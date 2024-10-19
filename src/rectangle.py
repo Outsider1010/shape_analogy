@@ -10,10 +10,10 @@ class Rectangle:
         self.y_max = y_max
 
     def get_width(self) -> int:
-        return self.x_max - self.x_min
+        return abs(self.x_max - self.x_min)
 
     def get_height(self) -> int:
-        return self.y_max - self.y_min
+        return abs(self.y_max - self.y_min)
 
     def get_center(self) -> Point:
         return Point((self.x_max+self.x_min)/2, (self.y_max+self.y_min)/2)
@@ -46,8 +46,8 @@ class Rectangle:
 
 
     def __repr__(self):
-        return f"{self.get_up_left()}, {self.get_bottom_right()}"
-        # return f"center : {self.get_center()}, dim : {self.get_width()}×{self.get_height()}"
+        # return f"{self.get_up_left()}, {self.get_bottom_right()}"
+        return f"center : {self.get_center()}, dim : {self.get_width()}×{self.get_height()}"
 
 def rectangle_analogy(r_a: Rectangle, r_b: Rectangle, r_c: Rectangle):
     center_a = r_a.get_center()

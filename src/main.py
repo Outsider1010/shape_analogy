@@ -1,4 +1,4 @@
-from shape import Shape
+from shape import shape_analogy_from_file
 
-s: Shape = Shape('resources/weird_shape_original.bmp')
-print(s.potential_little_rectangles())
+shape_analogy_from_file('resources/square_ul.bmp', 'resources/square.bmp',
+                        'resources/square.bmp', )
