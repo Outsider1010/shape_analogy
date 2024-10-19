@@ -2,32 +2,35 @@ import numpy as np
 from PIL import Image
 from copy import copy
 
-from rectangle import Rectangle, rectangle_analogy, greatest_common_rectangle_ratio
-from point import Point
-from utils.constants import *
-from utils.utils import aux, find_unique_bool
+from src.rectangle import Rectangle, rectangle_analogy, greatest_common_rectangle_ratio
+from src.point import Point
+from src.utils.constants import *
+from src.utils.utils import aux, find_unique_bool
 
 
 class Shape:
-    def __init__(self, img=None, shape=None, x_min=None, x_max=None, y_min=None, y_max=None):
+    def __init__(self, img=None, shape=None, x_min=None, x_max=None, y_min=None, y_max=None, big_r=None):
         # Black -> True
         # White (and everything else) -> False
         if img:
             img = Image.open(img)
-            self.tab = np.array(img)
-            self.shape = np.zeros(self.tab.shape[:2], dtype=bool)
+            tab = np.array(img)
+            self.shape = np.zeros(tab.shape[:2], dtype=bool)
             # Compare each pixel with black color and assign 1 where they are equal
-            self.shape[np.all(self.tab == [0, 0, 0], axis=-1)] = True
+            self.shape[np.all(tab == [0, 0, 0], axis=-1)] = True
         else:
-            self.shape = shape[y_min:y_max, x_min:x_max]
+            if x_min:
+                self.shape = shape[y_min:y_max, x_min:x_max]
+            else:
+                self.shape = shape
 
-        self.big_r = self.find_big_rectangle()
+        self.big_r = big_r if big_r else self.find_big_rectangle()
         self.little_r = None
 
     def find_big_rectangle(self):
         if self.shape.any():
             w, h = self.shape.shape
-            x_min, offset = np.unravel_index(self.shape.argmax(), self.shape.shape)
+            y_min, offset = np.unravel_index(self.shape.argmax(), self.shape.shape)
             temp = np.rot90(self.shape[offset:])
             ind, offset = np.unravel_index(temp.argmax(), temp.shape)
             x_max = w - ind
@@ -35,7 +38,7 @@ class Shape:
             ind, offset = np.unravel_index(temp.argmax(), temp.shape)
             y_max = h - ind
             temp = np.rot90(temp[:h - offset])
-            y_min = np.unravel_index(temp.argmax(), temp.shape)[0]
+            x_min = np.unravel_index(temp.argmax(), temp.shape)[0]
             return Rectangle(x_min, x_max, y_min, y_max)
         else:
             return None
@@ -51,6 +54,10 @@ class Shape:
 
     def big_rectangle(self):
         return self.big_r
+
+    # we assume every pixel of the rectangle has the same color
+    def get_color_little_rectangle(self):
+        return self.color(self.little_r.x_min, self.little_r.y_min)
 
     def potential_little_rectangles(self):
         res = []
@@ -129,11 +136,12 @@ class Shape:
                            y_min=little_r.y_min, y_max=big_r.y_max)
         return new_shape1, new_shape2, new_shape3, new_shape4
 
-    def to_image(self, name="default.bmp"):
-        pixel_array = np.full((self.shape.shape[0], self.shape.shape[1], 3), 255, dtype=np.uint8)
-        pixel_array[self.shape] = [0, 0, 0]
-        img = Image.fromarray(pixel_array)
-        img.save(name)
+
+def to_image(array, name="default.bmp"):
+    pixel_array = np.full((array.shape[0], array.shape[1], 3), 255, dtype=np.uint8)
+    pixel_array[array] = [0, 0, 0]
+    img = Image.fromarray(pixel_array)
+    img.save(name)
 
 
 def can_extend(direction: int, color: bool, shape: Shape, r: Rectangle):
@@ -273,6 +281,7 @@ def find_real_little_rectangles(little_r_a_candidates, big_r_a, little_r_b_candi
                     area_max = area
     return chosen
 
+# DOESN'T WORK DON'T EXECUTE
 def shape_analogy(sp_a: Shape, sp_b: Shape, sp_c: Shape):
     big_r_a = sp_a.big_rectangle()
     big_r_b = sp_b.big_rectangle()
@@ -286,6 +295,26 @@ def shape_analogy(sp_a: Shape, sp_b: Shape, sp_c: Shape):
     sp_a.little_r, sp_b.little_r, sp_c.little_r = find_real_little_rectangles(little_r_a_candidates, big_r_a,
                                                                               little_r_b_candidates, big_r_b,
                                                                               little_r_c_candidates, big_r_c, big_r_d)
+    color_c = sp_c.get_color_little_rectangle()
+    little_r_d_color = color_c if sp_a.get_color_little_rectangle() == sp_b.get_color_little_rectangle() else not color_c
     little_r_d = rectangle_analogy(sp_a.little_r, sp_b.little_r, sp_c.little_r)
+    shape_d_w = max(sp_a.get_width(), sp_b.get_width(), sp_c.get_width(), )
+    shape_d_h = max(sp_a.get_height(), sp_b.get_height(), sp_c.get_height(), big_r_d.get_height())
+    d_array = np.zeros((big_r_d.get_width(), shape_d_h), dtype=bool)
+    if little_r_d_color:
+        d_array[little_r_d.y_min:little_r_d.y_max, little_r_d.x_min:little_r_d.x_max] = True
+    sp_a1, sp_a2, sp_a3, sp_a4 = sp_a.cutting_in_4()
+    sp_b1, sp_b2, sp_b3, sp_b4 = sp_b.cutting_in_4()
+    sp_c1, sp_c2, sp_c3, sp_c4 = sp_c.cutting_in_4()
+
+    sp_d1 = shape_analogy(sp_a1, sp_b1, sp_c1)
+    sp_d2 = shape_analogy(sp_a2, sp_b2, sp_c2)
+    sp_d3 = shape_analogy(sp_a3, sp_b3, sp_c3)
+    sp_d4 = shape_analogy(sp_a4, sp_b4, sp_c4)
+    # HELPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+    # depends on the cutting method
+
+    return d_array
+
 
 

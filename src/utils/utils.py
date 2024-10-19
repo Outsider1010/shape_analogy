@@ -1,4 +1,4 @@
-from constants import LEFT_RIGHT, UP_DOWN
+from src.utils.constants import LEFT_RIGHT, UP_DOWN
 
 def find_unique_bool(bool_list: tuple[bool, ...]):
     count_true = count_false = elem_true = elem_false = 0

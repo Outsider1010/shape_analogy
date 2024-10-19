@@ -1,5 +1,5 @@
-from point import Point
-from utils.constants import LEFT, RIGHT, UP, DOWN
+from src.point import Point
+from src.utils.constants import LEFT, RIGHT, UP, DOWN
 
 
 class Rectangle:
