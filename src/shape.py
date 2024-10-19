@@ -30,14 +30,14 @@ class Shape:
     def find_big_rectangle(self):
         if self.shape.any():
             w, h = self.shape.shape
-            y_min, offset = np.unravel_index(self.shape.argmax(), self.shape.shape)
-            temp = np.rot90(self.shape[offset:])
-            ind, offset = np.unravel_index(temp.argmax(), temp.shape)
+            y_min = np.unravel_index(self.shape.argmax(), self.shape.shape)[0]
+            temp = np.rot90(self.shape[y_min:])
+            ind = np.unravel_index(temp.argmax(), temp.shape)[0]
             x_max = w - ind
-            temp = np.rot90(temp[:, :w - offset])
-            ind, offset = np.unravel_index(temp.argmax(), temp.shape)
+            temp = np.rot90(temp[ind:])
+            ind = np.unravel_index(temp.argmax(), temp.shape)[0]
             y_max = h - ind
-            temp = np.rot90(temp[:h - offset])
+            temp = np.rot90(temp[ind:])
             x_min = np.unravel_index(temp.argmax(), temp.shape)[0]
             return Rectangle(x_min, x_max, y_min, y_max)
         else:
@@ -62,6 +62,7 @@ class Shape:
     def potential_little_rectangles(self):
         res = []
         big_r: Rectangle = self.big_rectangle()
+        print(big_r)
         # could be a random point but must be the "same" across the 3 shapes
         center: Point = big_r.get_center()
 
