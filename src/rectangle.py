@@ -53,9 +53,11 @@ def rectangle_analogy(r_a: Rectangle, r_b: Rectangle, r_c: Rectangle):
     center_a = r_a.get_center()
     center_b = r_b.get_center()
     center_c = r_c.get_center()
-    center_d = (center_c.x + (center_b.x - center_a.x), center_c.y + (center_b.y - center_a.y))
-    w_d = r_c.get_width() * (r_b.get_width() / r_a.get_width())
-    h_d = r_c.get_height() * (r_b.get_height() / r_a.get_height())
+    r_w = r_b.get_width() / r_a.get_width()
+    r_h = r_b.get_height() / r_a.get_height()
+    center_d = (r_w * (center_c.x - center_a.x) + center_b.x, r_h * (center_c.y - center_a.y) + center_b.y)
+    w_d = r_c.get_width() * r_w
+    h_d = r_c.get_height() * r_h
     return Rectangle(center_d[0] - w_d / 2, center_d[0] + w_d / 2,
                      center_d[1] - h_d / 2, center_d[1] + h_d / 2)
 
