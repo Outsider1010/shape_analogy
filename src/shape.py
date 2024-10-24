@@ -3,7 +3,7 @@ from PIL import Image
 from copy import copy
 from math import ceil
 
-from src.rectangle import Rectangle, rectangle_analogy, greatest_common_rectangle_ratio
+from src.rectangle import Rectangle, rectangle_analogy, find_little_rectangles
 from src.point import Point
 from src.utils.constants import *
 from src.utils.utils import aux, find_unique_bool
@@ -16,7 +16,10 @@ class Shape:
         if img is not None:
             self.shape = np.where(np.array(Image.open(img)) == 0, True, False)
         elif shape is not None:
-            self.shape = shape.range(x_min, x_max, y_min, y_max)
+            shape_d_w = ceil(max(2 * abs(y_min), 2 * abs(y_max)))
+            shape_d_h = ceil(max(2 * abs(x_min), 2 * abs(x_max)))
+            self.shape = np.zeros((shape_d_w, shape_d_h), dtype=bool)
+            self.set_range_value(x_min, x_max, y_min, y_max, shape.range(x_min, x_max, y_min, y_max))
         elif array is not None:
             self.shape = array
 
@@ -40,20 +43,27 @@ class Shape:
         else:
             return None
 
+    def update_big_rectangle(self):
+        self.big_r = self.find_big_rectangle()
+
     def color(self, x, y) -> bool:
         return self.shape[int(y + self.get_width()/2)][int(x + self.get_height()/2)]
 
     def range(self, x_min, x_max, y_min, y_max):
         w, h = self.shape.shape
-        return self.shape[int(y_min + w/2):int(y_max + w/2), int(x_min + h/2):int(x_max + h/2)]
+        return self.shape[int(y_min + w/2):int(y_max + w/2), int((x_min * 2 + h) // 2):int((x_max * 2 + h) // 2)]
 
-    def row(self, x, y_min, y_max):
+    def set_range_value(self, x_min, x_max, y_min, y_max, value):
         w, h = self.shape.shape
-        return self.shape[int(x + h/2), int(y_min + w / 2):int(y_max + w / 2)]
+        self.shape[int(y_min + w / 2):int(y_max + w / 2), int((x_min * 2 + h) // 2):int((x_max * 2 + h) // 2)] = value
 
-    def col(self, x_min, x_max, y):
+    def row(self, x_min, x_max, y):
         w, h = self.shape.shape
-        return self.shape[int(x_min + h / 2):int(x_max + h / 2), int(y + w / 2)]
+        return self.shape[int(y + w / 2), int(x_min + h / 2):int(x_max + h / 2)]
+
+    def col(self, x, y_min, y_max):
+        w, h = self.shape.shape
+        return self.shape[int(y_min + w / 2):int(y_max + w / 2), int(x + h / 2)]
 
     def get_width(self):
         return self.shape.shape[0]
@@ -142,8 +152,8 @@ class Shape:
         if little_r.x_min != big_r.x_max and big_r.y_min != little_r.y_min:
             new_shapes.append(Shape(shape=self, x_min=little_r.x_min, x_max=big_r.x_max,
                                     y_min=big_r.y_min, y_max=little_r.y_min))
-        if big_r.x_min != little_r.x_min and little_r.y_max != big_r.y_max:
-            new_shapes.append(Shape(shape=self, x_min=big_r.x_min, x_max=little_r.x_min,
+        if big_r.x_min != little_r.x_max and little_r.y_max != big_r.y_max:
+            new_shapes.append(Shape(shape=self, x_min=big_r.x_min, x_max=little_r.x_max,
                                     y_min=little_r.y_max, y_max=big_r.y_max))
         if little_r.x_max != big_r.x_max and little_r.y_min != big_r.y_max:
             new_shapes.append(Shape(shape=self, x_min=little_r.x_max, x_max=big_r.x_max,
@@ -158,13 +168,13 @@ def to_image(array, name="default.bmp"):
 
 def can_extend(direction: int, color: bool, shape: Shape, r: Rectangle):
     if direction == UP:
-        return r.y_min + shape.get_height() / 2 >= 1 and np.all(shape.row(r.y_min - 1, r.x_min, r.x_max) == color)
+        return r.y_min + shape.get_width() / 2 >= 1 and np.all(shape.row(r.x_min, r.x_max, r.y_min - 1) == color)
     if direction == LEFT:
-        return r.x_min + shape.get_width() / 2 >= 1 and np.all(shape.col(r.y_min, r.y_max, r.x_min - 1) == color)
+        return r.x_min + shape.get_height() / 2 >= 1 and np.all(shape.col(r.x_min - 1, r.y_min, r.y_max) == color)
     if direction == DOWN:
-        return r.y_max < shape.get_height()/2 and np.all(shape.row(r.y_max, r.x_min, r.x_max) == color)
+        return r.y_max < shape.get_width()/2 and np.all(shape.row(r.x_min, r.x_max, r.y_max) == color)
     if direction == RIGHT:
-        return r.x_max < shape.get_width()/2 and np.all(shape.col(r.y_min, r.y_max, r.x_max) == color)
+        return r.x_max < shape.get_height()/2 and np.all(shape.col(r.x_max, r.y_min, r.y_max) == color)
 
 
 def corner(_corner: int, r: Rectangle):
@@ -271,37 +281,20 @@ def extend(sp: Shape, r: Rectangle, color: bool, sides: int, nb: int, check=True
     return res
 
 
-def rectangle_from_ratios(big_r, r_x_min, r_x_max, r_y_min, r_y_max):
-    w, h = big_r.get_width(), big_r.get_height()
-    x_min = big_r.x_min + w * r_x_min
-    x_max = big_r.x_max - w * r_x_max
-    y_min = big_r.y_min + h * r_y_min
-    y_max = big_r.y_max - h * r_y_max
-    return x_min, x_max, y_min, y_max
+def analogy(sp_a, sp_b, sp_c, x_min, x_max, y_min, y_max):
+    sp_d = shape_analogy(sp_a, sp_b, sp_c)
+    if sp_d.big_r:
+        x_min = min(x_min, sp_d.big_r.x_min)
+        x_max = max(x_max, sp_d.big_r.x_max)
+        y_min = min(y_min, sp_d.big_r.y_min)
+        y_max = max(y_max, sp_d.big_r.y_max)
+    return sp_d, x_min, x_max, y_min, y_max
 
 
-def find_little_rectangles(little_r_a_candidates, big_r_a, little_r_b_candidates, big_r_b,
-                           little_r_c_candidates, big_r_c, big_r_d):
-    chosen = None
-    area_max = 0
-    # we are going to take the rectangles maximising the area of the little rectangle of d
-    for candidate_r_a in little_r_a_candidates:
-        for candidate_r_b in little_r_b_candidates:
-            for candidate_r_c in little_r_c_candidates:
-                r_x_min, r_x_max, r_y_min, r_y_max = greatest_common_rectangle_ratio(candidate_r_a, big_r_a,
-                                                                                     candidate_r_b, big_r_b,
-                                                                                     candidate_r_c, big_r_c)
-                d_x_min, d_x_max, d_y_min, d_y_max = rectangle_from_ratios(big_r_d, r_x_min, r_x_max, r_y_min, r_y_max)
-                area = abs(d_x_max - d_x_min) * abs(d_y_max - d_y_min)
-                if area > area_max:
-                    chosen = r_x_min, r_x_max, r_y_min, r_y_max
-                    area_max = area
-    return [Rectangle(*rectangle_from_ratios(big_r_a, *chosen)), Rectangle(*rectangle_from_ratios(big_r_b, *chosen)),
-            Rectangle(*rectangle_from_ratios(big_r_c, *chosen)), Rectangle(*rectangle_from_ratios(big_r_d, *chosen))]
-
-# DOESN'T WORK DON'T EXECUTE
 def shape_analogy(sp_a: Shape, sp_b: Shape, sp_c: Shape):
     if sp_a.big_r is None or sp_b.big_r is None or sp_c.big_r is None:
+        if sp_a.big_r == sp_c.big_r:
+            return Shape(array=sp_b.shape)
         # cas de base
         print("SAIS PAS FAIRE")
         exit()
@@ -320,31 +313,41 @@ def shape_analogy(sp_a: Shape, sp_b: Shape, sp_c: Shape):
                                                                                          big_r_d)
         color_c = sp_c.color_little_rectangle()
         little_r_d_color = color_c if sp_a.color_little_rectangle() == sp_b.color_little_rectangle() else not color_c
-        sous_sp_a = sp_a.cutting_in_4()
-        sous_sp_b = sp_b.cutting_in_4()
-        sous_sp_c = sp_c.cutting_in_4()
+        sub_sp_a = sp_a.cutting_in_4()
+        sub_sp_b = sp_b.cutting_in_4()
+        sub_sp_c = sp_c.cutting_in_4()
+        sub_sp_d = []
+        x_min = big_r_d.x_min
+        x_max = big_r_d.x_max
+        y_min = big_r_d.y_min
+        y_max = big_r_d.y_max
+        for i in range(len(sub_sp_a)):
+            sp_d, x_min, x_max, y_min, y_max = analogy(sub_sp_a[i], sub_sp_b[i], sub_sp_c[i],
+                                                       x_min, x_max, y_min, y_max)
+            sub_sp_d.append(sp_d)
 
         # analogy between rectangles for example
-        if len(sous_sp_a) == 0:
-            shape_d_w = ceil(max(sp_c.get_width(), sp_b.get_width(), 2 * abs(big_r_d.y_min), 2 * abs(big_r_d.y_max)))
-            shape_d_h = ceil(max(sp_c.get_height(), sp_b.get_height(), 2 * abs(big_r_d.x_min), 2 * abs(big_r_d.x_max)))
-            d_array = np.zeros((shape_d_w, shape_d_h), dtype=bool)
-            if little_r_d_color:
-                d_array[int(little_r_d.y_min + shape_d_w/2):int(little_r_d.y_max + shape_d_w/2),
-                int(little_r_d.x_min + shape_d_h/2):int(little_r_d.x_max + shape_d_h/2)] = True
-            print("R_d (exact) :", big_r_d)
-            return Shape(array=d_array)
-        else:
-            print("SAIS PAS FAIRE 2")
-            exit()
+        shape_d_w = ceil(max(2 * abs(y_min), 2 * abs(y_max)))
+        shape_d_h = ceil(max(2 * abs(x_min), 2 * abs(x_max)))
+        shape_d = Shape(array=np.zeros((shape_d_w, shape_d_h), dtype=bool))
+        if little_r_d_color:
+            shape_d.set_range_value(little_r_d.x_min, little_r_d.x_max, little_r_d.y_min, little_r_d.y_max, True)
+
+        for sp_d in sub_sp_d:
+            big_r = sp_d.big_r
+            if big_r:
+                shape_d.set_range_value(big_r.x_min, big_r.x_max, big_r.y_min, big_r.y_max,
+                                        sp_d.range(big_r.x_min, big_r.x_max, big_r.y_min, big_r.y_max))
+        shape_d.update_big_rectangle()
+        return shape_d
 
 def shape_analogy_from_file(img_a: str, img_b: str, img_c: str, name_img_res='default.bmp'):
     sp_a = Shape(img=img_a)
     sp_b = Shape(img=img_b)
     sp_c = Shape(img=img_c)
-    res = shape_analogy(sp_a, sp_b, sp_c)
     print("R_a :", sp_a.big_r)
     print("R_b :", sp_b.big_r)
     print("R_c :", sp_c.big_r)
-    print("R_d (pixel) :", res.big_r)
+    res = shape_analogy(sp_a, sp_b, sp_c)
+    print("R_d :", res.big_r)
     to_image(res.shape, name_img_res)
