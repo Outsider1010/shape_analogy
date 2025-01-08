@@ -1,3 +1,7 @@
+from math import ceil
+
+from numpy import unravel_index, rot90, zeros
+
 from src.point import Point
 from src.utils.constants import LEFT, RIGHT, UP, DOWN
 
@@ -16,7 +20,7 @@ class Rectangle:
         return abs(self.y_max - self.y_min)
 
     def get_center(self) -> Point:
-        return Point((self.x_max+self.x_min)/2, (self.y_max+self.y_min)/2)
+        return Point((self.x_max + self.x_min) / 2, (self.y_max + self.y_min) / 2)
 
     def get_up_left(self) -> Point:
         return Point(self.x_min, self.y_min)
@@ -74,6 +78,24 @@ def rectangle_analogy(r_a: Rectangle, r_b: Rectangle, r_c: Rectangle):
                      center_d[1] - h_d / 2, center_d[1] + h_d / 2)
 
 
+def find_big_rectangle(array):
+    if array.any():
+        w, h = array.shape
+        ind = unravel_index(array.argmax(), array.shape)[0]
+        y_min = ind - w/2
+        temp = rot90(array[ind:])
+        ind = unravel_index(temp.argmax(), temp.shape)[0]
+        x_max = (h - ind) - h/2
+        temp = rot90(temp[ind:])
+        ind = unravel_index(temp.argmax(), temp.shape)[0]
+        y_max = (w - ind) - w/2
+        temp = rot90(temp[ind:])
+        x_min = unravel_index(temp.argmax(), temp.shape)[0] - h/2
+        return Rectangle(x_min, x_max, y_min, y_max)
+    else:
+        return None
+
+
 def greatest_common_rectangle_ratio(r_a: Rectangle, big_r_a: Rectangle, r_b: Rectangle, big_r_b: Rectangle,
                                     r_c: Rectangle, big_r_c: Rectangle):
     w_a, h_a = big_r_a.get_width(), big_r_a.get_height()
@@ -90,6 +112,8 @@ def greatest_common_rectangle_ratio(r_a: Rectangle, big_r_a: Rectangle, r_b: Rec
     return r_x_min, r_x_max, r_y_min, r_y_max
 
 
+# find the little rectangles of each figure maximising the area of the little rectangle of the analogy
+# the triple loop may seem scary, but there are usually very few candidates for each figure.
 def find_little_rectangles(little_r_a_candidates, big_r_a, little_r_b_candidates, big_r_b,
                            little_r_c_candidates, big_r_c, big_r_d):
     chosen = best_r_d = None
@@ -109,3 +133,26 @@ def find_little_rectangles(little_r_a_candidates, big_r_a, little_r_b_candidates
                     best_r_d = r_d
     return [big_r_a.rectangle_from_ratios(*chosen), big_r_b.rectangle_from_ratios(*chosen),
             big_r_c.rectangle_from_ratios(*chosen), best_r_d]
+
+
+def rect_to_array(r, from_array=None):
+    if from_array is None:
+        w, h = ceil(max(2 * abs(r.y_min), 2 * abs(r.y_max))), ceil(max(2 * abs(r.x_min), 2 * abs(r.x_max)))
+        array = zeros((w, h), dtype=bool)
+        array[int(r.y_min + w / 2):int(r.y_max + w / 2), int(r.x_min + h / 2):int(r.x_max + h / 2)] = True
+    else:
+        a_w, a_h = from_array.shape
+        w, h = ceil(max(2 * abs(r.y_min), 2 * abs(r.y_max), a_w)), ceil(max(2 * abs(r.x_min), 2 * abs(r.x_max), a_h))
+        if w == a_w and h == a_h:
+            array = from_array
+        else:
+            array = zeros((w, h), dtype=bool)
+            array[int((w - a_w) / 2):int((w + a_w) / 2), int((h - a_h) / 2):int((h + a_h) / 2)] = from_array
+        array[int(r.y_min + w / 2):int(r.y_max + w / 2), int(r.x_min + h / 2):int(r.x_max + h / 2)] = True
+    return array
+
+def rects_to_array(*rs):
+    array = rect_to_array(rs[0])
+    for r in rs[1:]:
+        array = rect_to_array(r, array)
+    return array
