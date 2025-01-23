@@ -2,72 +2,83 @@ import numpy as np
 from PIL import Image
 from copy import copy
 from math import ceil
+from numpy import unravel_index, rot90, zeros
 
-from src.rectangle import Rectangle, rectangle_analogy, find_little_rectangles, find_big_rectangle
+from src.birectangle import BiRectangle
+from src.rectangle import Rectangle
 from src.point import Point
+from src.shapes.shape import Shape
 from src.utils.constants import *
 from src.utils.utils import aux, find_unique_bool, array_to_image
 
 
-class Shape:
-    def __init__(self, img=None, shape=None, x_min=None, x_max=None, y_min=None, y_max=None, array=None):
+class PixelShape(Shape):
+
+    def getOuterRectangle(self) -> Rectangle:
+        w, h = self.pixels.shape
+        ind = unravel_index(self.pixels.argmax(), self.pixels.shape)[0]
+        y_min = ind - w / 2
+        temp = rot90(self.pixels[ind:])
+        ind = unravel_index(temp.argmax(), temp.shape)[0]
+        x_max = (h - ind) - h / 2
+        temp = rot90(temp[ind:])
+        ind = unravel_index(temp.argmax(), temp.shape)[0]
+        y_max = (w - ind) - w / 2
+        temp = rot90(temp[ind:])
+        x_min = unravel_index(temp.argmax(), temp.shape)[0] - h / 2
+        return Rectangle(x_min, x_max, y_min, y_max)
+
+    def getInnerRectangle(self) -> Rectangle:
+        pass
+
+    def __init__(self, img=None, pixelShape=None, x_min=None, x_max=None, y_min=None, y_max=None, array=None):
         # Black -> True
         # White (and everything else) -> False
         if img is not None:
-            self.shape = np.where(np.array(Image.open(img)) == 0, True, False)
-        elif shape is not None:
-            self.shape = np.zeros((ceil(max(2 * abs(y_min), 2 * abs(y_max))),
+            self.pixels = np.where(np.array(Image.open(img)) == 0, True, False)
+        elif pixelShape is not None:
+            self.pixels = np.zeros((ceil(max(2 * abs(y_min), 2 * abs(y_max))),
                                    ceil(max(2 * abs(x_min), 2 * abs(x_max)))), dtype=bool)
-            self.set_range_value(x_min, x_max, y_min, y_max, shape.range(x_min, x_max, y_min, y_max))
+            self.set_range_value(x_min, x_max, y_min, y_max, pixelShape.range(x_min, x_max, y_min, y_max))
         elif array is not None:
-            self.shape = array
-
-        self.big_r = find_big_rectangle(self.shape)
-        self.little_r = None
+            self.pixels = array
 
     def color(self, x, y) -> bool:
-        return self.shape[int(y + self.get_width() / 2)][int(x + self.get_height() / 2)]
+        return self.pixels[int(y + self.get_width() / 2)][int(x + self.get_height() / 2)]
 
     def range(self, x_min, x_max, y_min, y_max):
-        return arr_range(self.shape, x_min, x_max, y_min, y_max)
+        return arr_range(self.pixels, x_min, x_max, y_min, y_max)
 
     def set_range_value(self, x_min, x_max, y_min, y_max, value):
-        arr_set_range_value(self.shape, x_min, x_max, y_min, y_max, value)
+        arr_set_range_value(self.pixels, x_min, x_max, y_min, y_max, value)
 
     def row(self, x_min, x_max, y):
-        w, h = self.shape.shape
-        return self.shape[round(y + w / 2), round(x_min + h / 2):round(x_max + h / 2)]
+        w, h = self.pixels.shape
+        return self.pixels[round(y + w / 2), round(x_min + h / 2):round(x_max + h / 2)]
 
     def col(self, x, y_min, y_max):
-        w, h = self.shape.shape
-        return self.shape[round(y_min + w / 2):round(y_max + w / 2), round(x + h / 2)]
+        w, h = self.pixels.shape
+        return self.pixels[round(y_min + w / 2):round(y_max + w / 2), round(x + h / 2)]
 
     def get_width(self):
-        return self.shape.shape[0]
+        return self.pixels.shape[0]
 
     def get_height(self):
-        return self.shape.shape[1]
+        return self.pixels.shape[1]
 
-    def big_rectangle(self):
-        return self.big_r
-
-    def no_shape(self):
-        return self.big_r is None
-
-    # we assume every pixel of the rectangle has the same color
-    def color_little_rectangle(self):
-        return self.color(self.little_r.x_min, self.little_r.y_min)
-
+    # DOESN'T RESPECT THE SPECIFICATION : r must be inside the shape
     def potential_little_rectangles(self):
         res = []
-        big_r: Rectangle = self.big_rectangle()
+        big_r: Rectangle = self.getOuterRectangle()
         # could be a random point but must be the "same" across the 3 shapes
-        center: Point = big_r.get_center()
+        # after analysis, this is incorrect because it is specified that little r should be inside the shape
+        # the center of the rectangle is not always inside the shape
+        center: Point = big_r.center()
 
         # if the width (resp. height) is odd then the center of the rectangle is inside a pixel
         # if the width (resp. height) is even then the center is between 2 pixels horizontally (resp. vertically)
-        _x = (center.x - 0.5,) if big_r.get_width() % 2 == 1 else (center.x - 1, center.x)
-        _y = (center.y - 0.5,) if big_r.get_height() % 2 == 1 else (center.y - 1, center.y)
+        _x = (center.x - 0.5,) if big_r.width() % 2 == 1 else (center.x - 1, center.x)
+        _y = (center.y - 0.5,) if big_r.height() % 2 == 1 else (center.y - 1, center.y)
 
         # colors of the pixels around the center (1, 2 or 4 pixels)
         colors = tuple(self.color(a, b) for a in _x for b in _y)
@@ -123,22 +134,22 @@ class Shape:
     # #    3    |  4  #
     # #         |     #
     # #################
-    def cutting_in_4(self):
-        big_r = self.big_r
-        little_r = self.little_r
+    def cutting_in_4(self, birectangle: BiRectangle):
+        big_r = birectangle.outerRectangle
+        little_r = birectangle.innerRectangle
         new_shapes = []
         if big_r.x_min != little_r.x_min and big_r.y_min != little_r.y_max:
-            new_shapes.append(Shape(shape=self, x_min=big_r.x_min, x_max=little_r.x_min,
-                                    y_min=big_r.y_min, y_max=little_r.y_max))
+            new_shapes.append(PixelShape(pixelShape=self, x_min=big_r.x_min, x_max=little_r.x_min,
+                                         y_min=big_r.y_min, y_max=little_r.y_max))
         if little_r.x_min != big_r.x_max and big_r.y_min != little_r.y_min:
-            new_shapes.append(Shape(shape=self, x_min=little_r.x_min, x_max=big_r.x_max,
-                                    y_min=big_r.y_min, y_max=little_r.y_min))
+            new_shapes.append(PixelShape(pixelShape=self, x_min=little_r.x_min, x_max=big_r.x_max,
+                                         y_min=big_r.y_min, y_max=little_r.y_min))
         if big_r.x_min != little_r.x_max and little_r.y_max != big_r.y_max:
-            new_shapes.append(Shape(shape=self, x_min=big_r.x_min, x_max=little_r.x_max,
-                                    y_min=little_r.y_max, y_max=big_r.y_max))
+            new_shapes.append(PixelShape(pixelShape=self, x_min=big_r.x_min, x_max=little_r.x_max,
+                                         y_min=little_r.y_max, y_max=big_r.y_max))
         if little_r.x_max != big_r.x_max and little_r.y_min != big_r.y_max:
-            new_shapes.append(Shape(shape=self, x_min=little_r.x_max, x_max=big_r.x_max,
-                                    y_min=little_r.y_min, y_max=big_r.y_max))
+            new_shapes.append(PixelShape(pixelShape=self, x_min=little_r.x_max, x_max=big_r.x_max,
+                                         y_min=little_r.y_min, y_max=big_r.y_max))
         return new_shapes
 
     # one of the ways to cut
@@ -151,36 +162,54 @@ class Shape:
         # #  6  | 7 |  8  #
         # #     |   |     #
         # #################
-    def cutting_in_8(self):
-            big_r = self.big_r
-            little_r = self.little_r
-            new_shapes = []
-            if big_r.x_min != little_r.x_min and big_r.y_min != little_r.y_min:
-                new_shapes.append(Shape(shape=self, x_min=big_r.x_min, x_max=little_r.x_min,
-                                        y_min=big_r.y_min, y_max=little_r.y_min))
-            if big_r.y_min != little_r.y_min:
-                new_shapes.append(Shape(shape=self, x_min=little_r.x_min, x_max=little_r.x_max,
-                                        y_min=big_r.y_min, y_max=little_r.y_min))
-            if little_r.x_max != big_r.x_max and big_r.y_min != little_r.y_min:
-                new_shapes.append(Shape(shape=self, x_min=little_r.x_max, x_max=big_r.x_max,
-                                        y_min=big_r.y_min, y_max=little_r.y_min))
-            if big_r.x_min != little_r.x_min:
-                new_shapes.append(Shape(shape=self, x_min=big_r.x_min, x_max=little_r.x_min,
-                                        y_min=little_r.y_min, y_max=little_r.y_max))
-            if big_r.x_max != little_r.x_max:
-                new_shapes.append(Shape(shape=self, x_min=little_r.x_max, x_max=big_r.x_max,
-                                        y_min=little_r.y_min, y_max=little_r.y_max))
+    def cutting_in_8(self, birectangle):
+        big_r = birectangle.outerRectangle
+        little_r = birectangle.innerRectangle
+        new_shapes = []
+        if big_r.x_min != little_r.x_min and big_r.y_min != little_r.y_min:
+            new_shapes.append(PixelShape(pixelShape=self, x_min=big_r.x_min, x_max=little_r.x_min,
+                                         y_min=big_r.y_min, y_max=little_r.y_min))
+        if big_r.y_min != little_r.y_min:
+            new_shapes.append(PixelShape(pixelShape=self, x_min=little_r.x_min, x_max=little_r.x_max,
+                                         y_min=big_r.y_min, y_max=little_r.y_min))
+        if little_r.x_max != big_r.x_max and big_r.y_min != little_r.y_min:
+            new_shapes.append(PixelShape(pixelShape=self, x_min=little_r.x_max, x_max=big_r.x_max,
+                                         y_min=big_r.y_min, y_max=little_r.y_min))
+        if big_r.x_min != little_r.x_min:
+            new_shapes.append(PixelShape(pixelShape=self, x_min=big_r.x_min, x_max=little_r.x_min,
+                                         y_min=little_r.y_min, y_max=little_r.y_max))
+        if big_r.x_max != little_r.x_max:
+            new_shapes.append(PixelShape(pixelShape=self, x_min=little_r.x_max, x_max=big_r.x_max,
+                                         y_min=little_r.y_min, y_max=little_r.y_max))
 
-            if big_r.x_min != little_r.x_min and big_r.y_max != little_r.y_max:
-                new_shapes.append(Shape(shape=self, x_min=big_r.x_min, x_max=little_r.x_min,
-                                        y_min=little_r.y_max, y_max=big_r.y_max))
-            if big_r.y_max != little_r.y_max:
-                new_shapes.append(Shape(shape=self, x_min=little_r.x_min, x_max=little_r.x_max,
-                                        y_min=little_r.y_max, y_max=big_r.y_max))
-            if little_r.x_max != big_r.x_max and big_r.y_max != little_r.y_max:
-                new_shapes.append(Shape(shape=self, x_min=little_r.x_max, x_max=big_r.x_max,
-                                        y_min=little_r.y_max, y_max=big_r.y_max))
-            return new_shapes
+        if big_r.x_min != little_r.x_min and big_r.y_max != little_r.y_max:
+            new_shapes.append(PixelShape(pixelShape=self, x_min=big_r.x_min, x_max=little_r.x_min,
+                                         y_min=little_r.y_max, y_max=big_r.y_max))
+        if big_r.y_max != little_r.y_max:
+            new_shapes.append(PixelShape(pixelShape=self, x_min=little_r.x_min, x_max=little_r.x_max,
+                                         y_min=little_r.y_max, y_max=big_r.y_max))
+        if little_r.x_max != big_r.x_max and big_r.y_max != little_r.y_max:
+            new_shapes.append(PixelShape(pixelShape=self, x_min=little_r.x_max, x_max=big_r.x_max,
+                                         y_min=little_r.y_max, y_max=big_r.y_max))
+        return new_shapes
+
+    @staticmethod
+    def rectangles_to_shape(rectangles):
+        r0 = rectangles[0]
+        w, h = ceil(max(2 * abs(r0.y_min), 2 * abs(r0.y_max))), ceil(max(2 * abs(r0.x_min), 2 * abs(r0.x_max)))
+        array = zeros((w, h), dtype=bool)
+        array[int(r0.y_min + w / 2):int(r0.y_max + w / 2), int(r0.x_min + h / 2):int(r0.x_max + h / 2)] = True
+
+        for r in rectangles[1:]:
+            a_w, a_h = array.shape
+            w, h = (ceil(max(2 * abs(r.y_min), 2 * abs(r.y_max), a_w)),
+                    ceil(max(2 * abs(r.x_min), 2 * abs(r.x_max), a_h)))
+            if w != a_w or h != a_h:
+                array = zeros((w, h), dtype=bool)
+                array[int((w - a_w) / 2):int((w + a_w) / 2), int((h - a_h) / 2):int((h + a_h) / 2)] = array
+            array[int(r.y_min + w / 2):int(r.y_max + w / 2), int(r.x_min + h / 2):int(r.x_max + h / 2)] = True
+
+        return array
 
 
 def arr_range(arr, x_min, x_max, y_min, y_max):
@@ -201,7 +230,8 @@ def arr_set_range_value(arr, x_min, x_max, y_min, y_max, value):
     arr[b1:b2, b3:b4] |= value
 
 
-def can_extend(direction: int, color: bool, sp: Shape, r: Rectangle):
+# DEAD
+def can_extend(direction: int, color: bool, sp: PixelShape, r: Rectangle):
     if direction == UP:
         return r.y_min - 1 >= sp.big_r.y_min and np.all(sp.row(r.x_min, r.x_max, r.y_min - 1) == color)
     if direction == LEFT:
@@ -217,7 +247,7 @@ def corner(_corner: int, r: Rectangle):
             r.y_min - 1 if (_corner & UP) == UP else r.y_max)
 
 
-def extend(sp: Shape, r: Rectangle, color: bool, sides: int, nb: int, check=True):
+def extend(sp: PixelShape, r: Rectangle, color: bool, sides: int, nb: int, check=True):
     if nb == 0:
         return [r]
     res = []
@@ -316,75 +346,3 @@ def extend(sp: Shape, r: Rectangle, color: bool, sides: int, nb: int, check=True
             else:
                 res.extend(extend(sp, r.extend(sides), color, sides, 4))
     return res
-
-
-def analogy(sp_a, sp_b, sp_c, x_min, x_max, y_min, y_max):
-    sp_d = shape_analogy(sp_a, sp_b, sp_c)
-    if not sp_d.no_shape():
-        x_min = min(x_min, sp_d.big_r.x_min)
-        x_max = max(x_max, sp_d.big_r.x_max)
-        y_min = min(y_min, sp_d.big_r.y_min)
-        y_max = max(y_max, sp_d.big_r.y_max)
-    return sp_d, x_min, x_max, y_min, y_max
-
-
-def shape_analogy(sp_a: Shape, sp_b: Shape, sp_c: Shape):
-    # cas de base
-    if sp_a.no_shape() or sp_b.no_shape() or sp_c.no_shape():
-        if sp_a.no_shape() == sp_b.no_shape():
-            return Shape(array=sp_c.shape)
-        if sp_a.no_shape() == sp_c.no_shape():
-            return Shape(array=sp_b.shape)
-        if sp_b.no_shape() == sp_c.no_shape():
-            return Shape(array=sp_a.shape)
-    else:
-        big_r_a = sp_a.big_rectangle()
-        big_r_b = sp_b.big_rectangle()
-        big_r_c = sp_c.big_rectangle()
-        big_r_d = rectangle_analogy(big_r_a, big_r_b, big_r_c)
-        little_r_a_candidates = sp_a.potential_little_rectangles()
-        little_r_b_candidates = sp_b.potential_little_rectangles()
-        little_r_c_candidates = sp_c.potential_little_rectangles()
-        sp_a.little_r, sp_b.little_r, sp_c.little_r, little_r_d = find_little_rectangles(little_r_a_candidates, big_r_a,
-                                                                                         little_r_b_candidates, big_r_b,
-                                                                                         little_r_c_candidates, big_r_c,
-                                                                                         big_r_d)
-        color_c = sp_c.color_little_rectangle()
-        little_r_d_color = color_c if sp_a.color_little_rectangle() == sp_b.color_little_rectangle() else not color_c
-        sub_sp_a = sp_a.cutting_in_4()
-        sub_sp_b = sp_b.cutting_in_4()
-        sub_sp_c = sp_c.cutting_in_4()
-        sub_sp_d = []
-        x_min = big_r_d.x_min
-        x_max = big_r_d.x_max
-        y_min = big_r_d.y_min
-        y_max = big_r_d.y_max
-        for i in range(len(sub_sp_a)):
-            sp_d, x_min, x_max, y_min, y_max = analogy(sub_sp_a[i], sub_sp_b[i], sub_sp_c[i],
-                                                       x_min, x_max, y_min, y_max)
-            sub_sp_d.append(sp_d)
-
-        # analogy between rectangles for example
-        shape_d_w = ceil(max(2 * abs(y_min), 2 * abs(y_max)))
-        shape_d_h = ceil(max(2 * abs(x_min), 2 * abs(x_max)))
-        arr = np.zeros((shape_d_w, shape_d_h), dtype=bool)
-        if little_r_d_color:
-            arr_set_range_value(arr, little_r_d.x_min, little_r_d.x_max, little_r_d.y_min, little_r_d.y_max, True)
-
-        for sp_d in sub_sp_d:
-            if not sp_d.no_shape():
-                big_r = sp_d.big_r
-                arr_set_range_value(arr, big_r.x_min, big_r.x_max, big_r.y_min, big_r.y_max,
-                                        sp_d.range(big_r.x_min, big_r.x_max, big_r.y_min, big_r.y_max))
-        return Shape(array=arr)
-
-def shape_analogy_from_file(img_a: str, img_b: str, img_c: str, name_img_res='default.bmp'):
-    sp_a = Shape(img=img_a)
-    sp_b = Shape(img=img_b)
-    sp_c = Shape(img=img_c)
-    print("R_a :", sp_a.big_r)
-    print("R_b :", sp_b.big_r)
-    print("R_c :", sp_c.big_r)
-    res = shape_analogy(sp_a, sp_b, sp_c)
-    print("R_d :", res.big_r)
-    array_to_image(res.shape, name_img_res)
