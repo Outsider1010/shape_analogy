@@ -59,16 +59,16 @@ class Rectangle:
                 and self.y_min == other.y_min and self.y_max == other.y_max)
 
     def __repr__(self):
-        return f"{self.topLeft()}, {self.bottomRight()}"
-        # return f"center : {self.get_center()}, dim : {round(self.get_width(), 4)}×{round(self.get_height(), 4)}"
+        # return f"{self.topLeft()}, {self.bottomRight()}"
+        return f"center : {self.center()}, dim : {round(self.width(), 4)}×{round(self.height(), 4)}"
 
     @staticmethod
     def fromCenter(center, w, h):
         return Rectangle(center.x - w/2, center.x + w/2, center.y - h/2, center.y + h/2)
 
     @staticmethod
-    def fromTopLeft(topLeft, w, h):
-        return Rectangle(topLeft.x, topLeft.x + w, topLeft.y, topLeft.y + h)
+    def fromTopLeft(top_left, w, h):
+        return Rectangle(top_left.x, top_left.x + w, top_left.y, top_left.y + h)
 
     @staticmethod
     def analogy(rectangle_a, rectangle_b, rectangle_c):
@@ -80,11 +80,16 @@ class Rectangle:
         h_d = rectangle_c.height() * rectangle_b.height() / rectangle_a.height()
         return Rectangle.fromCenter(center_d, w_d, h_d)
 
-    def containsRectangle(self, innerRectangle):
-        pass
+    def containsRectangle(self, R):
+        bottom_condition = (self.bottomRight().y <= R.bottomRight().y)
+        top_condition = (self.topLeft().y >= R.topLeft().y)
+        left_condition = (self.topLeft().x <= R.topLeft().x)
+        right_condition = (self.bottomRight().x >= R.bottomRight().x)
+        return bottom_condition and top_condition and left_condition and right_condition
 
 
-def greatest_common_rectangle_ratio(r_a: Rectangle, big_r_a: Rectangle, r_b: Rectangle, big_r_b: Rectangle,
+def greatest_common_rectangle_ratio(r_a: Rectangle, big_r_a: Rectangle,
+                                    r_b: Rectangle, big_r_b: Rectangle,
                                     r_c: Rectangle, big_r_c: Rectangle):
     w_a, h_a = big_r_a.width(), big_r_a.height()
     w_b, h_b = big_r_b.width(), big_r_b.height()
