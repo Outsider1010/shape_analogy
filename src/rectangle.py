@@ -1,5 +1,4 @@
 from src.point import Point
-from src.utils.constants import LEFT, RIGHT, UP, DOWN
 
 
 class Rectangle:
@@ -21,16 +20,16 @@ class Rectangle:
         return Point((self.x_max + self.x_min) / 2, (self.y_max + self.y_min) / 2)
 
     def topLeft(self) -> Point:
-        return Point(self.x_min, self.y_min)
-
-    def topRight(self) -> Point:
-        return Point(self.x_max, self.y_min)
-
-    def bottomLeft(self) -> Point:
         return Point(self.x_min, self.y_max)
 
-    def bottomRight(self) -> Point:
+    def topRight(self) -> Point:
         return Point(self.x_max, self.y_max)
+
+    def bottomLeft(self) -> Point:
+        return Point(self.x_min, self.y_min)
+
+    def bottomRight(self) -> Point:
+        return Point(self.x_max, self.y_min)
 
     def area(self):
         return self.width() * self.height()
@@ -42,17 +41,6 @@ class Rectangle:
         y_min = self.y_min + h * r_y_min
         y_max = self.y_max - h * r_y_max
         return Rectangle(x_min, x_max, y_min, y_max)
-
-    def extend(self, direction):
-        if direction & UP == UP:
-            self.y_min -= 1
-        if direction & LEFT == LEFT:
-            self.x_min -= 1
-        if direction & DOWN == DOWN:
-            self.y_max += 1
-        if direction & RIGHT == RIGHT:
-            self.x_max += 1
-        return self
 
     def __eq__(self, other):
         return (isinstance(other, Rectangle) and self.x_min == other.x_min and self.x_max == other.x_max
@@ -68,23 +56,28 @@ class Rectangle:
 
     @staticmethod
     def fromTopLeft(top_left, w, h):
-        return Rectangle(top_left.x, top_left.x + w, top_left.y, top_left.y + h)
+        return Rectangle(top_left.x, top_left.x + w, top_left.y - h, top_left.y)
 
     @staticmethod
     def analogy(rectangle_a, rectangle_b, rectangle_c):
         center_a = rectangle_a.center()
         center_b = rectangle_b.center()
         center_c = rectangle_c.center()
-        center_d = Point(center_b.x - center_a.x + center_c.x, center_b.y - center_a.y + center_c.y)
+        center_d = Point.analogy(center_a, center_b, center_c)
         w_d = rectangle_c.width() * rectangle_b.width() / rectangle_a.width()
         h_d = rectangle_c.height() * rectangle_b.height() / rectangle_a.height()
         return Rectangle.fromCenter(center_d, w_d, h_d)
 
-    def containsRectangle(self, R):
-        bottom_condition = (self.bottomRight().y <= R.bottomRight().y)
-        top_condition = (self.topLeft().y >= R.topLeft().y)
-        left_condition = (self.topLeft().x <= R.topLeft().x)
-        right_condition = (self.bottomRight().x >= R.bottomRight().x)
+    def containsRectangle(self, r):
+        """
+        Check if this rectangle contains r
+        :param r: inner rectangle
+        :return: True if this rectangle contains r
+        """
+        bottom_condition = self.y_min <= r.y_min
+        top_condition = self.y_max >= r.y_max
+        left_condition = self.x_min <= r.x_min
+        right_condition = self.x_max >= r.x_max
         return bottom_condition and top_condition and left_condition and right_condition
 
 

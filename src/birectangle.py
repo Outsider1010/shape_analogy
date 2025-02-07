@@ -31,22 +31,22 @@ class BiRectangle:
         xB_rescale = (BRB_inner_topLeft.x - BRB_outer_topLeft.x) / BRB.outerRectangle.w
         xC_rescale = (BRC_inner_topLeft.x - BRC_outer_topLeft.x) / BRC.outerRectangle.w
         xD_rescale = real_analogies.bounded(xA_rescale, xB_rescale, xC_rescale)
-        xD = outerD.topLeft.x + outerD.w * xD_rescale
+        xD = outerD.x_min + outerD.w * xD_rescale
 
         yA_rescale = (- BRA_inner_topLeft.y + BRA_outer_topLeft.y) / BRA.outerRectangle.h
         yB_rescale = (- BRB_inner_topLeft.y + BRB_outer_topLeft.y) / BRB.outerRectangle.h
         yC_rescale = (- BRC_inner_topLeft.y + BRC_outer_topLeft.y) / BRC.outerRectangle.h
         yD_rescale = real_analogies.bounded(yA_rescale, yB_rescale, yC_rescale)
-        yD = outerD.topLeft.y - outerD.h * yD_rescale
+        yD = outerD.y_max - outerD.h * yD_rescale
 
         wA_rescale = (BRA.innerRectangle.w + BRA_inner_topLeft.x
-                      - BRA.outerRectangle.topLeft.x) / BRA.outerRectangle.w
+                      - BRA_outer_topLeft.x) / BRA.outerRectangle.w
         wB_rescale = (BRB.innerRectangle.w + BRB_inner_topLeft.x
-                      - BRB.outerRectangle.topLeft.x) / BRB.outerRectangle.w
+                      - BRB_outer_topLeft.x) / BRB.outerRectangle.w
         wC_rescale = (BRC.innerRectangle.w + BRC_inner_topLeft.x
-                      - BRC.outerRectangle.topLeft.x) / BRC.outerRectangle.w
+                      - BRC_outer_topLeft.x) / BRC.outerRectangle.w
         wD_rescale = real_analogies.bounded(wA_rescale, wB_rescale, wC_rescale)
-        wD = outerD.topLeft.x - xD + outerD.w * wD_rescale
+        wD = outerD.x_min - xD + outerD.w * wD_rescale
 
         hA_rescale = (BRA.innerRectangle.h - BRA_inner_topLeft.y
                       + BRA_outer_topLeft.y) / BRA.outerRectangle.h
@@ -55,8 +55,9 @@ class BiRectangle:
         hC_rescale = (BRC.innerRectangle.h - BRC_inner_topLeft.y
                       + BRC_outer_topLeft.y) / BRC.outerRectangle.h
         hD_rescale = real_analogies.bounded(hA_rescale, hB_rescale, hC_rescale)
-        hD = yD - outerD.topLeft.y + outerD.h * hD_rescale
+        hD = yD - outerD.y_max + outerD.h * hD_rescale
 
-        innerD = Rectangle.fromTopLeft(Point(int(xD), int(yD)), int(wD), int(hD))
+        print(xD, yD, wD, hD)
+        innerD = Rectangle.fromTopLeft(Point(xD, yD), wD, hD)
 
         return BiRectangle(outerD, innerD)

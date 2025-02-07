@@ -13,16 +13,7 @@ class Shape(ABC):
         pass
 
     @abstractmethod
-    def cutting_in_4(self, birectangle: list[Rectangle]):
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def rectangles_to_shape(rectangles):
-        pass
-
-    @abstractmethod
-    def isblank(self) -> bool:
+    def cutting_in_4(self, birectangle):
         pass
 
     @staticmethod
@@ -41,11 +32,12 @@ class Shape(ABC):
             subshape_a = subshapes[0][i]
             subshape_b = subshapes[1][i]
             subshape_c = subshapes[2][i]
-            # si une des figures est vide, on ne fait rien
+            # if one of the shapes is empty, we don't do anything,
+            # but we should, some equations can be resolved (tho, we won't have rectangles as solutions)
             if not (subshape_a.isblank() or subshape_b.isblank() or subshape_c.isblank()):
                 results.extend(Shape.analogy(subshape_a, subshape_b, subshape_c))
 
-        return Shape.rectangles_to_shape(results)
+        return results
 
 
 
