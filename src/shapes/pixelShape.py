@@ -3,10 +3,11 @@ from math import ceil
 from numpy import unravel_index, rot90, zeros
 
 from src.birectangle import BiRectangle
+from src.point import Point
 from src.rectangle import Rectangle
 from src.shapes.shape import Shape
 from src.utils import image_to_array, arr_set_range_value_from_array
-
+import largestinteriorrectangle as lir
 
 class PixelShape(Shape):
 
@@ -27,7 +28,11 @@ class PixelShape(Shape):
         return self.outerRectangle
 
     def getInnerRectangle(self) -> Rectangle:
-        pass
+        # find the largest interior rectangle
+        topLeft_x, topLeft_y, w, h = lir.lir(self.pixels)
+        w2, h2 = self.pixels.shape
+        # have to adjust because we consider the center of the image to be the origin
+        return Rectangle.fromTopLeft(Point(topLeft_x - h2/2, topLeft_y + h - w2/2), w, h)
 
     def __init__(self, img=None, array=None):
         if img is not None:

@@ -5,7 +5,7 @@ from point import Point
 class BiRectangle:
     def __init__(self, outerRectangle: Rectangle, innerRectangle: Rectangle):
         assert outerRectangle.containsRectangle(
-            innerRectangle), "Inner rectangle should be contained by outter rectangle"
+            innerRectangle), "Inner rectangle should be contained by outer rectangle"
 
         self.innerRectangle = innerRectangle
         self.outerRectangle = outerRectangle
@@ -16,6 +16,7 @@ class BiRectangle:
     def __str__(self):
         return "Outer: " + str(self.outerRectangle) + "\nInner: " + str(self.innerRectangle)
 
+    # write a version using center instead of topLeft
     @staticmethod
     def analogy(BRA, BRB, BRC):
         outerD = Rectangle.analogy(BRA.outerRectangle, BRB.outerRectangle, BRC.outerRectangle)
@@ -45,7 +46,14 @@ class BiRectangle:
                       - BRB_outer_topLeft.x) / BRB.outerRectangle.w
         wC_rescale = (BRC.innerRectangle.w + BRC_inner_topLeft.x
                       - BRC_outer_topLeft.x) / BRC.outerRectangle.w
-        wD_rescale = real_analogies.bounded(wA_rescale, wB_rescale, wC_rescale)
+
+        # if-elif added
+        if wA_rescale == wC_rescale == 1:
+            wD_rescale = wB_rescale
+        elif wA_rescale == wB_rescale == 1:
+            wD_rescale = wC_rescale
+        else:
+            wD_rescale = real_analogies.bounded(wA_rescale, wB_rescale, wC_rescale)
         wD = outerD.x_min - xD + outerD.w * wD_rescale
 
         hA_rescale = (BRA.innerRectangle.h - BRA_inner_topLeft.y
@@ -54,10 +62,16 @@ class BiRectangle:
                       + BRB_outer_topLeft.y) / BRB.outerRectangle.h
         hC_rescale = (BRC.innerRectangle.h - BRC_inner_topLeft.y
                       + BRC_outer_topLeft.y) / BRC.outerRectangle.h
-        hD_rescale = real_analogies.bounded(hA_rescale, hB_rescale, hC_rescale)
+
+        # if-elif added
+        if hA_rescale == hC_rescale == 1:
+            hD_rescale = hB_rescale
+        elif hA_rescale == hB_rescale == 1:
+            hD_rescale = hC_rescale
+        else:
+            hD_rescale = real_analogies.bounded(hA_rescale, hB_rescale, hC_rescale)
         hD = yD - outerD.y_max + outerD.h * hD_rescale
 
-        print(xD, yD, wD, hD)
         innerD = Rectangle.fromTopLeft(Point(xD, yD), wD, hD)
 
         return BiRectangle(outerD, innerD)

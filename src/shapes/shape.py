@@ -20,7 +20,7 @@ class Shape(ABC):
     def analogy(shape_a, shape_b, shape_c):
         shape_list = (shape_a, shape_b, shape_c)
 
-        birectangles = tuple(BiRectangle(shape.getOutterRectangle(),
+        birectangles = tuple(BiRectangle(shape.getOuterRectangle(),
                                     shape.getInnerRectangle()) for shape in shape_list)
 
         birectangle_d = BiRectangle.analogy(*birectangles)
