@@ -17,11 +17,15 @@ class Shape(ABC):
         pass
 
     @abstractmethod
+    def cutting_in_8(self, birectangle):
+        pass
+
+    @abstractmethod
     def isEmpty(self):
         pass
 
     @staticmethod
-    def analogy(shape_a, shape_b, shape_c, birectAnalogy=BiRectangle.analogy):
+    def analogy(shape_a, shape_b, shape_c, birectAnalogy=BiRectangle.analogy, cutting = 4):
         shape_list = (shape_a, shape_b, shape_c)
 
         birectangles = tuple(BiRectangle(shape.getOuterRectangle(),
@@ -29,10 +33,14 @@ class Shape(ABC):
 
         birectangle_d = birectAnalogy(*birectangles)
 
-        subshapes = tuple(shape_list[i].cutting_in_4(birectangles[i]) for i in range(3))
+        if cutting == 8:
+            subshapes = tuple(shape_list[i].cutting_in_8(birectangles[i]) for i in range(3))
+        else:
+            subshapes = tuple(shape_list[i].cutting_in_4(birectangles[i]) for i in range(3))
+            cutting = 4
 
         results = [birectangle_d.innerRectangle]
-        for i in range(4):
+        for i in range(cutting):
             subshape_a: Shape = subshapes[0][i]
             subshape_b: Shape = subshapes[1][i]
             subshape_c: Shape = subshapes[2][i]

@@ -1,2 +1,2 @@
-# shape_analogy
-algorithm in python for analogy resolution on 2D simple geometric shapes
+# Shape Analogy
+Algorithmes en python pour la résolution d'équations analogiques pour des formes géométriques 2D.

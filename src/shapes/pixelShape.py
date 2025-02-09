@@ -6,7 +6,7 @@ from src.birectangle import BiRectangle
 from src.point import Point
 from src.rectangle import Rectangle
 from src.shapes.shape import Shape
-from src.utils import image_to_array, arr_set_range_value_from_array, array_to_image
+from src.utils import image_to_array, arr_set_range_value_from_array
 import largestinteriorrectangle as lir
 
 class PixelShape(Shape):
@@ -120,14 +120,14 @@ class PixelShape(Shape):
     def cutting_in_8(self, birectangle):
         big_r = birectangle.outerRectangle
         little_r = birectangle.innerRectangle
-        new_shapes = [PixelShape.fromShape(self, big_r.x_min, little_r.x_min, big_r.y_min, little_r.y_min),
-                      PixelShape.fromShape(self, little_r.x_min, little_r.x_max, big_r.y_min, little_r.y_min),
-                      PixelShape.fromShape(self, little_r.x_max, big_r.x_max, big_r.y_min, little_r.y_min),
-                      PixelShape.fromShape(self, big_r.x_min, little_r.x_min, little_r.y_min, little_r.y_max),
-                      PixelShape.fromShape(self, little_r.x_max, big_r.x_max, little_r.y_min, little_r.y_max),
-                      PixelShape.fromShape(self, big_r.x_min, little_r.x_min, little_r.y_max, big_r.y_max),
-                      PixelShape.fromShape(self, little_r.x_min, little_r.x_max, little_r.y_max, big_r.y_max),
-                      PixelShape.fromShape(self, little_r.x_max, big_r.x_max, little_r.y_max, big_r.y_max)]
+        new_shapes = [self.fromShape(big_r.x_min, little_r.x_min, big_r.y_min, little_r.y_min),
+                      self.fromShape(little_r.x_min, little_r.x_max, big_r.y_min, little_r.y_min),
+                      self.fromShape(little_r.x_max, big_r.x_max, big_r.y_min, little_r.y_min),
+                      self.fromShape(big_r.x_min, little_r.x_min, little_r.y_min, little_r.y_max),
+                      self.fromShape(little_r.x_max, big_r.x_max, little_r.y_min, little_r.y_max),
+                      self.fromShape(big_r.x_min, little_r.x_min, little_r.y_max, big_r.y_max),
+                      self.fromShape(little_r.x_min, little_r.x_max, little_r.y_max, big_r.y_max),
+                      self.fromShape(little_r.x_max, big_r.x_max, little_r.y_max, big_r.y_max)]
         return new_shapes
 
     def isEmpty(self) -> bool:
