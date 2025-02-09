@@ -1,6 +1,7 @@
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle as PltRect
 from skimage.transform import radon
 
 # Black -> True
@@ -52,4 +53,19 @@ def plot_sinogram(image):
     )
 
     fig.tight_layout()
+    plt.show()
+
+
+def visualize(rectangles, axis = None):
+    # define Matplotlib figure and axis
+    fig, ax = plt.subplots()
+
+    # add rectangle to plot
+    for rect in rectangles:
+        ax.add_patch(PltRect((rect.x_min, rect.y_max), rect.w, rect.h))
+
+    if axis:
+        plt.axis(axis)
+    else:
+        plt.axis([-200., 200., -200., 200.])
     plt.show()

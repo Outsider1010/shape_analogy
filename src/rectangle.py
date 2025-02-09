@@ -11,10 +11,10 @@ class Rectangle:
         self.h = self.height()
 
     def width(self) -> int:
-        return abs(self.x_max - self.x_min)
+        return self.x_max - self.x_min
 
     def height(self) -> int:
-        return abs(self.y_max - self.y_min)
+        return self.y_max - self.y_min
 
     def center(self) -> Point:
         return Point((self.x_max + self.x_min) / 2, (self.y_max + self.y_min) / 2)

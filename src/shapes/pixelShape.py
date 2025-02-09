@@ -6,10 +6,18 @@ from src.birectangle import BiRectangle
 from src.point import Point
 from src.rectangle import Rectangle
 from src.shapes.shape import Shape
-from src.utils import image_to_array, arr_set_range_value_from_array
+from src.utils import image_to_array, arr_set_range_value_from_array, array_to_image
 import largestinteriorrectangle as lir
 
 class PixelShape(Shape):
+
+    def __init__(self, img=None, array=None):
+        if img is not None:
+            self.pixels = image_to_array(img)
+        elif array is not None:
+            self.pixels = array
+
+        self.outerRectangle = None
 
     def getOuterRectangle(self) -> Rectangle:
         if self.outerRectangle is None:
@@ -33,14 +41,6 @@ class PixelShape(Shape):
         w2, h2 = self.pixels.shape
         # have to adjust because we consider the center of the image to be the origin
         return Rectangle.fromTopLeft(Point(topLeft_x - h2/2, w2/2 - topLeft_y), w, h)
-
-    def __init__(self, img=None, array=None):
-        if img is not None:
-            self.pixels = image_to_array(img)
-        elif array is not None:
-            self.pixels = array
-
-        self.outerRectangle = None
 
     @staticmethod
     def fromRectangles(rectangles):
@@ -68,6 +68,19 @@ class PixelShape(Shape):
 
     def color(self, x, y):
         return self.pixels[int(y + self.get_width() / 2)][int(x + self.get_height() / 2)]
+
+    def __eq__(self, other):
+        if not isinstance(other, PixelShape):
+            return False
+        w1, h1 = self.pixels.shape
+        w2, h2 = other.pixels.shape
+        w = max(w1, w2)
+        h = max(h1, h2)
+        new_self_pixels = np.zeros((w, h), dtype=bool)
+        new_other_pixels = np.zeros((w, h), dtype=bool)
+        arr_set_range_value_from_array(new_self_pixels, - h1/2, h1/2, -w1/2, w1/2, self.pixels)
+        arr_set_range_value_from_array(new_other_pixels, -h2/2, h2/2, -w2/2, w2/2, other.pixels)
+        return np.all(new_self_pixels == new_other_pixels)
 
     def get_width(self):
         return self.pixels.shape[0]

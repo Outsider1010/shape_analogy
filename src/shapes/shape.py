@@ -21,13 +21,13 @@ class Shape(ABC):
         pass
 
     @staticmethod
-    def analogy(shape_a, shape_b, shape_c):
+    def analogy(shape_a, shape_b, shape_c, birectAnalogy=BiRectangle.analogy):
         shape_list = (shape_a, shape_b, shape_c)
 
         birectangles = tuple(BiRectangle(shape.getOuterRectangle(),
                                     shape.getInnerRectangle()) for shape in shape_list)
 
-        birectangle_d = BiRectangle.analogy(*birectangles)
+        birectangle_d = birectAnalogy(*birectangles)
 
         subshapes = tuple(shape_list[i].cutting_in_4(birectangles[i]) for i in range(3))
 
@@ -37,10 +37,15 @@ class Shape(ABC):
             subshape_b: Shape = subshapes[1][i]
             subshape_c: Shape = subshapes[2][i]
             # if one of the shapes is empty, we don't do anything,
-            # but some equations can be resolved (although, we won't have rectangles as solutions)
+            # but we could (although, we won't have rectangles as solutions)
             if not (subshape_a.isEmpty() or subshape_b.isEmpty() or subshape_c.isEmpty()):
-                results.extend(Shape.analogy(subshape_a, subshape_b, subshape_c))
-
+                results.extend(Shape.analogy(subshape_a, subshape_b, subshape_c, birectAnalogy))
+            elif subshape_a.isEmpty() and subshape_b.isEmpty() and subshape_c.isEmpty():
+                continue
+            # elif subshape_a.isEmpty() and subshape_b.isEmpty():
+            #     results.append(subshape_c)
+            # elif subshape_a.isEmpty() and subshape_c.isEmpty():
+            #     results.append(subshape_b)
         return results
 
 
