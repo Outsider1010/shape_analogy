@@ -20,7 +20,13 @@ def arr_set_range_value_from_array(arr, x_min, x_max, y_min, y_max, fromArray):
     b2 = b1 + round(y_max - y_min)
     b3 = int(x_min + h / 2)
     b4 = b3 + round(x_max - x_min)
-    arr[b1:b2, b3:b4] |= fromArray[b1:b2, b3:b4]
+
+    w, h = fromArray.shape
+    c1 = int(y_min + w / 2)
+    c2 = c1 + round(y_max - y_min)
+    c3 = int(x_min + h / 2)
+    c4 = c3 + round(x_max - x_min)
+    arr[b1:b2, b3:b4] |= fromArray[c1:c2, c3:c4]
 
 
 def plot_sinogram(image):

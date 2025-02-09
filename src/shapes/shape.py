@@ -16,6 +16,10 @@ class Shape(ABC):
     def cutting_in_4(self, birectangle):
         pass
 
+    @abstractmethod
+    def isEmpty(self):
+        pass
+
     @staticmethod
     def analogy(shape_a, shape_b, shape_c):
         shape_list = (shape_a, shape_b, shape_c)
@@ -29,12 +33,12 @@ class Shape(ABC):
 
         results = [birectangle_d.innerRectangle]
         for i in range(4):
-            subshape_a = subshapes[0][i]
-            subshape_b = subshapes[1][i]
-            subshape_c = subshapes[2][i]
+            subshape_a: Shape = subshapes[0][i]
+            subshape_b: Shape = subshapes[1][i]
+            subshape_c: Shape = subshapes[2][i]
             # if one of the shapes is empty, we don't do anything,
-            # but we should, some equations can be resolved (tho, we won't have rectangles as solutions)
-            if not (subshape_a.isblank() or subshape_b.isblank() or subshape_c.isblank()):
+            # but some equations can be resolved (although, we won't have rectangles as solutions)
+            if not (subshape_a.isEmpty() or subshape_b.isEmpty() or subshape_c.isEmpty()):
                 results.extend(Shape.analogy(subshape_a, subshape_b, subshape_c))
 
         return results

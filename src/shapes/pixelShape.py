@@ -1,6 +1,6 @@
 import numpy as np
 from math import ceil
-from numpy import unravel_index, rot90, zeros
+from numpy import unravel_index, rot90, zeros, argmax
 
 from src.birectangle import BiRectangle
 from src.point import Point
@@ -14,16 +14,16 @@ class PixelShape(Shape):
     def getOuterRectangle(self) -> Rectangle:
         if self.outerRectangle is None:
             w, h = self.pixels.shape
-            ind = unravel_index(self.pixels.argmax(), self.pixels.shape)[0]
-            y_min = ind - w / 2
+            ind = unravel_index(argmax(self.pixels), self.pixels.shape)[0]
+            y_max = w / 2 - ind
             temp = rot90(self.pixels[ind:])
-            ind = unravel_index(temp.argmax(), temp.shape)[0]
+            ind = unravel_index(argmax(temp), temp.shape)[0]
             x_max = (h - ind) - h / 2
             temp = rot90(temp[ind:])
-            ind = unravel_index(temp.argmax(), temp.shape)[0]
-            y_max = (w - ind) - w / 2
+            ind = unravel_index(argmax(temp), temp.shape)[0]
+            y_min = ind - w / 2
             temp = rot90(temp[ind:])
-            x_min = unravel_index(temp.argmax(), temp.shape)[0] - h / 2
+            x_min = unravel_index(argmax(temp), temp.shape)[0] - h / 2
             self.outerRectangle = Rectangle(x_min, x_max, y_min, y_max)
         return self.outerRectangle
 
@@ -32,7 +32,7 @@ class PixelShape(Shape):
         topLeft_x, topLeft_y, w, h = lir.lir(self.pixels)
         w2, h2 = self.pixels.shape
         # have to adjust because we consider the center of the image to be the origin
-        return Rectangle.fromTopLeft(Point(topLeft_x - h2/2, topLeft_y + h - w2/2), w, h)
+        return Rectangle.fromTopLeft(Point(topLeft_x - h2/2, w2/2 - topLeft_y), w, h)
 
     def __init__(self, img=None, array=None):
         if img is not None:
@@ -60,12 +60,10 @@ class PixelShape(Shape):
 
         return PixelShape(array=array)
 
-    @staticmethod
-    def fromShape(pixel_shape, x_min, x_max, y_min, y_max):
+    def fromShape(self, x_min, x_max, y_min, y_max):
         array = np.zeros((ceil(max(2 * abs(y_min), 2 * abs(y_max))),
                                 ceil(max(2 * abs(x_min), 2 * abs(x_max)))), dtype=bool)
-        print(array.shape)
-        arr_set_range_value_from_array(array, x_min, x_max, y_min, y_max, pixel_shape.pixels)
+        arr_set_range_value_from_array(array, x_min, x_max, y_min, y_max, self.pixels)
         return PixelShape(array=array)
 
     def color(self, x, y):
@@ -90,10 +88,10 @@ class PixelShape(Shape):
     def cutting_in_4(self, birectangle: BiRectangle):
         big_r = birectangle.outerRectangle
         little_r = birectangle.innerRectangle
-        new_shapes = [PixelShape.fromShape(self, big_r.x_min, little_r.x_min, big_r.y_min, little_r.y_max),
-                      PixelShape.fromShape(self, little_r.x_min, big_r.x_max, big_r.y_min, little_r.y_min),
-                      PixelShape.fromShape(self, big_r.x_min, little_r.x_max, little_r.y_max, big_r.y_max),
-                      PixelShape.fromShape(self, little_r.x_max, big_r.x_max, little_r.y_min, big_r.y_max)]
+        new_shapes = [self.fromShape(big_r.x_min, little_r.x_min, big_r.y_min, little_r.y_max),
+                      self.fromShape(little_r.x_min, big_r.x_max, big_r.y_min, little_r.y_min),
+                      self.fromShape(big_r.x_min, little_r.x_max, little_r.y_max, big_r.y_max),
+                      self.fromShape(little_r.x_max, big_r.x_max, little_r.y_min, big_r.y_max)]
         return new_shapes
 
     # one of the ways to cut
@@ -119,5 +117,5 @@ class PixelShape(Shape):
                       PixelShape.fromShape(self, little_r.x_max, big_r.x_max, little_r.y_max, big_r.y_max)]
         return new_shapes
 
-    def isblank(self) -> bool:
+    def isEmpty(self) -> bool:
         return not self.pixels.any()

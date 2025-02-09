@@ -47,8 +47,8 @@ class Rectangle:
                 and self.y_min == other.y_min and self.y_max == other.y_max)
 
     def __repr__(self):
-        # return f"{self.topLeft()}, {self.bottomRight()}"
-        return f"center : {self.center()}, dim : {round(self.width(), 4)}×{round(self.height(), 4)}"
+        # return f"{self.bottomLeft()}, {self.topRight()}"
+        return f"topLeft={self.topLeft()}, w={round(self.width(), 4)}, h={round(self.height(), 4)}"
 
     @staticmethod
     def fromCenter(center, w, h):
