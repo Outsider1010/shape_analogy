@@ -1,7 +1,6 @@
 from src.biframemethod.frameanalogy.FrameAnalogy import FrameAnalogy
 from src.biframemethod.pointanalogy.ArithmeticPointAnalogy import ArithmeticPointAnalogy
 from src.biframemethod.rectangle import Rectangle
-from src.point import Point
 
 
 class CenterFrameAnalogy(FrameAnalogy):
@@ -13,4 +12,4 @@ class CenterFrameAnalogy(FrameAnalogy):
         center_d = ArithmeticPointAnalogy().analogy(center_a, center_b, center_c)
         w_d = FC.width() * FB.width() / FA.width()
         h_d = FC.height() * FB.height() / FA.height()
-        return Rectangle.fromTopLeft(center_d, w_d, h_d)
+        return Rectangle.fromCenter(center_d, w_d, h_d)

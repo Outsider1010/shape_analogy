@@ -1,5 +1,5 @@
 from src.ShapeAnalogy import ShapeAnalogy
-from src.biframemethod.biframeanalogy.SigmoidCenterAnalogy import SigmoidCenterBFAnalogy
+from src.biframemethod.biframeanalogy.SigmoidCenterAnalogy import SigmoidCenterAnalogy
 from src.biframemethod.birectangle import BiRectangle
 from src.biframemethod.cuttingmethod.FirstCuttingIn4Method import FirstCuttingIn4Method
 from src.biframemethod.innerframefinder.LargestFrameFinder import LargestFrameFinder
@@ -10,7 +10,7 @@ from src.shapes.shape import Shape
 class BiFrameMethod(ShapeAnalogy):
 
     def __init__(self):
-        self.biFrameAnalogy = SigmoidCenterBFAnalogy()
+        self.biFrameAnalogy = SigmoidCenterAnalogy()
         self.cuttingMethod = FirstCuttingIn4Method()
         self.innerFrameFinder = LargestFrameFinder()
 

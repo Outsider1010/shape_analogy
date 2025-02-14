@@ -6,7 +6,7 @@ from src.biframemethod.rectangle import Rectangle
 from src.point import Point
 
 
-class SigmoidCenterBFAnalogy(BiFrameAnalogy):
+class SigmoidCenterAnalogy(BiFrameAnalogy):
 
     # TODO : simplifier la fonction
     def analogy(self, BRA: BiRectangle, BRB: BiRectangle, BRC: BiRectangle) -> BiRectangle:

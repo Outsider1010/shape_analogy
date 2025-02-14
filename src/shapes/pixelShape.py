@@ -23,7 +23,7 @@ class PixelShape(Shape):
         r0 = rectangle
         w, h = ceil(max(2 * abs(r0.y_min), 2 * abs(r0.y_max))), ceil(max(2 * abs(r0.x_min), 2 * abs(r0.x_max)))
         array = zeros((w, h), dtype=bool)
-        array[int(r0.y_min + w / 2):int(r0.y_max + w / 2), int(r0.x_min + h / 2):int(r0.x_max + h / 2)] = True
+        array[int(r0.y_min - w / 2):int(r0.y_max + w / 2), int(r0.x_min - h / 2):int(r0.x_max + h / 2)] = True
 
         # for r in rectangles[1:]:
         #     a_w, a_h = array.shape
