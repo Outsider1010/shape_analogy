@@ -1,4 +1,4 @@
-from shapes.pixelShape import PixelShape
+from src.shapes.pixelShape import PixelShape
 from src.birectangle import BiRectangle
 from src.shapes.shape import Shape
 from src.utils import visualize

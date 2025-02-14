@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from basicanalogies.realnumbers import arithmetic
+from . basicanalogies.realnumbers import arithmetic
 
 @dataclass(frozen=True)
 class Point:

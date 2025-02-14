@@ -5,7 +5,7 @@ from numpy import unravel_index, rot90, zeros, argmax
 from src.birectangle import BiRectangle
 from src.point import Point
 from src.rectangle import Rectangle
-from src.shapes.shape import Shape
+from . shape import Shape
 from src.utils import image_to_array, arr_set_range_value_from_array
 import largestinteriorrectangle as lir
 

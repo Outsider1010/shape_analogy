@@ -1,6 +1,6 @@
-from rectangle import Rectangle
-from basicanalogies import realnumbers as real_analogies
-from point import Point
+from . rectangle import Rectangle
+from . basicanalogies import realnumbers as real_analogies
+from . point import Point
 
 class BiRectangle:
     def __init__(self, outerRectangle: Rectangle, innerRectangle: Rectangle):
