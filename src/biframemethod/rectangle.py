@@ -58,16 +58,6 @@ class Rectangle:
     def fromTopLeft(top_left, w, h):
         return Rectangle(top_left.x, top_left.x + w, top_left.y - h, top_left.y)
 
-    @staticmethod
-    def analogy(rectangle_a, rectangle_b, rectangle_c):
-        center_a = rectangle_a.center()
-        center_b = rectangle_b.center()
-        center_c = rectangle_c.center()
-        center_d = Point.analogy(center_a, center_b, center_c)
-        w_d = rectangle_c.width() * rectangle_b.width() / rectangle_a.width()
-        h_d = rectangle_c.height() * rectangle_b.height() / rectangle_a.height()
-        return Rectangle.fromCenter(center_d, w_d, h_d)
-
     def containsRectangle(self, r):
         """
         Check if this rectangle contains r

@@ -21,7 +21,8 @@ def ext_bounded(a:float, b:float, c:float, Ia: tuple[float, float], Ib: tuple[fl
     assert(b_inf_b < b < b_sup_b)
     assert(b_inf_c < c < b_sup_c)
 
-    return b_inf_d + ((b_sup_d - b_inf_d) / (1 + ((b_sup_c - c) * (b_sup_b - b) * (a - b_inf_a)) / ((c - b_inf_c) * (b - b_inf_b) * (b_sup_a - a))))
+    return b_inf_d + ((b_sup_d - b_inf_d) / (1 +
+            ((b_sup_c - c) * (b_sup_b - b) * (a - b_inf_a)) / ((c - b_inf_c) * (b - b_inf_b) * (b_sup_a - a))))
     
     
     
