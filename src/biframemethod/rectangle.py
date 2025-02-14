@@ -1,4 +1,4 @@
-from src.point import Point
+from src.biframemethod.point import Point
 
 
 class Rectangle:

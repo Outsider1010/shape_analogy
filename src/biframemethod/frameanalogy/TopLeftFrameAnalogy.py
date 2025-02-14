@@ -1,6 +1,6 @@
 from src.biframemethod.frameanalogy.FrameAnalogy import FrameAnalogy
 from src.biframemethod.rectangle import Rectangle
-from src.point import Point
+from src.biframemethod.point import Point
 
 
 class TopLeftFrameAnalogy(FrameAnalogy):

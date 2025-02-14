@@ -26,7 +26,7 @@ class BiFrameMethod(ShapeAnalogy):
         nbSubShapes = self.cuttingMethod.nbSubShapes()
         subshapes = tuple(shape_list[i].cut(birectangles[i], self.cuttingMethod) for i in range(3))
 
-        p = PixelShape.fromRectangle(birectangle_d.innerRectangle)
+        p = PixelShape(rect=birectangle_d.innerRectangle)
 
         for i in range(nbSubShapes):
             subshapeA: Shape = subshapes[0][i]
