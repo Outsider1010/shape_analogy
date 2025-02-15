@@ -88,8 +88,8 @@ class PixelShape(Shape):
     def cut(self, birectangle: BiRectangle, strategy):
         return strategy.cutPixels(self, birectangle)
 
-    def isPointInShape(self, x, y) -> bool:
-        return self.pixels[int(y + self.width() / 2), int(x + self.height() / 2)]
+    def isPointInShape(self, x: float, y: float) -> bool:
+        return self.pixels[int(self.width() / 2 - y), int(x + self.height() / 2)]
 
     def __eq__(self, other):
         if not isinstance(other, PixelShape):
