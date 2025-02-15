@@ -5,9 +5,9 @@ from src.shapes.pixelShape import PixelShape
 
 
 class InnerFrameFinder(ABC):
-
-    def __init__(self):
-        pass
+    """
+    Interface for different ways to find an inner frame of a shape
+    """
 
     @abstractmethod
     def findInnerFramePixels(self, shape: PixelShape) -> Rectangle:

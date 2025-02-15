@@ -2,7 +2,7 @@ import largestinteriorrectangle as lir
 
 from src.biframemethod.innerframefinder.InnerFrameFinder import InnerFrameFinder
 from src.biframemethod.rectangle import Rectangle
-from src.point import Point
+from src.biframemethod.point import Point
 from src.shapes.pixelShape import PixelShape
 
 

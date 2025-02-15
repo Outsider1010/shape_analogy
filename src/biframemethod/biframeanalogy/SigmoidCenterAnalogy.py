@@ -3,7 +3,7 @@ from src.biframemethod.birectangle import BiRectangle
 from src.basicanalogies.realnumbers import bounded
 from src.biframemethod.frameanalogy.CenterFrameAnalogy import CenterFrameAnalogy
 from src.biframemethod.rectangle import Rectangle
-from src.point import Point
+from src.biframemethod.point import Point
 
 
 class SigmoidCenterAnalogy(BiFrameAnalogy):
