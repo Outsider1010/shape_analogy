@@ -4,9 +4,9 @@ from src.biframemethod.rectangle import Rectangle
 
 
 class FrameAnalogy(ABC):
-
-    def __init__(self):
-        pass
+    """
+    Interface for different frame analogies
+    """
 
     @abstractmethod
     def analogy(self, FA: Rectangle, FB: Rectangle, FC: Rectangle) -> Rectangle:

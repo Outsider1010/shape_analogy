@@ -5,9 +5,9 @@ from src.shapes.pixelShape import PixelShape
 
 
 class CuttingMethod(ABC):
-
-    def __init__(self):
-        pass
+    """
+    Interface for different cutting strategies
+    """
 
     @abstractmethod
     def cutPixels(self, pixelShape: PixelShape, biFrame: BiRectangle) -> list[PixelShape]:

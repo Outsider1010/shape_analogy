@@ -12,7 +12,7 @@ def bounded(a:float, b:float, c:float) -> float:
     return 1 / (1 + (1-c) * (1-b) * a / ((1-a) * b * c))
 
 def ext_bounded(a:float, b:float, c:float, Ia: tuple[float, float], Ib: tuple[float, float],
-                Ic: tuple[float, float], Id: tuple[float, float]):
+                Ic: tuple[float, float], Id: tuple[float, float]) -> float:
     b_inf_a, b_sup_a = Ia
     b_inf_b, b_sup_b = Ib
     b_inf_c, b_sup_c = Ic
