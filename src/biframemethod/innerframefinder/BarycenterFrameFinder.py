@@ -2,7 +2,7 @@ import largestinteriorrectangle as lir
 
 from src.biframemethod.innerframefinder.InnerFrameFinder import InnerFrameFinder
 from src.biframemethod.rectangle import Rectangle
-from src.point import Point
+from src.biframemethod.point import Point
 from src.shapes.pixelShape import PixelShape
 
 class BarycenterFrameFinder(InnerFrameFinder):
@@ -13,7 +13,7 @@ class BarycenterFrameFinder(InnerFrameFinder):
         # Calculate the mean position of the border's form.
         # =================================================
 
-        matrix = shape.getPixels()
+        matrix = shape.pixelsMatrix()
 
         # ==========
         #   STEP 1

@@ -145,3 +145,6 @@ class PixelShape(Shape):
         # )
         # fig.tight_layout()
         # plt.show()
+
+    def pixelsMatrix(self):
+        return self.pixels
