@@ -88,7 +88,7 @@ class PixelShape(Shape):
     def cut(self, birectangle: BiRectangle, strategy):
         return strategy.cutPixels(self, birectangle)
 
-    def isPointInShape(self, x: float, y:float) -> bool:
+    def isPointInShape(self, x: float, y: float) -> bool:
         return self.pixels[int(self.width() / 2 - y), int(x + self.height() / 2)]
 
     def __eq__(self, other):
@@ -144,3 +144,6 @@ class PixelShape(Shape):
         # )
         # fig.tight_layout()
         # plt.show()
+
+    def pixelsMatrix(self):
+        return self.pixels
