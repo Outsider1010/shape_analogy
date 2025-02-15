@@ -1,4 +1,5 @@
 from src.biframemethod.BiFrameMethod import BiFrameMethod
+from src.biframemethod.innerframefinder.BarycenterFrameFinder import BarycenterFrameFinder
 from src.shapes.pixelShape import PixelShape
 from src.utils import array_to_image
 

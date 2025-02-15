@@ -89,3 +89,6 @@ class PixelShape(Shape):
 
     def dim(self) -> tuple[float, float]:
         return self.pixels.shape
+
+    def getPixels(self):
+        return self.pixels
