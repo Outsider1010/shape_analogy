@@ -6,7 +6,6 @@ from skimage.transform import radon
 from src.biframemethod.birectangle import BiRectangle
 from src.biframemethod.rectangle import Rectangle
 from . shape import Shape
-from src.biframemethod.point import Point
 from PIL import Image
 # DO NOT IMPORT STRATEGIES
 
@@ -89,8 +88,8 @@ class PixelShape(Shape):
     def cut(self, birectangle: BiRectangle, strategy):
         return strategy.cutPixels(self, birectangle)
 
-    def isPointInShape(self, p: Point) -> bool:
-        return self.pixels[int(p.y + self.width() / 2), int(p.x + self.height() / 2)]
+    def isPointInShape(self, x: float, y:float) -> bool:
+        return self.pixels[int(self.width() / 2 - y), int(x + self.height() / 2)]
 
     def __eq__(self, other):
         if not isinstance(other, PixelShape):
