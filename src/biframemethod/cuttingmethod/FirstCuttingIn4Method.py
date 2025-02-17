@@ -23,8 +23,8 @@ class FirstCuttingIn4Method(CuttingMethod):
     def cutPixels(self, pixelShape: PixelShape, biFrame: BiRectangle) -> list[PixelShape]:
         big_r = biFrame.outerRectangle
         little_r = biFrame.innerRectangle
-        new_shapes = [pixelShape.fromShape(big_r.x_min, little_r.x_min, big_r.y_min, little_r.y_max),
-                      pixelShape.fromShape(little_r.x_min, big_r.x_max, big_r.y_min, little_r.y_min),
-                      pixelShape.fromShape(big_r.x_min, little_r.x_max, little_r.y_max, big_r.y_max),
-                      pixelShape.fromShape(little_r.x_max, big_r.x_max, little_r.y_min, big_r.y_max)]
+        new_shapes = [pixelShape.fromShape(big_r.x_min, little_r.x_min, little_r.y_min, big_r.y_max),
+                      pixelShape.fromShape(little_r.x_min, big_r.x_max, little_r.y_max, big_r.y_max),
+                      pixelShape.fromShape(big_r.x_min, little_r.x_max, big_r.y_min, little_r.y_min),
+                      pixelShape.fromShape(little_r.x_max, big_r.x_max, big_r.y_min, little_r.y_max)]
         return new_shapes

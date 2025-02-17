@@ -5,6 +5,5 @@ SA = PixelShape(img="resources/square.bmp")
 SB = PixelShape(img="resources/square_ul.bmp")
 SC = PixelShape(img="resources/square.bmp")
 
-s = BiFrameMethod()
-res = s.analogy(SA, SB, SC)
+res = BiFrameMethod().analogy(SA, SB, SC)
 res.toImage()

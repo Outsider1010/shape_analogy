@@ -23,24 +23,22 @@ class BiFrameMethod(ShapeAnalogy):
                                          shape.getInnerFrame(self.innerFrameFinder)) for shape in shape_list)
 
         birectangle_d = self.biFrameAnalogy.analogy(*birectangles)
-
-        nbSubShapes = self.cuttingMethod.nbSubShapes()
-        subshapes = tuple(shape_list[i].cut(birectangles[i], self.cuttingMethod) for i in range(3))
-
         d: PixelShape = PixelShape(rect=birectangle_d.innerRectangle)
 
-        for i in range(nbSubShapes):
+        subshapes = tuple(shape_list[i].cut(birectangles[i], self.cuttingMethod) for i in range(3))
+
+        for i in range(self.cuttingMethod.nbSubShapes()):
             subshapeA: Shape = subshapes[0][i]
             subshapeB: Shape = subshapes[1][i]
             subshapeC: Shape = subshapes[2][i]
             if not (subshapeA.isEmpty() or subshapeB.isEmpty() or subshapeC.isEmpty()):
                 subshapeD = self.analogy(subshapeA, subshapeB, subshapeC)
-                d = d.merge(subshapeD)
+                d.merge(subshapeD)
             elif subshapeA.isEmpty() and subshapeB.isEmpty() and subshapeC.isEmpty():
                 continue
             elif subshapeA.isEmpty() and subshapeB.isEmpty():
                 d.merge(subshapeC)
             elif subshapeA.isEmpty() and subshapeC.isEmpty():
-                d.merge(subshapeC)
+                d.merge(subshapeB)
 
         return d

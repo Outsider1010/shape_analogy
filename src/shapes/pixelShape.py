@@ -25,7 +25,6 @@ class PixelShape(Shape):
             w, h = (ceil(max(2 * abs(rect.y_min), 2 * abs(rect.y_max))),
                     ceil(max(2 * abs(rect.x_min), 2 * abs(rect.x_max))))
             array = np.zeros((w, h), dtype=bool)
-            print(rect.y_min, rect.y_max, rect.x_min, rect.x_max)
             array[int(w / 2 - rect.y_max):int(w / 2 - rect.y_min), int(rect.x_min + h / 2):int(rect.x_max + h / 2)] = True
 
         self.pixels: np.ndarray[bool] = array
@@ -39,34 +38,25 @@ class PixelShape(Shape):
 
     def __set_values_from_this(self, arr, x_min, x_max, y_min, y_max):
         w, h = arr.shape
-        b1 = int(y_min + w / 2)
-        b2 = b1 + round(y_max - y_min)
+        b1 = int(w / 2 - y_min)
+        b2 = int(w / 2 - y_max)
         b3 = int(x_min + h / 2)
-        b4 = b3 + round(x_max - x_min)
+        b4 = int(x_max + h / 2)
 
         w, h = self.dim()
-        c1 = int(y_min + w / 2)
-        c2 = c1 + round(y_max - y_min)
+        c1 = int(w / 2 - y_min)
+        c2 = int(w / 2 - y_max)
         c3 = int(x_min + h / 2)
-        c4 = c3 + round(x_max - x_min)
-        arr[b1:b2, b3:b4] |= self.pixels[c1:c2, c3:c4]
+        c4 = int(x_max + h / 2)
+        arr[b2:b1, b3:b4] |= self.pixels[c2:c1, c3:c4]
 
     def merge(self, other):
         w1, h1 = self.dim()
         w2, h2 = other.dim()
-        # no need to create a new shape
-        if w1 >= w2 and h1 >= h2:
-            other.__set_values_from_this(self.pixels, - h2/2, h2/2, - w2 / 2, w2 / 2)
-            return self
-        elif w2 >= w1 and h2 >= h1:
-            self.__set_values_from_this(other.pixels, - h1/2, h1/2, - w1/2, w1/2)
-            return other
-        else:
-            array = np.zeros((max(w1, w2), max(h1, h2)), dtype=bool)
-            self.__set_values_from_this(array, -h1/2, h1/2, -w1/2, w1/2)
-            other.__set_values_from_this(array, - h2/2, h2/2, - w2 / 2, w2 / 2)
-            return PixelShape(array=array)
-
+        array = np.zeros((max(w1, w2), max(h1, h2)), dtype=bool)
+        self.__set_values_from_this(array, - h1 / 2, h1 / 2, - w1 / 2, w1 / 2)
+        other.__set_values_from_this(array, - h2 / 2, h2 / 2, - w2 / 2, w2 / 2)
+        self.pixels = array
 
     def getOuterFrame(self) -> Rectangle:
         w, h = self.pixels.shape
@@ -90,6 +80,9 @@ class PixelShape(Shape):
 
     def isPointInShape(self, x: float, y:float) -> bool:
         return self.pixels[int(self.width() / 2 - y), int(x + self.height() / 2)]
+
+    def resize(self, min_w = 1, min_h = 1):
+        self.merge(PixelShape(array=np.zeros((min_w, min_h), dtype=bool)))
 
     def __eq__(self, other):
         if not isinstance(other, PixelShape):
