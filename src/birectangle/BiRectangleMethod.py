@@ -1,8 +1,8 @@
 from src.ShapeAnalogy import ShapeAnalogy
-from src.birectanglemethod.birectangleanalogy.SigmoidCenterAnalogy import SigmoidCenterAnalogy
-from src.birectanglemethod.birectangle import BiRectangle
-from src.birectanglemethod.cuttingmethod.FirstCuttingIn4Method import FirstCuttingIn4Method
-from src.birectanglemethod.innerrectanglefinder.LargestRectangleFinder import LargestRectangleFinder
+from src.birectangle.birectangleanalogy.SigmoidCenterAnalogy import SigmoidCenterAnalogy
+from src.birectangle.BiRectangle import BiRectangle
+from src.birectangle.cuttingmethod.FirstCuttingIn4Method import FirstCuttingIn4Method
+from src.birectangle.innerrectanglefinder.LargestRectangleFinder import LargestRectangleFinder
 from src.shapes.pixelShape import PixelShape
 from src.shapes.shape import Shape
 
@@ -24,8 +24,8 @@ class BiRectangleMethod(ShapeAnalogy):
         try:
             birectangle_d = self.biRectangleAnalogy.analogy(*birectangles)
             d = PixelShape(rect=birectangle_d.innerRectangle)
-        except AssertionError:
-            print("No solution was found.")
+        except AssertionError as e:
+            print(f"No solution was found.\nError : {e}")
             return None
 
         subshapes = tuple(shape_list[i].cut(birectangles[i], self.cuttingMethod) for i in range(3))

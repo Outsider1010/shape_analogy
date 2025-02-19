@@ -1,9 +1,10 @@
-from src.birectanglemethod.rectangle import Rectangle
+from src.birectangle.Rectangle import Rectangle
 
 class BiRectangle:
     def __init__(self, outerRectangle: Rectangle, innerRectangle: Rectangle):
         assert outerRectangle.containsRectangle(
-            innerRectangle), "Inner rectangle should be contained by outer rectangle"
+            innerRectangle), (f"Inner rectangle should be contained by outer rectangle.\n"
+                              f"Outer : {outerRectangle}\nInner : {innerRectangle}")
 
         self.innerRectangle = innerRectangle
         self.outerRectangle = outerRectangle
