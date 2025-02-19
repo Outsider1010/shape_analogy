@@ -1,14 +1,14 @@
 import largestinteriorrectangle as lir
 
-from src.biframemethod.innerframefinder.InnerFrameFinder import InnerFrameFinder
-from src.biframemethod.rectangle import Rectangle
-from src.biframemethod.point import Point
+from src.birectanglemethod.innerrectanglefinder.InnerRectangleFinder import InnerRectangleFinder
+from src.birectanglemethod.rectangle import Rectangle
+from src.birectanglemethod.point import Point
 from src.shapes.pixelShape import PixelShape
 
 
-class LargestFrameFinder(InnerFrameFinder):
+class LargestRectangleFinder(InnerRectangleFinder):
 
-    def findInnerFramePixels(self, shape: PixelShape) -> Rectangle:
+    def findInnerRectanglePixels(self, shape: PixelShape) -> Rectangle:
         # find the largest interior rectangle
         topLeft_x, topLeft_y, w, h = lir.lir(shape.pixels)
         w2, h2 = shape.dim()

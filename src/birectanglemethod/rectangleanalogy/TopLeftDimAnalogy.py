@@ -1,10 +1,10 @@
-from src.biframemethod.frameanalogy.FrameAnalogy import FrameAnalogy
-from src.biframemethod.pointanalogy.ArithmeticPointAnalogy import ArithmeticPointAnalogy
-from src.biframemethod.rectangle import Rectangle
-from src.biframemethod.point import Point
+from src.birectanglemethod.rectangleanalogy.RectangleAnalogy import RectangleAnalogy
+from src.birectanglemethod.pointanalogy.ArithmeticPointAnalogy import ArithmeticPointAnalogy
+from src.birectanglemethod.rectangle import Rectangle
+from src.birectanglemethod.point import Point
 
 
-class TopLeftFrameAnalogy(FrameAnalogy):
+class TopLeftDimAnalogy(RectangleAnalogy):
 
     def analogy(self, FA: Rectangle, FB: Rectangle, FC: Rectangle) -> Rectangle:
         topLeft_a = FA.topLeft()

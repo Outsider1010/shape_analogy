@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from src.biframemethod.point import Point
+from src.birectanglemethod.point import Point
 
 
 class PointAnalogy(ABC):

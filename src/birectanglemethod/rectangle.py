@@ -1,8 +1,11 @@
-from src.biframemethod.point import Point
+from src.birectanglemethod.point import Point
 
 
 class Rectangle:
-    def __init__(self, x_min, x_max, y_min, y_max):
+    """
+    An axis-aligned rectangle
+    """
+    def __init__(self, x_min: float, x_max: float, y_min: float, y_max: float):
         self.x_min = x_min
         self.x_max = x_max
         self.y_min = y_min
@@ -31,7 +34,7 @@ class Rectangle:
     def bottomRight(self) -> Point:
         return Point(self.x_max, self.y_min)
 
-    def area(self):
+    def area(self) -> float:
         return self.width() * self.height()
 
     def rectangle_from_ratios(self, r_x_min, r_x_max, r_y_min, r_y_max):
@@ -51,14 +54,14 @@ class Rectangle:
         return f"topLeft={self.topLeft()}, w={round(self.width(), 4)}, h={round(self.height(), 4)}"
 
     @staticmethod
-    def fromCenter(center, w, h):
+    def fromCenter(center: Point, w: float, h: float):
         return Rectangle(center.x - w/2, center.x + w/2, center.y - h/2, center.y + h/2)
 
     @staticmethod
-    def fromTopLeft(top_left, w, h):
-        return Rectangle(top_left.x, top_left.x + w, top_left.y - h, top_left.y)
+    def fromTopLeft(topLeft: Point, w: float, h: float):
+        return Rectangle(topLeft.x, topLeft.x + w, topLeft.y - h, topLeft.y)
 
-    def containsRectangle(self, r):
+    def containsRectangle(self, r) -> bool:
         """
         Check if this rectangle contains r
         :param r: inner rectangle

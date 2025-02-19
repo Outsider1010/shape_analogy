@@ -1,16 +1,16 @@
-from src.biframemethod.biframeanalogy.BiFrameAnalogy import BiFrameAnalogy
-from src.biframemethod.birectangle import BiRectangle
+from src.birectanglemethod.birectangleanalogy.BiRectangleAnalogy import BiRectangleAnalogy
+from src.birectanglemethod.birectangle import BiRectangle
 from src.basicanalogies.realnumbers import bounded
-from src.biframemethod.frameanalogy.CenterFrameAnalogy import CenterFrameAnalogy
-from src.biframemethod.rectangle import Rectangle
-from src.biframemethod.point import Point
+from src.birectanglemethod.rectangleanalogy.CenterDimAnalogy import CenterDimAnalogy
+from src.birectanglemethod.rectangle import Rectangle
+from src.birectanglemethod.point import Point
 
 
-class SigmoidCenterAnalogy(BiFrameAnalogy):
+class SigmoidCenterAnalogy(BiRectangleAnalogy):
 
     # TODO : simplifier la fonction
     def analogy(self, BRA: BiRectangle, BRB: BiRectangle, BRC: BiRectangle) -> BiRectangle:
-        outerD = CenterFrameAnalogy().analogy(BRA.outerRectangle, BRB.outerRectangle, BRC.outerRectangle)
+        outerD = CenterDimAnalogy().analogy(BRA.outerRectangle, BRB.outerRectangle, BRC.outerRectangle)
 
         BRA_inner_center = BRA.innerRectangle.center()
         BRA_outer_topLeft = BRA.outerRectangle.topLeft()

@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 
-from src.biframemethod.birectangle import BiRectangle
+from src.birectanglemethod.birectangle import BiRectangle
 
 
-class BiFrameAnalogy(ABC):
+class BiRectangleAnalogy(ABC):
     """
-    Interface for different strategies of bi-frame analogies
+    Interface for different strategies of bi-rectangle analogies
     """
 
     @abstractmethod

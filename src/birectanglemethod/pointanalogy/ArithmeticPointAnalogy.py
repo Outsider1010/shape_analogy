@@ -1,6 +1,6 @@
 from src.basicanalogies.realnumbers import arithmetic
-from src.biframemethod.pointanalogy.PointAnalogy import PointAnalogy
-from src.biframemethod.point import Point
+from src.birectanglemethod.pointanalogy.PointAnalogy import PointAnalogy
+from src.birectanglemethod.point import Point
 
 
 class ArithmeticPointAnalogy(PointAnalogy):

@@ -3,8 +3,8 @@ from math import ceil
 
 from skimage.transform import radon
 
-from src.biframemethod.birectangle import BiRectangle
-from src.biframemethod.rectangle import Rectangle
+from src.birectanglemethod.birectangle import BiRectangle
+from src.birectanglemethod.rectangle import Rectangle
 from . shape import Shape
 from PIL import Image
 # DO NOT IMPORT STRATEGIES
@@ -28,7 +28,6 @@ class PixelShape(Shape):
             array[int(w / 2 - rect.y_max):int(w / 2 - rect.y_min), int(rect.x_min + h / 2):int(rect.x_max + h / 2)] = True
 
         self.pixels: np.ndarray[bool] = array
-
 
     def fromShape(self, x_min, x_max, y_min, y_max):
         array = np.zeros((ceil(max(2 * abs(y_min), 2 * abs(y_max))),
@@ -58,7 +57,7 @@ class PixelShape(Shape):
         other.__set_values_from_this(array, - h2 / 2, h2 / 2, - w2 / 2, w2 / 2)
         self.pixels = array
 
-    def getOuterFrame(self) -> Rectangle:
+    def getOuterRectangle(self) -> Rectangle:
         w, h = self.pixels.shape
         ind = np.unravel_index(np.argmax(self.pixels), self.pixels.shape)[0]
         y_max = w / 2 - ind
@@ -72,8 +71,8 @@ class PixelShape(Shape):
         x_min = np.unravel_index(np.argmax(temp), temp.shape)[0] - h / 2
         return Rectangle(x_min, x_max, y_min, y_max)
 
-    def getInnerFrame(self, strategy) -> Rectangle:
-        return strategy.findInnerFramePixels(self)
+    def getInnerRectangle(self, strategy) -> Rectangle:
+        return strategy.findInnerRectanglePixels(self)
 
     def cut(self, birectangle: BiRectangle, strategy):
         return strategy.cutPixels(self, birectangle)

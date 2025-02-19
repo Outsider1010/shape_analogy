@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from src.biframemethod.birectangle import BiRectangle
-from src.biframemethod.rectangle import Rectangle
+from src.birectanglemethod.birectangle import BiRectangle
+from src.birectanglemethod.rectangle import Rectangle
 # DO NOT IMPORT STRATEGIES
 
 class Shape(ABC):
@@ -9,16 +9,16 @@ class Shape(ABC):
     Interface for different shape representations
     """
     @abstractmethod
-    def getInnerFrame(self, strategy) -> Rectangle:
+    def getInnerRectangle(self, strategy) -> Rectangle:
         """
-        Find an interior axis-aligned rectangle (= frame) of the shape
-        :param strategy: The method used to find the frame
-        :return: A frame of the shape
+        Find an interior axis-aligned rectangle of the shape
+        :param strategy: The method used to find the rectangle
+        :return: A (axis-aligned) rectangle of the shape
         """
         pass
 
     @abstractmethod
-    def getOuterFrame(self) -> Rectangle:
+    def getOuterRectangle(self) -> Rectangle:
         """
         Find the axis-aligned minimum bounding box of the shape
         :return: the AABB minimizing area
@@ -28,8 +28,8 @@ class Shape(ABC):
     @abstractmethod
     def cut(self, birectangle: BiRectangle, strategy):
         """
-        Cut the space between the inner and outer frame of `birectangle` into frames
-        and return the subshapes inside each frame
+        Cut the space between the inner and outer rectangle of `birectangle` into rectangles
+        and return the subshapes inside each rectangle
         :param birectangle: The birectangle
         :param strategy: The strategy used to cut
         :return: The list of subshapes

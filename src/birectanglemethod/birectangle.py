@@ -1,4 +1,4 @@
-from src.biframemethod.rectangle import Rectangle
+from src.birectanglemethod.rectangle import Rectangle
 
 class BiRectangle:
     def __init__(self, outerRectangle: Rectangle, innerRectangle: Rectangle):

@@ -1,17 +1,17 @@
-from src.biframemethod.biframeanalogy.BiFrameAnalogy import BiFrameAnalogy
-from src.biframemethod.birectangle import BiRectangle
+from src.birectanglemethod.birectangleanalogy.BiRectangleAnalogy import BiRectangleAnalogy
+from src.birectanglemethod.birectangle import BiRectangle
 from src.basicanalogies.realnumbers import bounded
-from src.biframemethod.frameanalogy.TopLeftFrameAnalogy import TopLeftFrameAnalogy
-from src.biframemethod.rectangle import Rectangle
-from src.biframemethod.point import Point
+from src.birectanglemethod.rectangleanalogy.TopLeftDimAnalogy import TopLeftDimAnalogy
+from src.birectanglemethod.rectangle import Rectangle
+from src.birectanglemethod.point import Point
 
 
-class SigmoidTopLeftAnalogy(BiFrameAnalogy):
+class SigmoidTopLeftAnalogy(BiRectangleAnalogy):
     """
-    Pierre-Alexandre analogy on bi-frames
+    Pierre-Alexandre analogy on bi-rectangles
     """
     def analogy(self, BRA: BiRectangle, BRB: BiRectangle, BRC: BiRectangle) -> BiRectangle:
-        outerD = TopLeftFrameAnalogy().analogy(BRA.outerRectangle, BRB.outerRectangle, BRC.outerRectangle)
+        outerD = TopLeftDimAnalogy().analogy(BRA.outerRectangle, BRB.outerRectangle, BRC.outerRectangle)
 
         BRA_inner_topLeft = BRA.innerRectangle.topLeft()
         BRA_outer_topLeft = BRA.outerRectangle.topLeft()

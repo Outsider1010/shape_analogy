@@ -1,9 +1,9 @@
-from src.biframemethod.frameanalogy.FrameAnalogy import FrameAnalogy
-from src.biframemethod.pointanalogy.ArithmeticPointAnalogy import ArithmeticPointAnalogy
-from src.biframemethod.rectangle import Rectangle
+from src.birectanglemethod.rectangleanalogy.RectangleAnalogy import RectangleAnalogy
+from src.birectanglemethod.pointanalogy.ArithmeticPointAnalogy import ArithmeticPointAnalogy
+from src.birectanglemethod.rectangle import Rectangle
 
 
-class CenterFrameAnalogy(FrameAnalogy):
+class CenterDimAnalogy(RectangleAnalogy):
 
     def analogy(self, FA: Rectangle, FB: Rectangle, FC: Rectangle) -> Rectangle:
         center_a = FA.center()

@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 
-from src.biframemethod.rectangle import Rectangle
+from src.birectanglemethod.rectangle import Rectangle
 
 
-class FrameAnalogy(ABC):
+class RectangleAnalogy(ABC):
     """
-    Interface for different frame analogies
+    Interface for different rectangle analogies
     """
 
     @abstractmethod
