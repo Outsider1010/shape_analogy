@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from src.birectanglemethod.rectangle import Rectangle
+from src.birectangle.Rectangle import Rectangle
 
 
 class RectangleAnalogy(ABC):

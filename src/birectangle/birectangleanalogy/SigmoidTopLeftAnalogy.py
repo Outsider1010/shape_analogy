@@ -1,9 +1,9 @@
-from src.birectanglemethod.birectangleanalogy.BiRectangleAnalogy import BiRectangleAnalogy
-from src.birectanglemethod.birectangle import BiRectangle
+from src.birectangle.birectangleanalogy.BiRectangleAnalogy import BiRectangleAnalogy
+from src.birectangle.BiRectangle import BiRectangle
 from src.basicanalogies.realnumbers import bounded
-from src.birectanglemethod.rectangleanalogy.TopLeftDimAnalogy import TopLeftDimAnalogy
-from src.birectanglemethod.rectangle import Rectangle
-from src.birectanglemethod.point import Point
+from src.birectangle.rectangleanalogy.TopLeftDimAnalogy import TopLeftDimAnalogy
+from src.birectangle.Rectangle import Rectangle
+from src.birectangle.Point import Point
 
 
 class SigmoidTopLeftAnalogy(BiRectangleAnalogy):

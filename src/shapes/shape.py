@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from src.birectanglemethod.birectangle import BiRectangle
-from src.birectanglemethod.rectangle import Rectangle
+from src.birectangle.BiRectangle import BiRectangle
+from src.birectangle.Rectangle import Rectangle
 # DO NOT IMPORT STRATEGIES
 
 class Shape(ABC):

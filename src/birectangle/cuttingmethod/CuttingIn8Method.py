@@ -1,5 +1,5 @@
-from src.birectanglemethod.birectangle import BiRectangle
-from src.birectanglemethod.cuttingmethod.CuttingMethod import CuttingMethod
+from src.birectangle.BiRectangle import BiRectangle
+from src.birectangle.cuttingmethod.CuttingMethod import CuttingMethod
 from src.shapes.pixelShape import PixelShape
 
 

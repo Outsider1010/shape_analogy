@@ -1,4 +1,4 @@
-from src.birectanglemethod.point import Point
+from src.birectangle.Point import Point
 
 
 class Rectangle:

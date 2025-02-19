@@ -3,8 +3,8 @@ from math import ceil
 
 from skimage.transform import radon
 
-from src.birectanglemethod.birectangle import BiRectangle
-from src.birectanglemethod.rectangle import Rectangle
+from src.birectangle.BiRectangle import BiRectangle
+from src.birectangle.Rectangle import Rectangle
 from . shape import Shape
 from PIL import Image
 # DO NOT IMPORT STRATEGIES

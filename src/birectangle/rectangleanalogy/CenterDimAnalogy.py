@@ -1,6 +1,6 @@
-from src.birectanglemethod.rectangleanalogy.RectangleAnalogy import RectangleAnalogy
-from src.birectanglemethod.pointanalogy.ArithmeticPointAnalogy import ArithmeticPointAnalogy
-from src.birectanglemethod.rectangle import Rectangle
+from src.birectangle.rectangleanalogy.RectangleAnalogy import RectangleAnalogy
+from src.birectangle.pointanalogy.ArithmeticPointAnalogy import ArithmeticPointAnalogy
+from src.birectangle.Rectangle import Rectangle
 
 
 class CenterDimAnalogy(RectangleAnalogy):
