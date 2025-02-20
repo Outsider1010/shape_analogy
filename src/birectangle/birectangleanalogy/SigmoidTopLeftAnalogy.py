@@ -13,31 +13,25 @@ class SigmoidTopLeftAnalogy(BiRectangleAnalogy):
     def analogy(self, BRA: BiRectangle, BRB: BiRectangle, BRC: BiRectangle) -> BiRectangle:
         outerD = TopLeftDimAnalogy().analogy(BRA.outerRectangle, BRB.outerRectangle, BRC.outerRectangle)
 
-        BRA_inner_topLeft = BRA.innerRectangle.topLeft()
-        BRA_outer_topLeft = BRA.outerRectangle.topLeft()
-        BRB_inner_topLeft = BRB.innerRectangle.topLeft()
-        BRB_outer_topLeft = BRB.outerRectangle.topLeft()
-        BRC_inner_topLeft = BRC.innerRectangle.topLeft()
-        BRC_outer_topLeft = BRC.outerRectangle.topLeft()
         # Geometrical analogy on the rescaled inner rectangles
-        xA_rescale = (BRA_inner_topLeft.x - BRA_outer_topLeft.x) / BRA.outerRectangle.width()
-        xB_rescale = (BRB_inner_topLeft.x - BRB_outer_topLeft.x) / BRB.outerRectangle.width()
-        xC_rescale = (BRC_inner_topLeft.x - BRC_outer_topLeft.x) / BRC.outerRectangle.width()
+        xA_rescale = (BRA.innerRectangle.x_min - BRA.outerRectangle.x_min) / BRA.outerRectangle.width()
+        xB_rescale = (BRB.innerRectangle.x_min - BRB.outerRectangle.x_min) / BRB.outerRectangle.width()
+        xC_rescale = (BRC.innerRectangle.x_min - BRC.outerRectangle.x_min) / BRC.outerRectangle.width()
         xD_rescale = bounded(xA_rescale, xB_rescale, xC_rescale)
         xD = outerD.x_min + outerD.width() * xD_rescale
 
-        yA_rescale = (- BRA_inner_topLeft.y + BRA_outer_topLeft.y) / BRA.outerRectangle.height()
-        yB_rescale = (- BRB_inner_topLeft.y + BRB_outer_topLeft.y) / BRB.outerRectangle.height()
-        yC_rescale = (- BRC_inner_topLeft.y + BRC_outer_topLeft.y) / BRC.outerRectangle.height()
+        yA_rescale = (- BRA.innerRectangle.y_max + BRA.outerRectangle.y_max) / BRA.outerRectangle.height()
+        yB_rescale = (- BRB.innerRectangle.y_max + BRB.outerRectangle.y_max) / BRB.outerRectangle.height()
+        yC_rescale = (- BRC.innerRectangle.y_max + BRC.outerRectangle.y_max) / BRC.outerRectangle.height()
         yD_rescale = bounded(yA_rescale, yB_rescale, yC_rescale)
         yD = outerD.y_max - outerD.height() * yD_rescale
 
-        wA_rescale = (BRA.innerRectangle.width() + BRA_inner_topLeft.x
-                      - BRA_outer_topLeft.x) / BRA.outerRectangle.width()
-        wB_rescale = (BRB.innerRectangle.width() + BRB_inner_topLeft.x
-                      - BRB_outer_topLeft.x) / BRB.outerRectangle.width()
-        wC_rescale = (BRC.innerRectangle.width() + BRC_inner_topLeft.x
-                      - BRC_outer_topLeft.x) / BRC.outerRectangle.width()
+        wA_rescale = (BRA.innerRectangle.width() + BRA.innerRectangle.x_min
+                      - BRA.outerRectangle.x_min) / BRA.outerRectangle.width()
+        wB_rescale = (BRB.innerRectangle.width() + BRB.innerRectangle.x_min
+                      - BRB.outerRectangle.x_min) / BRB.outerRectangle.width()
+        wC_rescale = (BRC.innerRectangle.width() + BRC.innerRectangle.x_min
+                      - BRC.outerRectangle.x_min) / BRC.outerRectangle.width()
 
         # if-elif added
         if wA_rescale == wC_rescale == 1:
@@ -48,12 +42,12 @@ class SigmoidTopLeftAnalogy(BiRectangleAnalogy):
             wD_rescale = bounded(wA_rescale, wB_rescale, wC_rescale)
         wD = outerD.x_min - xD + outerD.width() * wD_rescale
 
-        hA_rescale = (BRA.innerRectangle.height() - BRA_inner_topLeft.y
-                      + BRA_outer_topLeft.y) / BRA.outerRectangle.height()
-        hB_rescale = (BRB.innerRectangle.height() - BRB_inner_topLeft.y
-                      + BRB_outer_topLeft.y) / BRB.outerRectangle.height()
-        hC_rescale = (BRC.innerRectangle.height() - BRC_inner_topLeft.y
-                      + BRC_outer_topLeft.y) / BRC.outerRectangle.height()
+        hA_rescale = (BRA.innerRectangle.height() - BRA.innerRectangle.y_max
+                      + BRA.outerRectangle.y_max) / BRA.outerRectangle.height()
+        hB_rescale = (BRB.innerRectangle.height() - BRB.innerRectangle.y_max
+                      + BRB.outerRectangle.y_max) / BRB.outerRectangle.height()
+        hC_rescale = (BRC.innerRectangle.height() - BRC.innerRectangle.y_max
+                      + BRC.outerRectangle.y_max) / BRC.outerRectangle.height()
 
         # if-elif added
         if hA_rescale == hC_rescale == 1:

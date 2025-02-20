@@ -1,6 +1,6 @@
 from src.ShapeAnalogy import ShapeAnalogy
-from src.birectangle.birectangleanalogy.SigmoidCenterAnalogy import SigmoidCenterAnalogy
 from src.birectangle.BiRectangle import BiRectangle
+from src.birectangle.birectangleanalogy.ExtSigmoidAnalogy import ExtSigmoidAnalogy
 from src.birectangle.cuttingmethod.FirstCuttingIn4Method import FirstCuttingIn4Method
 from src.birectangle.innerrectanglefinder.LargestRectangleFinder import LargestRectangleFinder
 from src.shapes.pixelShape import PixelShape
@@ -9,8 +9,9 @@ from src.shapes.shape import Shape
 
 class BiRectangleMethod(ShapeAnalogy):
 
-    def __init__(self, BRAnalogy = SigmoidCenterAnalogy, CutMethod = FirstCuttingIn4Method,
-                 InnerRectangle = LargestRectangleFinder, epsilon = 1e-1, maxIteration = 100):
+    def __init__(self, BRAnalogy = ExtSigmoidAnalogy, CutMethod = FirstCuttingIn4Method,
+                 InnerRectangle = LargestRectangleFinder, epsilon = 0.1, maxIteration = 7):
+        assert epsilon < 0.5, f"Epsilon value ({epsilon}) is too high (should be < 0.5)"
         self.biRectangleAnalogy = BRAnalogy()
         self.cuttingMethod = CutMethod()
         self.innerRectangleFinder = InnerRectangle()
@@ -37,14 +38,7 @@ class BiRectangleMethod(ShapeAnalogy):
 
         # prevents the inner rectangle from touching the outerRectangle (if epsilon > 0)
         for biRect in birectangles:
-            if biRect.innerRectangle.x_min == biRect.outerRectangle.x_min:
-                biRect.innerRectangle.x_min += self.epsilon
-            if biRect.innerRectangle.x_max == biRect.outerRectangle.x_max:
-                biRect.innerRectangle.x_max -= self.epsilon
-            if biRect.innerRectangle.y_min == biRect.outerRectangle.y_min:
-                biRect.innerRectangle.y_min += self.epsilon
-            if biRect.innerRectangle.y_max == biRect.outerRectangle.y_max:
-                biRect.innerRectangle.y_max -= self.epsilon
+            biRect.separate(self.epsilon)
 
         birectangle_d = self.biRectangleAnalogy.analogy(*birectangles)
         d = PixelShape(rect=birectangle_d.innerRectangle)
@@ -57,7 +51,7 @@ class BiRectangleMethod(ShapeAnalogy):
             subshapeC: Shape = subshapes[2][i]
 
             if k < self.maxIteration:
-                subshapeD = self.analogy(subshapeA, subshapeB, subshapeC, k+1)
+                subshapeD = self.analogy(subshapeA, subshapeB, subshapeC, k + 1)
                 if subshapeD is not None:
                     d.merge(subshapeD)
 

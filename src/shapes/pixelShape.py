@@ -11,42 +11,55 @@ from PIL import Image
 
 class PixelShape(Shape):
     """
-    Representation of shapes using a boolean matrix.
+    Representation of shapes using a boolean matrix with even dimensions.
     Each pixel is a square of length 1 and equals True if it is included in the shape
     """
 
     def __init__(self, array=None, img=None, rect=None):
         assert (array is not None) or (img is not None) or (rect is not None), \
                "One of the parameters (array, img or rect) must be set"
+
         if img is not None:
             array = np.where(np.array(Image.open(img)) == 0, True, False)
 
         if rect is not None:
             w, h = (ceil(max(2 * abs(rect.y_min), 2 * abs(rect.y_max))),
                     ceil(max(2 * abs(rect.x_min), 2 * abs(rect.x_max))))
+            if w % 2 != 0:
+                w += 1
+            if h % 2 != 0:
+                h += 1
             array = np.zeros((w, h), dtype=bool)
-            array[int(w / 2 - rect.y_max):int(w / 2 - rect.y_min), int(rect.x_min + h / 2):int(rect.x_max + h / 2)] = True
+            array[int(w / 2 - rect.y_max):ceil(w / 2 - rect.y_min), int(rect.x_min + h / 2):ceil(rect.x_max + h / 2)] = True
 
+        w, h = array.shape
+        assert w % 2 == 0 and h % 2 == 0, f"Dimensions (w = {h}, h = {w}) must be even."
         self.pixels: np.ndarray[bool] = array
 
     def fromShape(self, x_min, x_max, y_min, y_max):
-        array = np.zeros((ceil(max(2 * abs(y_min), 2 * abs(y_max))),
-                                ceil(max(2 * abs(x_min), 2 * abs(x_max)))), dtype=bool)
+        w, h = ceil(max(2 * abs(y_min), 2 * abs(y_max))), ceil(max(2 * abs(x_min), 2 * abs(x_max)))
+        if w % 2 != 0:
+            w += 1
+        if h % 2 != 0:
+            h += 1
+        array = np.zeros((w, h), dtype=bool)
         self.__set_values_from_this(array, x_min, x_max, y_min, y_max)
         return PixelShape(array=array)
 
     def __set_values_from_this(self, arr, x_min, x_max, y_min, y_max):
-        w, h = arr.shape
-        b1 = int(w / 2 - y_min)
-        b2 = int(w / 2 - y_max)
-        b3 = int(x_min + h / 2)
-        b4 = int(x_max + h / 2)
+        w1, h1 = arr.shape
+
+        b1 = ceil(w1 / 2 - y_min)
+        b2 = int(w1 / 2 - y_max)
+        b3 = int(x_min + h1 / 2)
+        b4 = ceil(x_max + h1 / 2)
 
         w, h = self.dim()
-        c1 = int(w / 2 - y_min)
+        c1 = ceil(w / 2 - y_min)
         c2 = int(w / 2 - y_max)
         c3 = int(x_min + h / 2)
-        c4 = int(x_max + h / 2)
+        c4 = ceil(x_max + h / 2)
+
         arr[b2:b1, b3:b4] |= self.pixels[c2:c1, c3:c4]
 
     def merge(self, other):
@@ -80,8 +93,10 @@ class PixelShape(Shape):
     def isPointInShape(self, x: float, y:float) -> bool:
         return self.pixels[int(self.width() / 2 - y), int(x + self.height() / 2)]
 
-    def resize(self, min_w = 1, min_h = 1):
-        self.merge(PixelShape(array=np.zeros((min_w, min_h), dtype=bool)))
+    def resize(self, min_w = 2, min_h = 2):
+        assert min_w % 2 == 0, f"Minimum width {min_w} must be even."
+        assert min_h % 2 == 0, f"Minimum height {min_h} must be even."
+        self.merge(PixelShape(array=np.zeros((min_h, min_w), dtype=bool)))
 
     def __eq__(self, other):
         if not isinstance(other, PixelShape):
