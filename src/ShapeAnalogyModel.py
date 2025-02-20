@@ -2,11 +2,12 @@ from src.view.ViewInterface import ViewInterface
 from src.birectanglemethod.BiRectangleMethod import BiRectangleMethod
 from src.shapes.shape import Shape
 from src.shapes.pixelShape import PixelShape
+from src.birectangle.birectangleanalogy.SigmoidTopLeftAnalogy import SigmoidTopLeftAnalogy
 class ShapeAnalogyModel:
     def __init__(self):
         self.shapes = [None]*3
         self.result = None
-        self.analogyMethod = BiRectangleMethod()
+        self.analogyMethod = BiRectangleMethod(BRAnalogy= SigmoidTopLeftAnalogy)
         self.view = []
     def addObserver(self,view:ViewInterface):
         print("j'ajoute une vue")
