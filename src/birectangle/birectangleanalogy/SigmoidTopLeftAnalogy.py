@@ -20,24 +20,24 @@ class SigmoidTopLeftAnalogy(BiRectangleAnalogy):
         BRC_inner_topLeft = BRC.innerRectangle.topLeft()
         BRC_outer_topLeft = BRC.outerRectangle.topLeft()
         # Geometrical analogy on the rescaled inner rectangles
-        xA_rescale = (BRA_inner_topLeft.x - BRA_outer_topLeft.x) / BRA.outerRectangle.w
-        xB_rescale = (BRB_inner_topLeft.x - BRB_outer_topLeft.x) / BRB.outerRectangle.w
-        xC_rescale = (BRC_inner_topLeft.x - BRC_outer_topLeft.x) / BRC.outerRectangle.w
+        xA_rescale = (BRA_inner_topLeft.x - BRA_outer_topLeft.x) / BRA.outerRectangle.width()
+        xB_rescale = (BRB_inner_topLeft.x - BRB_outer_topLeft.x) / BRB.outerRectangle.width()
+        xC_rescale = (BRC_inner_topLeft.x - BRC_outer_topLeft.x) / BRC.outerRectangle.width()
         xD_rescale = bounded(xA_rescale, xB_rescale, xC_rescale)
-        xD = outerD.x_min + outerD.w * xD_rescale
+        xD = outerD.x_min + outerD.width() * xD_rescale
 
-        yA_rescale = (- BRA_inner_topLeft.y + BRA_outer_topLeft.y) / BRA.outerRectangle.h
-        yB_rescale = (- BRB_inner_topLeft.y + BRB_outer_topLeft.y) / BRB.outerRectangle.h
-        yC_rescale = (- BRC_inner_topLeft.y + BRC_outer_topLeft.y) / BRC.outerRectangle.h
+        yA_rescale = (- BRA_inner_topLeft.y + BRA_outer_topLeft.y) / BRA.outerRectangle.height()
+        yB_rescale = (- BRB_inner_topLeft.y + BRB_outer_topLeft.y) / BRB.outerRectangle.height()
+        yC_rescale = (- BRC_inner_topLeft.y + BRC_outer_topLeft.y) / BRC.outerRectangle.height()
         yD_rescale = bounded(yA_rescale, yB_rescale, yC_rescale)
-        yD = outerD.y_max - outerD.h * yD_rescale
+        yD = outerD.y_max - outerD.height() * yD_rescale
 
-        wA_rescale = (BRA.innerRectangle.w + BRA_inner_topLeft.x
-                      - BRA_outer_topLeft.x) / BRA.outerRectangle.w
-        wB_rescale = (BRB.innerRectangle.w + BRB_inner_topLeft.x
-                      - BRB_outer_topLeft.x) / BRB.outerRectangle.w
-        wC_rescale = (BRC.innerRectangle.w + BRC_inner_topLeft.x
-                      - BRC_outer_topLeft.x) / BRC.outerRectangle.w
+        wA_rescale = (BRA.innerRectangle.width() + BRA_inner_topLeft.x
+                      - BRA_outer_topLeft.x) / BRA.outerRectangle.width()
+        wB_rescale = (BRB.innerRectangle.width() + BRB_inner_topLeft.x
+                      - BRB_outer_topLeft.x) / BRB.outerRectangle.width()
+        wC_rescale = (BRC.innerRectangle.width() + BRC_inner_topLeft.x
+                      - BRC_outer_topLeft.x) / BRC.outerRectangle.width()
 
         # if-elif added
         if wA_rescale == wC_rescale == 1:
@@ -46,14 +46,14 @@ class SigmoidTopLeftAnalogy(BiRectangleAnalogy):
             wD_rescale = wC_rescale
         else:
             wD_rescale = bounded(wA_rescale, wB_rescale, wC_rescale)
-        wD = outerD.x_min - xD + outerD.w * wD_rescale
+        wD = outerD.x_min - xD + outerD.width() * wD_rescale
 
-        hA_rescale = (BRA.innerRectangle.h - BRA_inner_topLeft.y
-                      + BRA_outer_topLeft.y) / BRA.outerRectangle.h
-        hB_rescale = (BRB.innerRectangle.h - BRB_inner_topLeft.y
-                      + BRB_outer_topLeft.y) / BRB.outerRectangle.h
-        hC_rescale = (BRC.innerRectangle.h - BRC_inner_topLeft.y
-                      + BRC_outer_topLeft.y) / BRC.outerRectangle.h
+        hA_rescale = (BRA.innerRectangle.height() - BRA_inner_topLeft.y
+                      + BRA_outer_topLeft.y) / BRA.outerRectangle.height()
+        hB_rescale = (BRB.innerRectangle.height() - BRB_inner_topLeft.y
+                      + BRB_outer_topLeft.y) / BRB.outerRectangle.height()
+        hC_rescale = (BRC.innerRectangle.height() - BRC_inner_topLeft.y
+                      + BRC_outer_topLeft.y) / BRC.outerRectangle.height()
 
         # if-elif added
         if hA_rescale == hC_rescale == 1:
@@ -62,7 +62,7 @@ class SigmoidTopLeftAnalogy(BiRectangleAnalogy):
             hD_rescale = hC_rescale
         else:
             hD_rescale = bounded(hA_rescale, hB_rescale, hC_rescale)
-        hD = yD - outerD.y_max + outerD.h * hD_rescale
+        hD = yD - outerD.y_max + outerD.height() * hD_rescale
 
         innerD = Rectangle.fromTopLeft(Point(xD, yD), wD, hD)
 

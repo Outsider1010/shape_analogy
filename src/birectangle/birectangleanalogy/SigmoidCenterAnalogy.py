@@ -19,21 +19,21 @@ class SigmoidCenterAnalogy(BiRectangleAnalogy):
         BRC_inner_center = BRC.innerRectangle.center()
         BRC_outer_topLeft = BRC.outerRectangle.topLeft()
         # Geometrical analogy on the rescaled inner rectangles
-        xA_rescale = (BRA_inner_center.x - BRA_outer_topLeft.x) / BRA.outerRectangle.w
-        xB_rescale = (BRB_inner_center.x - BRB_outer_topLeft.x) / BRB.outerRectangle.w
-        xC_rescale = (BRC_inner_center.x - BRC_outer_topLeft.x) / BRC.outerRectangle.w
+        xA_rescale = (BRA_inner_center.x - BRA_outer_topLeft.x) / BRA.outerRectangle.width()
+        xB_rescale = (BRB_inner_center.x - BRB_outer_topLeft.x) / BRB.outerRectangle.width()
+        xC_rescale = (BRC_inner_center.x - BRC_outer_topLeft.x) / BRC.outerRectangle.width()
         xD_rescale = bounded(xA_rescale, xB_rescale, xC_rescale)
-        xD = outerD.x_min + outerD.w * xD_rescale
+        xD = outerD.x_min + outerD.width() * xD_rescale
 
-        yA_rescale = (- BRA_inner_center.y + BRA_outer_topLeft.y) / BRA.outerRectangle.h
-        yB_rescale = (- BRB_inner_center.y + BRB_outer_topLeft.y) / BRB.outerRectangle.h
-        yC_rescale = (- BRC_inner_center.y + BRC_outer_topLeft.y) / BRC.outerRectangle.h
+        yA_rescale = (- BRA_inner_center.y + BRA_outer_topLeft.y) / BRA.outerRectangle.height()
+        yB_rescale = (- BRB_inner_center.y + BRB_outer_topLeft.y) / BRB.outerRectangle.height()
+        yC_rescale = (- BRC_inner_center.y + BRC_outer_topLeft.y) / BRC.outerRectangle.height()
         yD_rescale = bounded(yA_rescale, yB_rescale, yC_rescale)
-        yD = outerD.y_max - outerD.h * yD_rescale
+        yD = outerD.y_max - outerD.height() * yD_rescale
 
-        wA_rescale = BRA.innerRectangle.w / BRA.outerRectangle.w
-        wB_rescale = BRB.innerRectangle.w / BRB.outerRectangle.w
-        wC_rescale = BRC.innerRectangle.w / BRC.outerRectangle.w
+        wA_rescale = BRA.innerRectangle.width() / BRA.outerRectangle.width()
+        wB_rescale = BRB.innerRectangle.width() / BRB.outerRectangle.width()
+        wC_rescale = BRC.innerRectangle.width() / BRC.outerRectangle.width()
 
         # if-elif added
         if wA_rescale == wC_rescale:
@@ -44,11 +44,11 @@ class SigmoidCenterAnalogy(BiRectangleAnalogy):
             wD_rescale = wB_rescale
         else:
             wD_rescale = bounded(wA_rescale, wB_rescale, wC_rescale)
-        wD = outerD.w * wD_rescale
+        wD = outerD.width() * wD_rescale
 
-        hA_rescale = BRA.innerRectangle.h / BRA.outerRectangle.h
-        hB_rescale = BRB.innerRectangle.h / BRB.outerRectangle.h
-        hC_rescale = BRC.innerRectangle.h / BRC.outerRectangle.h
+        hA_rescale = BRA.innerRectangle.height() / BRA.outerRectangle.height()
+        hB_rescale = BRB.innerRectangle.height() / BRB.outerRectangle.height()
+        hC_rescale = BRC.innerRectangle.height() / BRC.outerRectangle.height()
 
         # if-elif added
         if hA_rescale == hC_rescale:
@@ -57,7 +57,7 @@ class SigmoidCenterAnalogy(BiRectangleAnalogy):
             hD_rescale = hC_rescale
         else:
             hD_rescale = bounded(hA_rescale, hB_rescale, hC_rescale)
-        hD = outerD.h * hD_rescale
+        hD = outerD.height() * hD_rescale
 
         innerD = Rectangle.fromCenter(Point(xD, yD), wD, hD)
 

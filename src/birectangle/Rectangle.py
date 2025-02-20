@@ -10,7 +10,6 @@ class Rectangle:
         self.x_max = x_max
         self.y_min = y_min
         self.y_max = y_max
-        self.w = self.width()
         self.h = self.height()
 
     def width(self) -> float:
