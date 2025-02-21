@@ -23,65 +23,64 @@ class PixelShape(Shape):
             array = np.where(np.array(Image.open(img)) == 0, True, False)
 
         if rect is not None:
-            w, h = (ceil(max(2 * abs(rect.y_min), 2 * abs(rect.y_max))),
+            h, w = (ceil(max(2 * abs(rect.y_min), 2 * abs(rect.y_max))),
                     ceil(max(2 * abs(rect.x_min), 2 * abs(rect.x_max))))
             if w % 2 != 0:
                 w += 1
             if h % 2 != 0:
                 h += 1
-            array = np.zeros((w, h), dtype=bool)
-            array[int(w / 2 - rect.y_max):ceil(w / 2 - rect.y_min), int(rect.x_min + h / 2):ceil(rect.x_max + h / 2)] = True
+            array = np.zeros((h, w), dtype=bool)
+            array[int(h / 2 - rect.y_max):ceil(h / 2 - rect.y_min), int(rect.x_min + w / 2):ceil(rect.x_max + w / 2)] = True
 
         w, h = array.shape
         assert w % 2 == 0 and h % 2 == 0, f"Dimensions (w = {h}, h = {w}) must be even."
         self.pixels: np.ndarray[bool] = array
 
     def fromShape(self, x_min, x_max, y_min, y_max):
-        w, h = ceil(max(2 * abs(y_min), 2 * abs(y_max))), ceil(max(2 * abs(x_min), 2 * abs(x_max)))
+        h, w = ceil(max(2 * abs(y_min), 2 * abs(y_max))), ceil(max(2 * abs(x_min), 2 * abs(x_max)))
         if w % 2 != 0:
             w += 1
         if h % 2 != 0:
             h += 1
-        array = np.zeros((w, h), dtype=bool)
+        array = np.zeros((h, w), dtype=bool)
         self.__set_values_from_this(array, x_min, x_max, y_min, y_max)
         return PixelShape(array=array)
 
     def __set_values_from_this(self, arr, x_min, x_max, y_min, y_max):
-        w1, h1 = arr.shape
+        h1, w1 = arr.shape
+        b1 = ceil(h1 / 2 - y_min)
+        b2 = int(h1 / 2 - y_max)
+        b3 = int(x_min + w1 / 2)
+        b4 = ceil(x_max + w1 / 2)
 
-        b1 = ceil(w1 / 2 - y_min)
-        b2 = int(w1 / 2 - y_max)
-        b3 = int(x_min + h1 / 2)
-        b4 = ceil(x_max + h1 / 2)
-
-        w, h = self.dim()
-        c1 = ceil(w / 2 - y_min)
-        c2 = int(w / 2 - y_max)
-        c3 = int(x_min + h / 2)
-        c4 = ceil(x_max + h / 2)
+        h, w = self.dim()
+        c1 = ceil(h / 2 - y_min)
+        c2 = int(h / 2 - y_max)
+        c3 = int(x_min + w / 2)
+        c4 = ceil(x_max + w / 2)
 
         arr[b2:b1, b3:b4] |= self.pixels[c2:c1, c3:c4]
 
     def merge(self, other):
-        w1, h1 = self.dim()
-        w2, h2 = other.dim()
-        array = np.zeros((max(w1, w2), max(h1, h2)), dtype=bool)
-        self.__set_values_from_this(array, - h1 / 2, h1 / 2, - w1 / 2, w1 / 2)
-        other.__set_values_from_this(array, - h2 / 2, h2 / 2, - w2 / 2, w2 / 2)
+        h1, w1 = self.dim()
+        h2, w2 = other.dim()
+        array = np.zeros((max(h1, h2), max(w1, w2)), dtype=bool)
+        self.__set_values_from_this(array, - w1 / 2, w1 / 2, - h1 / 2, h1 / 2)
+        other.__set_values_from_this(array, - w2 / 2, w2 / 2, - h2 / 2, h2 / 2)
         self.pixels = array
 
     def getOuterRectangle(self) -> Rectangle:
-        w, h = self.pixels.shape
+        h, w = self.pixels.shape
         ind = np.unravel_index(np.argmax(self.pixels), self.pixels.shape)[0]
-        y_max = w / 2 - ind
+        y_max = h / 2 - ind
         temp = np.rot90(self.pixels[ind:])
         ind = np.unravel_index(np.argmax(temp), temp.shape)[0]
-        x_max = h / 2 - ind
+        x_max = w / 2 - ind
         temp = np.rot90(temp[ind:])
         ind = np.unravel_index(np.argmax(temp), temp.shape)[0]
-        y_min = ind - w / 2
+        y_min = ind - h / 2
         temp = np.rot90(temp[ind:])
-        x_min = np.unravel_index(np.argmax(temp), temp.shape)[0] - h / 2
+        x_min = np.unravel_index(np.argmax(temp), temp.shape)[0] - w / 2
         return Rectangle(x_min, x_max, y_min, y_max)
 
     def getInnerRectangle(self, strategy) -> Rectangle:
@@ -91,7 +90,7 @@ class PixelShape(Shape):
         return strategy.cutPixels(self, birectangle)
 
     def isPointInShape(self, x: float, y:float) -> bool:
-        return self.pixels[int(self.width() / 2 - y), int(x + self.height() / 2)]
+        return self.pixels[int(self.height() / 2 - y), int(x + self.width() / 2)]
 
     def resize(self, min_w = 2, min_h = 2):
         assert min_w % 2 == 0, f"Minimum width {min_w} must be even."
@@ -101,21 +100,21 @@ class PixelShape(Shape):
     def __eq__(self, other):
         if not isinstance(other, PixelShape):
             return False
-        w1, h1 = self.pixels.shape
-        w2, h2 = other.pixels.shape
+        h1, w1 = self.pixels.shape
+        h2, w2 = other.pixels.shape
         w = max(w1, w2)
         h = max(h1, h2)
         new_self_pixels = np.zeros((w, h), dtype=bool)
         new_other_pixels = np.zeros((w, h), dtype=bool)
-        self.__set_values_from_this(new_self_pixels, - h1/2, h1/2, -w1/2, w1/2)
-        other.__set_values_from_this(new_other_pixels, -h2/2, h2/2, -w2/2, w2/2)
+        self.__set_values_from_this(new_self_pixels, - w1/2, w1/2, -h1/2, h1/2)
+        other.__set_values_from_this(new_other_pixels, -w2/2, w2/2, -h2/2, h2/2)
         return np.all(new_self_pixels == new_other_pixels)
 
     def width(self) -> int:
-        return self.pixels.shape[0]
+        return self.pixels.shape[1]
 
     def height(self) -> int:
-        return self.pixels.shape[1]
+        return self.pixels.shape[0]
 
     def isEmpty(self) -> bool:
         return not self.pixels.any()

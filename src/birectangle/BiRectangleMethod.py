@@ -1,6 +1,7 @@
 from src.ShapeAnalogy import ShapeAnalogy
 from src.birectangle.BiRectangle import BiRectangle
 from src.birectangle.birectangleanalogy.ExtSigmoidAnalogy import ExtSigmoidAnalogy
+from src.birectangle.cuttingmethod.CuttingIn8Method import CuttingIn8Method
 from src.birectangle.cuttingmethod.FirstCuttingIn4Method import FirstCuttingIn4Method
 from src.birectangle.innerrectanglefinder.LargestRectangleFinder import LargestRectangleFinder
 from src.shapes.pixelShape import PixelShape
@@ -10,7 +11,7 @@ from src.shapes.shape import Shape
 class BiRectangleMethod(ShapeAnalogy):
 
     def __init__(self, BRAnalogy = ExtSigmoidAnalogy, CutMethod = FirstCuttingIn4Method,
-                 InnerRectangle = LargestRectangleFinder, epsilon = 0.1, maxIteration = 7):
+                 InnerRectangle = LargestRectangleFinder, epsilon = 0.1, maxIteration = 3000):
         assert epsilon < 0.5, f"Epsilon value ({epsilon}) is too high (should be < 0.5)"
         self.biRectangleAnalogy = BRAnalogy()
         self.cuttingMethod = CutMethod()
@@ -19,7 +20,10 @@ class BiRectangleMethod(ShapeAnalogy):
         self.maxIteration = maxIteration
 
 
-    def analogy(self, SA : Shape, SB : Shape, SC : Shape, k = 0) -> PixelShape | Shape | None:
+    def analogy(self, SA : Shape, SB : Shape, SC : Shape, k = None) -> PixelShape | Shape | None:
+        if k is None:
+            k = self.maxIteration
+
         emptyA = SA.isEmpty()
         emptyB = SB.isEmpty()
         emptyC = SC.isEmpty()
@@ -45,13 +49,14 @@ class BiRectangleMethod(ShapeAnalogy):
 
         subshapes = tuple(shape_list[i].cut(birectangles[i], self.cuttingMethod) for i in range(3))
 
-        for i in range(self.cuttingMethod.nbSubShapes()):
+        nbSubShapes = self.cuttingMethod.nbSubShapes()
+        for i in range(nbSubShapes):
             subshapeA: Shape = subshapes[0][i]
             subshapeB: Shape = subshapes[1][i]
             subshapeC: Shape = subshapes[2][i]
 
-            if k < self.maxIteration:
-                subshapeD = self.analogy(subshapeA, subshapeB, subshapeC, k + 1)
+            if k > 0:
+                subshapeD = self.analogy(subshapeA, subshapeB, subshapeC, k // nbSubShapes)
                 if subshapeD is not None:
                     d.merge(subshapeD)
 
