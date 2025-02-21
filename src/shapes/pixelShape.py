@@ -111,7 +111,6 @@ class PixelShape(Shape):
     def toImage(self, name="default.bmp"):
         img = Image.fromarray(np.uint8(np.where(self.pixels, 0, 255)), 'L')
         img.save('resources/' + name)
-
     def toSinogram(self, maxAngle = 180.):
         # useful ?
         # array = rescale(array, scale=0.4, mode='reflect', channel_axis=None)
