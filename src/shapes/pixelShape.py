@@ -25,7 +25,6 @@ class PixelShape(Shape):
             w, h = (ceil(max(2 * abs(rect.y_min), 2 * abs(rect.y_max))),
                     ceil(max(2 * abs(rect.x_min), 2 * abs(rect.x_max))))
             array = np.zeros((w, h), dtype=bool)
-            print(rect.y_min, rect.y_max, rect.x_min, rect.x_max)
             array[int(w / 2 - rect.y_max):int(w / 2 - rect.y_min), int(rect.x_min + h / 2):int(rect.x_max + h / 2)] = True
 
         self.pixels: np.ndarray[bool] = array
