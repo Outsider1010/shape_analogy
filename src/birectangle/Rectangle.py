@@ -1,3 +1,5 @@
+from math import ceil
+
 from src.birectangle.Point import Point
 
 
@@ -72,6 +74,17 @@ class Rectangle:
         left_condition = self.x_min <= r.x_min
         right_condition = self.x_max >= r.x_max
         return bottom_condition and top_condition and left_condition and right_condition
+
+    def drawOnImage(self, img_array, color):
+        h, w, _ = img_array.shape
+        y_min = int(h / 2 - self.y_max)
+        y_max = ceil(h / 2 - self.y_min) - 1
+        x_min = int(self.x_min + w / 2)
+        x_max = ceil(self.x_max + w / 2) - 1
+        img_array[y_min:y_max, x_max, :] = color
+        img_array[y_min:y_max, x_min, :] = color
+        img_array[y_min, x_min:x_max, :] = color
+        img_array[y_max, x_min:x_max, :] = color
 
 
 def greatest_common_rectangle_ratio(r_a: Rectangle, big_r_a: Rectangle,

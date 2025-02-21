@@ -8,7 +8,7 @@ from src.birectangle.Rectangle import Rectangle
 from . shape import Shape
 from PIL import Image
 
-from ..utils import resize2D, toImage
+from ..utils import resize, toImage
 
 
 # DO NOT IMPORT STRATEGIES
@@ -19,7 +19,7 @@ class PixelShape(Shape):
     Each pixel is a square of length 1 and equals True if it is included in the shape
     """
 
-    def __init__(self, array=None, img=None, rect=None):
+    def __init__(self, array=None, img=None, rect=None, min_w = 2, min_h = 2):
         assert (array is not None) or (img is not None) or (rect is not None), \
                "One of the parameters (array, img or rect) must be set"
 
@@ -27,8 +27,8 @@ class PixelShape(Shape):
             array = np.array(Image.open(img)) == 0
 
         if rect is not None:
-            h, w = (ceil(max(2 * abs(rect.y_min), 2 * abs(rect.y_max))),
-                    ceil(max(2 * abs(rect.x_min), 2 * abs(rect.x_max))))
+            h, w = (ceil(max(2 * abs(rect.y_min), 2 * abs(rect.y_max), min_h)),
+                    ceil(max(2 * abs(rect.x_min), 2 * abs(rect.x_max), min_w)))
             if w % 2 != 0:
                 w += 1
             if h % 2 != 0:
@@ -93,24 +93,27 @@ class PixelShape(Shape):
     def cut(self, birectangle: BiRectangle, strategy):
         return strategy.cutPixels(self, birectangle)
 
+    def toPixelShape(self):
+        return self
+
     def isPointInShape(self, x: float, y:float) -> bool:
         return self.pixels[int(self.height() / 2 - y), int(x + self.width() / 2)]
 
     def resize(self, min_w = 2, min_h = 2):
-        return PixelShape(array=resize2D(self.pixels, min_w, min_h))
+        return PixelShape(array=resize(self.pixels, min_w, min_h))
 
     def __eq__(self, other):
         if not isinstance(other, PixelShape):
             return False
-        h1, w1 = self.pixels.shape
-        h2, w2 = other.pixels.shape
-        w = max(w1, w2)
-        h = max(h1, h2)
-        new_self_pixels = np.zeros((w, h), dtype=bool)
-        new_other_pixels = np.zeros((w, h), dtype=bool)
-        self.__set_values_from_this(new_self_pixels, - w1/2, w1/2, -h1/2, h1/2)
-        other.__set_values_from_this(new_other_pixels, -w2/2, w2/2, -h2/2, h2/2)
-        return np.all(new_self_pixels == new_other_pixels)
+        h1, w1 = self.dim()
+        h2, w2 = other.dim()
+        y1, x1 = np.where(self.pixels)
+        y2, x2 = np.where(other.pixels)
+        y1 = h1 / 2 - y1
+        x1 = x1 + w1 / 2
+        y2 = h2 / 2 - y2
+        x2 = x2 + w2 / 2
+        return y1.shape == y2.shape and x1.shape == x2.shape and np.all(y1 == y2)  and np.all(x1 == x2)
 
     def width(self) -> int:
         return self.pixels.shape[1]
@@ -125,7 +128,7 @@ class PixelShape(Shape):
         return self.pixels.shape
 
     def toImage(self, name="default.bmp"):
-        toImage(np.uint8((1 - self.pixels) * 255))
+        toImage(np.uint8((1 - self.pixels) * 255), name=name)
 
     def toSinogram(self, maxAngle = 180.):
         # useful ?

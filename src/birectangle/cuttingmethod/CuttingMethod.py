@@ -19,5 +19,9 @@ class CuttingMethod(ABC):
         pass
 
     @abstractmethod
+    def drawCuttingLines(self, biRectangle: BiRectangle, img_array, color) -> None:
+        pass
+
+    @abstractmethod
     def nbSubShapes(self) -> int:
         pass
