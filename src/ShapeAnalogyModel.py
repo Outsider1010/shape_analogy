@@ -17,10 +17,17 @@ class ShapeAnalogyModel:
         return self.shapes[0] != None and self.shapes[1] != None and self.shapes[2] != None
     def startAnalogy(self):
         if(self.can_Start):
+           
+
             print("je lance l'analogie")
-            self.result = self.analogyMethod.analogy(self.shapes[0],self.shapes[1],self.shapes[2])
+            self.result, full_array = m.analogy(self.shapes[0], self.shapes[1], self.shapes[2])
             if(self.result !=None):
                 self.result.toImage()
+            if full_array is not None:
+                arr = resize2D(full_array, 300, 300)
+                toImage(arr)
+            else:
+                print("no solution")
             self.notifier()
     def setShape(self,indice,filePath):
         if(self.result != None):

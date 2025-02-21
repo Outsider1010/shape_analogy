@@ -15,4 +15,14 @@ class BiRectangle:
     def __str__(self):
         return "Outer: " + str(self.outerRectangle) + "\nInner: " + str(self.innerRectangle)
 
+    def separate(self, epsilon: float):
+        if self.innerRectangle.x_min == self.outerRectangle.x_min:
+            self.innerRectangle.x_min += epsilon
+        if self.innerRectangle.x_max == self.outerRectangle.x_max:
+            self.innerRectangle.x_max -= epsilon
+        if self.innerRectangle.y_min == self.outerRectangle.y_min:
+            self.innerRectangle.y_min += epsilon
+        if self.innerRectangle.y_max == self.outerRectangle.y_max:
+            self.innerRectangle.y_max -= epsilon
+
 

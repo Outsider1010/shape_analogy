@@ -17,9 +17,9 @@ def ext_bounded(a:float, b:float, c:float, Ia: tuple[float, float], Ib: tuple[fl
     b_inf_b, b_sup_b = Ib
     b_inf_c, b_sup_c = Ic
     b_inf_d, b_sup_d = Id
-    assert(b_inf_a < a < b_sup_a)
-    assert(b_inf_b < b < b_sup_b)
-    assert(b_inf_c < c < b_sup_c)
+    assert b_inf_a < a < b_sup_a, f"forbidden value ({a}) for ext bounded analogy : {round(a, 2)}:{round(b, 2)}::{round(c, 2)}:?"
+    assert b_inf_b < b < b_sup_b, f"forbidden value ({b}) for bounded analogy : {round(a, 2)}:{round(b, 2)}::{round(c, 2)}:?"
+    assert b_inf_c < c < b_sup_c, f"forbidden value ({c}) for bounded analogy : {round(a, 2)}:{round(b, 2)}::{round(c, 2)}:?"
 
     return b_inf_d + ((b_sup_d - b_inf_d) / (1 +
             ((b_sup_c - c) * (b_sup_b - b) * (a - b_inf_a)) / ((c - b_inf_c) * (b - b_inf_b) * (b_sup_a - a))))
