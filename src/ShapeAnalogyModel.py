@@ -1,8 +1,9 @@
 from src.view.ViewInterface import ViewInterface
-from src.birectanglemethod.BiRectangleMethod import BiRectangleMethod
+from src.birectangle.BiRectangleMethod import BiRectangleMethod
 from src.shapes.shape import Shape
 from src.shapes.pixelShape import PixelShape
 from src.birectangle.birectangleanalogy.SigmoidTopLeftAnalogy import SigmoidTopLeftAnalogy
+from src.utils import resize2D,toImage
 class ShapeAnalogyModel:
     def __init__(self):
         self.shapes = [None]*3
@@ -20,7 +21,7 @@ class ShapeAnalogyModel:
            
 
             print("je lance l'analogie")
-            self.result, full_array = m.analogy(self.shapes[0], self.shapes[1], self.shapes[2])
+            self.result, full_array = self.analogyMethod.analogy(self.shapes[0], self.shapes[1], self.shapes[2])
             if(self.result !=None):
                 self.result.toImage()
             if full_array is not None:
