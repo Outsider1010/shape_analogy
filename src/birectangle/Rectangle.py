@@ -6,8 +6,8 @@ class Rectangle:
     An axis-aligned rectangle
     """
     def __init__(self, x_min: float, x_max: float, y_min: float, y_max: float):
-        assert x_min < x_max, f"Negative width: w = {x_max - x_min}"
-        assert y_min < y_max, f"Negative height: h = {y_max - y_min}"
+        assert x_min <= x_max, f"Negative width: w = {x_max - x_min}"
+        assert y_min <= y_max, f"Negative height: h = {y_max - y_min}"
         self.x_min = x_min
         self.x_max = x_max
         self.y_min = y_min

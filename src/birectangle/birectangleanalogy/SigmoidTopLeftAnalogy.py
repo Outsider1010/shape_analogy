@@ -34,12 +34,7 @@ class SigmoidTopLeftAnalogy(BiRectangleAnalogy):
                       - BRC.outerRectangle.x_min) / BRC.outerRectangle.width()
 
         # if-elif added
-        if wA_rescale == wC_rescale == 1:
-            wD_rescale = wB_rescale
-        elif wA_rescale == wB_rescale == 1:
-            wD_rescale = wC_rescale
-        else:
-            wD_rescale = bounded(wA_rescale, wB_rescale, wC_rescale)
+        wD_rescale = bounded(wA_rescale, wB_rescale, wC_rescale)
         wD = outerD.x_min - xD + outerD.width() * wD_rescale
 
         hA_rescale = (BRA.innerRectangle.height() - BRA.innerRectangle.y_max
@@ -50,12 +45,7 @@ class SigmoidTopLeftAnalogy(BiRectangleAnalogy):
                       + BRC.outerRectangle.y_max) / BRC.outerRectangle.height()
 
         # if-elif added
-        if hA_rescale == hC_rescale == 1:
-            hD_rescale = hB_rescale
-        elif hA_rescale == hB_rescale == 1:
-            hD_rescale = hC_rescale
-        else:
-            hD_rescale = bounded(hA_rescale, hB_rescale, hC_rescale)
+        hD_rescale = bounded(hA_rescale, hB_rescale, hC_rescale)
         hD = yD - outerD.y_max + outerD.height() * hD_rescale
 
         innerD = Rectangle.fromTopLeft(Point(xD, yD), wD, hD)

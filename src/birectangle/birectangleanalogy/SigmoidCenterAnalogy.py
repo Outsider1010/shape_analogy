@@ -32,29 +32,13 @@ class SigmoidCenterAnalogy(BiRectangleAnalogy):
         wA_rescale = BRA.innerRectangle.width() / BRA.outerRectangle.width()
         wB_rescale = BRB.innerRectangle.width() / BRB.outerRectangle.width()
         wC_rescale = BRC.innerRectangle.width() / BRC.outerRectangle.width()
-
-        # if-elif added
-        if wA_rescale == wC_rescale:
-            wD_rescale = wB_rescale
-        elif wA_rescale == wB_rescale:
-            wD_rescale = wC_rescale
-        elif wA_rescale == wC_rescale:
-            wD_rescale = wB_rescale
-        else:
-            wD_rescale = bounded(wA_rescale, wB_rescale, wC_rescale)
+        wD_rescale = bounded(wA_rescale, wB_rescale, wC_rescale)
         wD = wOuterD * wD_rescale
 
         hA_rescale = BRA.innerRectangle.height() / BRA.outerRectangle.height()
         hB_rescale = BRB.innerRectangle.height() / BRB.outerRectangle.height()
         hC_rescale = BRC.innerRectangle.height() / BRC.outerRectangle.height()
-
-        # if-elif added
-        if hA_rescale == hC_rescale:
-            hD_rescale = hB_rescale
-        elif hA_rescale == hB_rescale:
-            hD_rescale = hC_rescale
-        else:
-            hD_rescale = bounded(hA_rescale, hB_rescale, hC_rescale)
+        hD_rescale = bounded(hA_rescale, hB_rescale, hC_rescale)
         hD = hOuterD * hD_rescale
 
         innerD = Rectangle.fromCenter(Point(xD, yD), wD, hD)

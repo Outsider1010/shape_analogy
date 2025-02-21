@@ -8,7 +8,7 @@ SA = PixelShape(img="resources/ellipse_1.bmp")
 SB = PixelShape(img="resources/ellipse_2.bmp")
 SC = PixelShape(img="resources/ellipse_3.bmp")
 
-m = BiRectangleMethod(BRAnalogy=SigmoidTopLeftAnalogy)
+m = BiRectangleMethod(BRAnalogy=SigmoidCenterAnalogy)
 shape_res, full_array = m.analogy(SA, SB, SC)
 if full_array is not None:
     arr = resize2D(full_array, 300, 300)

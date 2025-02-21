@@ -24,7 +24,7 @@ class BiRectangleMethod(ShapeAnalogy):
         self.maxIteration = maxIteration
 
     def analogy(self, SA : Shape, SB : Shape, SC : Shape) -> tuple[PixelShape | Shape | None, np.ndarray | None]:
-        # list of regions where no subshape could be obtained (not solvable equations)
+        # list of regions where no subshape could be obtained (unsolvable equations)
         unresolved: list[Rectangle] = []
         res = self.__analogy(SA, SB, SC, self.maxIteration, unresolved)
         if res is not None:
@@ -65,7 +65,7 @@ class BiRectangleMethod(ShapeAnalogy):
         try:
             birectangle_d = self.biRectangleAnalogy.analogy(*birectangles)
         except AssertionError as e:
-            lgg.warning(f"{e}. Analogy unsolved.")
+            lgg.warning(f" {e}. Analogy unsolved.")
             return None
 
         d = PixelShape(rect=birectangle_d.innerRectangle)
