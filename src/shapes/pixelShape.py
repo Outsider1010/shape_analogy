@@ -7,6 +7,10 @@ from src.birectangle.BiRectangle import BiRectangle
 from src.birectangle.Rectangle import Rectangle
 from . shape import Shape
 from PIL import Image
+
+from ..utils import resize2D, toImage
+
+
 # DO NOT IMPORT STRATEGIES
 
 class PixelShape(Shape):
@@ -20,7 +24,7 @@ class PixelShape(Shape):
                "One of the parameters (array, img or rect) must be set"
 
         if img is not None:
-            array = np.where(np.array(Image.open(img)) == 0, True, False)
+            array = np.array(Image.open(img)) == 0
 
         if rect is not None:
             h, w = (ceil(max(2 * abs(rect.y_min), 2 * abs(rect.y_max))),
@@ -36,14 +40,14 @@ class PixelShape(Shape):
         assert w % 2 == 0 and h % 2 == 0, f"Dimensions (w = {h}, h = {w}) must be even."
         self.pixels: np.ndarray[bool] = array
 
-    def fromShape(self, x_min, x_max, y_min, y_max):
-        h, w = ceil(max(2 * abs(y_min), 2 * abs(y_max))), ceil(max(2 * abs(x_min), 2 * abs(x_max)))
+    def fromShape(self, r: Rectangle):
+        h, w = ceil(max(2 * abs(r.y_min), 2 * abs(r.y_max))), ceil(max(2 * abs(r.x_min), 2 * abs(r.x_max)))
         if w % 2 != 0:
             w += 1
         if h % 2 != 0:
             h += 1
         array = np.zeros((h, w), dtype=bool)
-        self.__set_values_from_this(array, x_min, x_max, y_min, y_max)
+        self.__set_values_from_this(array, r.x_min, r.x_max, r.y_min, r.y_max)
         return PixelShape(array=array)
 
     def __set_values_from_this(self, arr, x_min, x_max, y_min, y_max):
@@ -61,13 +65,13 @@ class PixelShape(Shape):
 
         arr[b2:b1, b3:b4] |= self.pixels[c2:c1, c3:c4]
 
-    def merge(self, other):
+    def __add__(self, other):
         h1, w1 = self.dim()
         h2, w2 = other.dim()
         array = np.zeros((max(h1, h2), max(w1, w2)), dtype=bool)
         self.__set_values_from_this(array, - w1 / 2, w1 / 2, - h1 / 2, h1 / 2)
         other.__set_values_from_this(array, - w2 / 2, w2 / 2, - h2 / 2, h2 / 2)
-        self.pixels = array
+        return PixelShape(array)
 
     def getOuterRectangle(self) -> Rectangle:
         h, w = self.pixels.shape
@@ -93,9 +97,7 @@ class PixelShape(Shape):
         return self.pixels[int(self.height() / 2 - y), int(x + self.width() / 2)]
 
     def resize(self, min_w = 2, min_h = 2):
-        assert min_w % 2 == 0, f"Minimum width {min_w} must be even."
-        assert min_h % 2 == 0, f"Minimum height {min_h} must be even."
-        self.merge(PixelShape(array=np.zeros((min_h, min_w), dtype=bool)))
+        return PixelShape(array=resize2D(self.pixels, min_w, min_h))
 
     def __eq__(self, other):
         if not isinstance(other, PixelShape):
@@ -123,8 +125,7 @@ class PixelShape(Shape):
         return self.pixels.shape
 
     def toImage(self, name="default.bmp"):
-        img = Image.fromarray(np.uint8(np.where(self.pixels, 0, 255)), 'L')
-        img.save('resources/' + name)
+        toImage(np.uint8((1 - self.pixels) * 255))
 
     def toSinogram(self, maxAngle = 180.):
         # useful ?
