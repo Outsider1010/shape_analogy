@@ -12,14 +12,14 @@ class MainView(ttk.Frame, ViewInterface):
         self.mode = 0
         self.biRectanglesMode()
         self.startView = StartView(self, model)
-        
-        self.startView.pack(side="bottom",pady=20)
+        self.startView.pack(side="bottom", pady=20)
        
     def tomographicMode(self):
         pass
+
     def biRectanglesMode(self):
         if self.mode==1:
             self.tomographicView.forget_pack()
         self.BirectanglesView.pack(fill="both", expand=True)
-        #StartView 
+        #StartView
         

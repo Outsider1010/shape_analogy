@@ -2,6 +2,7 @@ from tkinter import ttk
 from src.view.ViewSelectShape import ViewSelectShape
 from tkinter.filedialog import askopenfilename
 from src.view.ResultView import ResultView
+
 class ViewShape(ttk.Frame):
     def __init__(self, parent,model):
         self.model = model
@@ -27,18 +28,21 @@ class ViewShape(ttk.Frame):
        
     def selectFirstShape(self):
         shapeFile = self.__ask()
-        if(shapeFile!=() and shapeFile != ""):
+        if shapeFile!=() and shapeFile != "":
             self.model.setShape(0,shapeFile)
         return shapeFile
+
     def selectSecondShape(self):
         shapeFile = self.__ask()
-        if(shapeFile!=() and shapeFile != ""):
+        if shapeFile!=() and shapeFile != "":
             self.model.setShape(1,shapeFile)
         return shapeFile
+
     def selectThirdShape(self):
         shapeFile = self.__ask()
-        if(shapeFile!=() and shapeFile != ""):
+        if shapeFile!=() and shapeFile != "":
             self.model.setShape(2,shapeFile)
         return shapeFile
+
     def __ask(self):
-        return askopenfilename(filetypes=[("PNG files", "*.png"),("JPEG files", "*.jpeg"),("BMP files","*.bmp")])
+        return askopenfilename(filetypes=[("BMP files","*.bmp")])
