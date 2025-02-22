@@ -1,8 +1,9 @@
+import matplotlib.pyplot as plt
+
 from src.birectangle.BiRectangle import BiRectangle
 from src.birectangle.Rectangle import Rectangle
 from src.birectangle.cuttingmethod.CuttingMethod import CuttingMethod
 from src.shapes.pixelShape import PixelShape
-from src.utils import drawHLine, drawVLine
 
 
 class CuttingIn8Method(CuttingMethod):
@@ -21,30 +22,26 @@ class CuttingIn8Method(CuttingMethod):
         return 8
 
     def cutBiRectangle(self, biRectangle: BiRectangle) -> list[Rectangle]:
-        big_r = biRectangle.outerRectangle
-        little_r = biRectangle.innerRectangle
-        return [Rectangle(big_r.x_min, little_r.x_min, little_r.y_max, big_r.y_max),
-                Rectangle(little_r.x_min, little_r.x_max, little_r.y_max, big_r.y_max),
-                Rectangle(little_r.x_max, big_r.x_max, little_r.y_max, big_r.y_max),
-                Rectangle(big_r.x_min, little_r.x_min, little_r.y_min, little_r.y_max),
-                Rectangle(little_r.x_max, big_r.x_max, little_r.y_min, little_r.y_max),
-                Rectangle(big_r.x_min, little_r.x_min, big_r.y_min, little_r.y_min),
-                Rectangle(little_r.x_min, little_r.x_max, big_r.y_min, little_r.y_min),
-                Rectangle(little_r.x_max, big_r.x_max, big_r.y_min, little_r.y_min)]
+        innerR, outerR = biRectangle
+        return [Rectangle(outerR.x_min, innerR.x_min, innerR.y_max, outerR.y_max),
+                Rectangle(innerR.x_min, innerR.x_max, innerR.y_max, outerR.y_max),
+                Rectangle(innerR.x_max, outerR.x_max, innerR.y_max, outerR.y_max),
+                Rectangle(outerR.x_min, innerR.x_min, innerR.y_min, innerR.y_max),
+                Rectangle(innerR.x_max, outerR.x_max, innerR.y_min, innerR.y_max),
+                Rectangle(outerR.x_min, innerR.x_min, outerR.y_min, innerR.y_min),
+                Rectangle(innerR.x_min, innerR.x_max, outerR.y_min, innerR.y_min),
+                Rectangle(innerR.x_max, outerR.x_max, outerR.y_min, innerR.y_min)]
 
     def cutPixels(self, pixelShape: PixelShape, biRectangle: BiRectangle) -> list[PixelShape]:
         return [pixelShape.fromShape(r) for r in self.cutBiRectangle(biRectangle)]
 
-    def drawCuttingLines(self, biRectangle: BiRectangle, img_array, color):
-        big_r = biRectangle.outerRectangle
-        little_r = biRectangle.innerRectangle
-        drawHLine(img_array, big_r.x_min, little_r.x_min, little_r.y_max, color)
-        drawHLine(img_array, big_r.x_min, little_r.x_min, little_r.y_min, color)
-        drawHLine(img_array, little_r.x_max, big_r.x_max, little_r.y_min, color)
-        drawHLine(img_array, little_r.x_max, big_r.x_max, little_r.y_max, color)
-        drawVLine(img_array, little_r.y_max, big_r.y_max, little_r.x_min, color)
-        drawVLine(img_array, little_r.y_max, big_r.y_max, little_r.x_max, color)
-        drawVLine(img_array, big_r.y_min, little_r.y_min, little_r.x_min, color)
-        drawVLine(img_array, big_r.y_min, little_r.y_min, little_r.x_max, color)
-
-
+    def plotCuttingLines(self, biRectangle: BiRectangle):
+        innerR, outerR = biRectangle
+        plt.plot([outerR.x_min, innerR.x_min], [innerR.y_max] * 2, "g", linestyle="--")
+        plt.plot([outerR.x_min, innerR.x_min], [innerR.y_min] * 2, "g", linestyle="--")
+        plt.plot([innerR.x_max, outerR.x_max], [innerR.y_min] * 2, "g", linestyle="--")
+        plt.plot([innerR.x_max, outerR.x_max], [innerR.y_max] * 2, "g", linestyle="--")
+        plt.plot([innerR.x_min] * 2, [innerR.y_max, outerR.y_max], "g", linestyle="--")
+        plt.plot([innerR.x_max] * 2, [innerR.y_max, outerR.y_max], "g", linestyle="--")
+        plt.plot([innerR.x_min] * 2, [outerR.y_min, innerR.y_min], "g", linestyle="--")
+        plt.plot([innerR.x_max] * 2, [outerR.y_min, innerR.y_min], "g", linestyle="--")

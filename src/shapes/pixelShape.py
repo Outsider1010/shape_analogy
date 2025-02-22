@@ -128,7 +128,10 @@ class PixelShape(Shape):
         return self.pixels.shape
 
     def toImage(self, name="default.bmp"):
-        toImage(np.uint8((1 - self.pixels) * 255), name=name)
+        toImage(self.grayscale(), name=name)
+
+    def grayscale(self) -> np.ndarray:
+        return np.uint8((1 - self.pixels) * 255)
 
     def toSinogram(self, maxAngle = 180.):
         # useful ?

@@ -1,4 +1,4 @@
-from math import ceil
+from matplotlib import pyplot as plt
 
 from src.birectangle.Point import Point
 
@@ -39,6 +39,16 @@ class Rectangle:
     def area(self) -> float:
         return self.width() * self.height()
 
+    def set_x(self, new_x_min: float, new_x_max: float) -> None:
+        assert new_x_min <= new_x_max, f"Negative width: w = {new_x_max - new_x_min}"
+        self.x_min = new_x_min
+        self.x_max = new_x_max
+
+    def set_y(self, new_y_min: float, new_y_max: float) -> None:
+        assert new_y_min <= new_y_max, f"Negative height: h = {new_y_max - new_y_min}"
+        self.y_min = new_y_min
+        self.y_max = new_y_max
+
     def rectangle_from_ratios(self, r_x_min, r_x_max, r_y_min, r_y_max):
         w, h = self.width(), self.height()
         x_min = self.x_min + w * r_x_min
@@ -75,16 +85,16 @@ class Rectangle:
         right_condition = self.x_max >= r.x_max
         return bottom_condition and top_condition and left_condition and right_condition
 
-    def drawOnImage(self, img_array, color):
-        h, w, _ = img_array.shape
-        y_min = int(h / 2 - self.y_max)
-        y_max = ceil(h / 2 - self.y_min) - 1
-        x_min = int(self.x_min + w / 2)
-        x_max = ceil(self.x_max + w / 2) - 1
-        img_array[y_min:y_max, x_max, :] = color
-        img_array[y_min:y_max, x_min, :] = color
-        img_array[y_min, x_min:x_max, :] = color
-        img_array[y_max, x_min:x_max, :] = color
+    def plotBorder(self, color: str, alpha = 0.5, zorder = 3) -> None:
+        # TODO: compare the time with the patches version
+        plt.plot([self.x_min] * 2, [self.y_min, self.y_max], color, alpha=alpha, zorder=zorder)
+        plt.plot([self.x_max] * 2, [self.y_min, self.y_max], color, alpha=alpha, zorder=zorder)
+        plt.plot([self.x_min, self.x_max], [self.y_max] * 2, color, alpha=alpha, zorder=zorder)
+        plt.plot([self.x_min, self.x_max], [self.y_min] * 2, color, alpha=alpha, zorder=zorder)
+
+    def plotFilled(self, color: str, zorder: int) -> None:
+        plt.fill([self.x_min, self.x_min, self.x_max, self.x_max],
+                 [self.y_min, self.y_max, self.y_max, self.y_min], color, zorder=zorder)
 
 
 def greatest_common_rectangle_ratio(r_a: Rectangle, big_r_a: Rectangle,

@@ -7,7 +7,9 @@ from src.shapes.pixelShape import PixelShape
 
 
 class LargestRectangleFinder(InnerRectangleFinder):
-
+    """
+    Find the largest interior axis aligned rectangle of a shape.
+    """
     def findInnerRectanglePixels(self, shape: PixelShape) -> Rectangle:
         # find the largest interior rectangle
         topLeft_x, topLeft_y, w, h = lir.lir(shape.pixels)
