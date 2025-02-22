@@ -74,6 +74,9 @@ class PixelShape(Shape):
         return PixelShape(array)
 
     def getOuterRectangle(self) -> Rectangle:
+        # empty shape
+        if self.isEmpty():
+            return Rectangle(0, 0, 0, 0)
         h, w = self.pixels.shape
         ind = np.unravel_index(np.argmax(self.pixels), self.pixels.shape)[0]
         y_max = h / 2 - ind

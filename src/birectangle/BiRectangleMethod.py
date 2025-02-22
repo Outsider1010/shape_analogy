@@ -1,5 +1,7 @@
 import logging as lgg
 
+from matplotlib.pyplot import margins
+
 from src.ShapeAnalogy import ShapeAnalogy
 from src.birectangle.BiRectangle import BiRectangle
 from src.birectangle.birectangleanalogy.BiRectangleAnalogy import BiRectangleAnalogy
@@ -17,14 +19,15 @@ PLOT_ASSERT = ("`plot` keyword should be set to `step` to see every step, `last`
                "if only the resulting shape is needed. Or an integer between `0` and `maxDepth` to see only steps with"
                "a depth lower than `plot`.")
 
-def set_axis_and_show(maxDim, showD = False) -> None:
+def set_axis_and_show(x_min, x_max, y_min, y_max, showD = False) -> None:
     for x in ('A', 'B', 'C', 'D'):
         # a figure for shape D may not appear (if the equation was not solved)
         if not showD and x == 'D':
             continue
+        print(x)
         plt.figure(x)
         plt.axis('square')
-        plt.axis((- maxDim / 2, maxDim / 2, - maxDim / 2, maxDim / 2))
+        plt.axis((x_min, x_max, y_min, y_max))
     plt.show()
 
 
@@ -57,12 +60,10 @@ class BiRectangleMethod(ShapeAnalogy):
         :return: A shape D or None if the analogy could not be solved
         """
         shapes = (SA, SB, SC)
+        d = None
         empty_ = tuple(s.isEmpty() for s in shapes)
         asPixels = tuple(s.toPixelShape() for s in shapes)
-
-        d = None
-        # to have all shapes fully visible with the same scale
-        maxDim = -1.
+        outerRectangles = [s.getOuterRectangle() for s in shapes]
         try:
             # solving equation ø : ø :: c : ? with solution c (2)
             if empty_[0] and empty_[1]:
@@ -78,11 +79,12 @@ class BiRectangleMethod(ShapeAnalogy):
             elif any(empty_):
                 lgg.warning(" Unsolvable equation with empty shape(s). Analogy unsolved.")
             else:
-                birectangles = tuple(
-                    BiRectangle(s.getOuterRectangle(), s.getInnerRectangle(self.innerRectFinder)) for s in shapes)
+                birectangles = []
                 for i in range(3):
+                    b = BiRectangle(outerRectangles[i], shapes[i].getInnerRectangle(self.innerRectFinder))
                     # prevents the inner rectangle from touching the outerRectangle (if epsilon > 0)
-                    birectangles[i].separate(self.epsilon)
+                    b.separate(self.epsilon)
+                    birectangles.append(b)
                 birectangle_d = self.biRectangleAnalogy.analogy(*birectangles)
                 innerRD, outerRD = birectangle_d
                 d = PixelShape(rect=innerRD)
@@ -103,8 +105,8 @@ class BiRectangleMethod(ShapeAnalogy):
 
                 if self.__plotting(k):
                     for i in range(3):
-                        # plot A, B, C, their rectangles and the cutting lines
-                        maxDim = max(maxDim, self.__plot_mat(chr(ord("A") + i), asPixels[i], k))
+                        plt.figure(chr(ord("A") + i))
+                        # plot A, B, C bi-rectangles and the cutting lines
                         birectangles[i].outerRectangle.plotBorder("r")
                         birectangles[i].innerRectangle.plotBorder("b")
                         self.cuttingMethod.plotCuttingLines(birectangles[i])
@@ -115,16 +117,23 @@ class BiRectangleMethod(ShapeAnalogy):
                     innerRD.plotBorder("b")
                     innerRD.plotFilled("k", zorder=3)
                     self.cuttingMethod.plotCuttingLines(birectangle_d)
-                    maxDim = max(maxDim, outerRD.width(), innerRD.height())
+                    outerRectangles.append(outerRD)
             # plot A, B and C in case one of the shapes was empty, and we solved it without entering the 'else'
-            if maxDim == -1. and self.__plotting(k):
+            if self.__plotting(k):
                 for i in range(3):
-                    maxDim = max(maxDim, self.__plot_mat(chr(ord("A") + i), asPixels[i], k))
+                    self.__plot_mat(chr(ord("A") + i), asPixels[i], k)
         except AssertionError as e:
             lgg.warning(f" {e}. Analogy unsolved.")
 
         if self.__plotting(k):
-            set_axis_and_show(maxDim + 5, showD=d is not None)
+            # to have all shapes fully visible with the same scale
+            # TODO : improve with one loop
+            margin = 5
+            plt_x_min = min(r.x_min for r in outerRectangles) - margin
+            plt_x_max = max(r.x_max for r in outerRectangles) + margin
+            plt_y_min = min(r.y_min for r in outerRectangles) - margin
+            plt_y_max = max(r.y_max for r in outerRectangles) + margin
+            set_axis_and_show(plt_x_min, plt_x_max, plt_y_min, plt_y_max, showD=d is not None)
         return d
 
     def __plotting(self, k):
@@ -140,17 +149,17 @@ class BiRectangleMethod(ShapeAnalogy):
         plt.title('Press Enter to stop plotting, Space to skip to the end \nand any other key to continue step by step')
         plt.xlabel(f"depth = {k}")
 
-    def __plot_mat(self, fig_num: str, mat: PixelShape, k) -> float:
+    def __plot_mat(self, fig_num: str, mat: PixelShape, k) -> None:
         """
         Plot a grayscale matrix (used to plot pixelShapes)
         :param fig_num: figure id where to plot
         :param mat: the matrix to plot
-        :return: the biggest dimension
+        :return: Nothing.
         """
+        print(fig_num)
         self.__set_keys_and_text(plt.figure(fig_num), k)
         h, w = mat.dim()
         plt.imshow(mat.grayscale(), cmap='gray', vmin=0, vmax=255, extent=(- w / 2, w / 2, - h / 2, h / 2))
-        return max(h, w)
 
     def __on_key_press(self, event) -> None:
         """
