@@ -6,6 +6,7 @@ from src.birectangle.Rectangle import Rectangle
 from src.birectangle.Point import Point
 
 
+# TODO: documentation
 class SigmoidCenterAnalogy(BiRectangleAnalogy):
 
     def analogy(self, BRA: BiRectangle, BRB: BiRectangle, BRC: BiRectangle) -> BiRectangle:

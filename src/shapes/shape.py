@@ -45,6 +45,14 @@ class Shape(ABC):
         pass
 
     @abstractmethod
+    def toPixelShape(self):
+        """
+        Method to transform any shape to an approximate PixelShape
+        :return: A PixelShape
+        """
+        pass
+
+    @abstractmethod
     def toSinogram(self, maxAngle: float):
         """
         Create a sinogram of the shape

@@ -6,6 +6,7 @@ from src.birectangle.Rectangle import Rectangle
 from src.birectangle.Point import Point
 
 
+# TODO: documentation
 class SigmoidTopLeftAnalogy(BiRectangleAnalogy):
     """
     Pierre-Alexandre analogy on bi-rectangles
