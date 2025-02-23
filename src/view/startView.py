@@ -17,19 +17,14 @@ class StartView(ttk.Button, ViewInterface):
         self.config(image=photo, state=DISABLED, command=self.start)
         self.image = photo
 
+
     def start(self):
-        if self.model.can_Start():
+        if self.model.can_start():
             self.model.startAnalogy()
 
-    def reagir(self):
-        print("je réagis")
-        if self.model.can_Start():
-            print("je suis actif ")
+
+    def react(self,event:tuple):
+        if self.model.can_start():
             self.config(state=NORMAL)
         else:
-            print("je suis inactif")
             self.config(state=DISABLED)
-
-    def start(self):
-        print("je demarre l'analogie")
-        self.model.startAnalogy()
