@@ -22,19 +22,18 @@ PLOT_ASSERT = ("`plot` keyword should be set to `step` to see every step, `last`
 
 def set_axis_and_show(x_min, x_max, y_min, y_max, showD = False) -> None:
     for x in ('A', 'B', 'C', 'D'):
+        plt.figure(x)
         # a figure for shape D may not appear (if the equation was not solved)
         if not showD and x == 'D':
             continue
-        plt.figure(x)
         plt.axis('square')
         plt.axis((x_min, x_max, y_min, y_max))
-    plt.figure("D").canvas.start_event_loop()
-
+    plt.show()
 
 class BiRectangleMethod(ShapeAnalogy):
 
     def __init__(self, biRectAnalogy = ExtSigmoidAnalogy(), cutMethod = FirstCuttingIn4Method(),
-                 innerRectFinder = LargestRectangleFinder(), epsilon = 0.1, maxDepth = 6, plot='last'):
+                 innerRectFinder = LargestRectangleFinder(), epsilon = 0.1, maxDepth = 100, plot='last'):
         assert isinstance(biRectAnalogy, BiRectangleAnalogy)
         assert isinstance(cutMethod, CuttingMethod)
         assert isinstance(innerRectFinder, InnerRectangleFinder)
@@ -49,8 +48,6 @@ class BiRectangleMethod(ShapeAnalogy):
         self.plot = plot
 
     def analogy(self, SA : Shape, SB : Shape, SC : Shape) -> PixelShape | None:
-        plt.ion()
-        plt.show()
         res, _, _, _ = self.__analogy(SA, SB, SC, 0)
         # reset the plot keyword (changes if keys are pressed)
         self.plot = self.initPlot
