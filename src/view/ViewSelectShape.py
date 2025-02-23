@@ -55,16 +55,16 @@ class ViewSelectShape(ttk.Frame,ViewInterface):
         imageDelete = Image.open(img_file_name)
         image = ImageOps.contain(imageDelete, (20,20), Image.Resampling.LANCZOS)   
         photo = ImageTk.PhotoImage(image)
-        self.deleteButton = ttk.Button(self, width=100, command=self.unSet_Image)
+        self.deleteButton = ttk.Button(self, width=100, command=self.unset_image)
         self.deleteButton.config(image=photo)
         self.deleteButton.image = photo
         self.deleteButton.place(relx=0,rely=0)
     
         
-    def unSet_Image(self):
+    def unset_image(self):
         self.path = None
         self.label.destroy()
-        self.model.removeShape(self.number-1)
+        self.model.removeShape(self.number)
         self.deleteButton.destroy()
         self.button.place(relx=0.5, rely=0.5, anchor="center")
         
