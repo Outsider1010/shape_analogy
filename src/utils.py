@@ -2,11 +2,11 @@ import numpy as np
 from PIL import Image
 
 
-def toImage(array, name="default.bmp"):
+def toImage(array, name="resources/default.bmp"):
     if not name.endswith(".bmp"):
         name += ".bmp"
     img = Image.fromarray(array, 'L')
-    img.save('resources/' + name)
+    img.save(name)
 
 def resize2D(array, min_w = 2, min_h = 2):
     assert min_w % 2 == 0, f"Minimum width {min_w} must be even."

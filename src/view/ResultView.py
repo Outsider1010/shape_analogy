@@ -1,9 +1,9 @@
 from tkinter import ttk,Label,BOTH
 from PIL import Image, ImageTk,ImageOps
 from src.view.ViewInterface import ViewInterface
-import pathlib, os
+from tkinter.filedialog import asksaveasfile 
 
-class ResultView(ttk.Frame, ViewInterface):
+class ResultView(ttk.Frame,ViewInterface):
 
     def __init__(self, parent,model):
         ttk.Frame.__init__(self,parent)
@@ -11,25 +11,42 @@ class ResultView(ttk.Frame, ViewInterface):
         self.label = Label(self)
         self.pack_propagate(False)
         self.configure(relief='solid', borderwidth=2)
-        self.path = "../../resources/no_shape.bmp"
-        current_dir = pathlib.Path(__file__).parent.resolve() 
-        img_path = os.path.join(current_dir, self.path)
-        self.set_image(img_path)
+        self.path = "resources/no_shape.bmp"
+        self.set_image()
 
     def resize(self, event):
         if self.path is not None:
-            current_dir = pathlib.Path(__file__).parent.resolve() 
-            img_path = os.path.join(current_dir, self.path)
-            image = Image.open(img_path)
+            image = Image.open(self.path)
             largeur, hauteur = self.winfo_width(), self.winfo_height()
+            # Redimensionner l'image tout en conservant le rapport d'aspect
             image = ImageOps.contain(image, (largeur,hauteur), Image.Resampling.LANCZOS)
-            photo = ImageTk.PhotoImage(image)
+        
+            # Créer une nouvelle image avec un fond blanc
+            new_image = Image.new("RGB", (largeur,hauteur), (255, 255, 255))
+            # Calculer la position pour centrer l'image
+            x_offset = (largeur - image.width) // 2
+            y_offset = (hauteur - image.height) // 2
+            new_image.paste(image, (x_offset, y_offset))
+            photo = ImageTk.PhotoImage(new_image)
             self.label.config(image=photo)
             self.label.image = photo
+        if self.model.hasResult():
+            img_file_name = "resources/enregistre.png"
+            imageDelete = Image.open(img_file_name)
+            image = ImageOps.contain(imageDelete, (20,20), Image.Resampling.LANCZOS)   
+            photo = ImageTk.PhotoImage(image)
+            self.deleteButton = ttk.Button(self, width=100, command=self.save_image)
+            self.deleteButton.config(image=photo)
+            self.deleteButton.image = photo
+            self.deleteButton.place(relx=0,rely=0)
     
-    def set_image(self, image_path):
+    def save_image(self):
+        save_path = asksaveasfile(filetypes = [('All Files', '*.*')] , defaultextension = [('All Files', '*.*')])
+        print(save_path.name)
+        if(save_path != () and save_path != " "):
+            self.model.save_result(save_path.name) 
+    def set_image(self):
         """Met à jour l'affichage de l'image et l'adapte parfaitement à la taille du conteneur."""
-        self.path = image_path
         self.label.destroy()
         self.label = Label(self)
         self.label.pack(fill=BOTH,expand=True)
@@ -38,9 +55,9 @@ class ResultView(ttk.Frame, ViewInterface):
         self.bind("<Configure>", self.resize)
         self.resize((self.winfo_width(), self.winfo_height()))
 
-    def reagir(self):
+    def react(self,event:str):
         if self.model.hasResult():
-            self.path = "../../resources/default.bmp"   
+            self.path = "resources/default.bmp"   
         else:
-            self.path = "../../resources/no_shape.bmp"
-        self.set_image(self.path)
+            self.path = "resources/no_shape.bmp"
+        self.set_image()

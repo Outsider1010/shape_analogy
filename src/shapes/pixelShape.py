@@ -124,8 +124,8 @@ class PixelShape(Shape):
     def dim(self) -> tuple[int, int]:
         return self.pixels.shape
 
-    def toImage(self, name="default.bmp"):
-        toImage(np.uint8((1 - self.pixels) * 255))
+    def toImage(self, name="resources/default.bmp"):
+        toImage(np.uint8((1 - self.pixels) * 255),name)
 
     def toSinogram(self, maxAngle = 180.):
         # useful ?
