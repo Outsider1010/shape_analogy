@@ -3,9 +3,7 @@ from src.ShapeAnalogyModel import ShapeAnalogyModel
 
 # Define the classes representing the options
 class BiRectangleOption(ttk.Frame):
-    model:ShapeAnalogyModel
-    birect_analogy_combo:ttk.Combobox
-    birect_cutting_combo:ttk.Combobox
+
     def __init__(self,root,model:ShapeAnalogyModel):
         super().__init__(root)
         self.model = model
@@ -18,6 +16,7 @@ class BiRectangleOption(ttk.Frame):
         self.birect_analogy_combo.bind("<<ComboboxSelected>>",self.select_analogy_strategy)
         self.birect_cutting_combo.bind("<<ComboboxSelected>>",self.select_cutting_strategy)
         self.birect_inner_rectangle_finder.bind("<<ComboboxSelected>>",self.select_inner_rectangle_finder_strategy)
+
     def show(self):
         self.pack(side="top")
         self.birect_inner_rectangle_finder.grid(column=2,row=0)
@@ -32,10 +31,13 @@ class BiRectangleOption(ttk.Frame):
         
     def select_analogy_strategy(self,event):
         self.model.set_birectangle_birectangleAnalogy_strategy(self.birect_analogy_combo.get())
+
     def select_cutting_strategy(self,event):
         self.model.set_birectangle_cutting_strategy(self.birect_cutting_combo.get())
+
     def select_inner_rectangle_finder_strategy(self,event):
         self.model.set_birectangle_inner_rectangle_finder_strategy(self.birect_inner_rectangle_finder.get())
+
 class TomographyOption(ttk.Frame):
     def __init__(self, root,model:ShapeAnalogyModel):
         super().__init__(root)

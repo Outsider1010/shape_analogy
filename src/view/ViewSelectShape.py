@@ -3,21 +3,22 @@ from PIL import Image, ImageTk,ImageOps
 from tkinter.filedialog import askopenfilename
 from src.view.ViewInterface import ViewInterface
 
-class ViewSelectShape(ttk.Frame,ViewInterface):
+class ViewSelectShape(ttk.Frame, ViewInterface):
+
     def __init__(self, parent, number,model):
         ttk.Frame.__init__(self,parent)
         ViewInterface.__init__(self,model)
         self.label = None
         self.deleteButton = None
         self.number = number
-        self.button = ttk.Button(self, text=f"select shape {number+1}", command = self.displayImage)
+        self.button = ttk.Button(self, text=f"select shape {chr(ord('A')+number)}", command = self.displayImage)
         self.button.place(relx=0.5, rely=0.5, anchor="center")
         self.path = None
         self.pack_propagate(False)
       
       
     def displayImage(self):
-        shapeFile = self.__ask()
+        shapeFile = askopenfilename(filetypes=[("BMP files","*.bmp")])
         if shapeFile!=() and shapeFile != "":
             self.model.setShape(self.number,shapeFile)
             self.set_image(shapeFile)
@@ -67,8 +68,4 @@ class ViewSelectShape(ttk.Frame,ViewInterface):
         self.model.removeShape(self.number)
         self.deleteButton.destroy()
         self.button.place(relx=0.5, rely=0.5, anchor="center")
-        
-        
-    def __ask(self):
-        return askopenfilename(filetypes=[("BMP files","*.bmp")])
         

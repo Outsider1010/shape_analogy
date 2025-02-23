@@ -3,7 +3,9 @@ from src.view.ViewInterface import ViewInterface
 from src.view.startView import StartView
 from src.view.ViewShape import ViewShape
 from src.view.OptionView import OptionView
+
 class MainView(ttk.Frame,ViewInterface):
+
     def __init__(self, parent, model):
         ttk.Frame.__init__(self, parent)
         ViewInterface.__init__(self, model)

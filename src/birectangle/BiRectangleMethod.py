@@ -49,6 +49,7 @@ class BiRectangleMethod(ShapeAnalogy):
             "Center dimension analogy": CenterDimAnalogy(),
             "Top left dimension analogy": TopLeftDimAnalogy()
         }
+
     def analogy(self, SA : Shape, SB : Shape, SC : Shape) -> tuple[PixelShape | Shape | None, np.ndarray | None]:
         # list of regions where no subshape could be obtained (unsolvable equations)
         unresolved: list[Rectangle] = []

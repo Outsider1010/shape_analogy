@@ -8,6 +8,7 @@ class ResultView(ttk.Frame,ViewInterface):
     def __init__(self, parent,model):
         ttk.Frame.__init__(self,parent)
         ViewInterface.__init__(self,model)
+        self.deleteButton = None
         self.label = Label(self)
         self.pack_propagate(False)
         self.configure(relief='solid', borderwidth=2)
@@ -41,10 +42,10 @@ class ResultView(ttk.Frame,ViewInterface):
             self.deleteButton.place(relx=0,rely=0)
     
     def save_image(self):
-        save_path = asksaveasfile(filetypes = [('All Files', '*.*')] , defaultextension = [('All Files', '*.*')])
-        print(save_path.name)
-        if(save_path != () and save_path != " "):
-            self.model.save_result(save_path.name) 
+        save_path = asksaveasfile(filetypes = [('bmp', '*.bmp')] , defaultextension = 'bmp')
+        if save_path != () and save_path != " ":
+            self.model.save_result(save_path.name)
+            
     def set_image(self):
         """Met à jour l'affichage de l'image et l'adapte parfaitement à la taille du conteneur."""
         self.label.destroy()

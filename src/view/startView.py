@@ -24,7 +24,6 @@ class StartView(ttk.Button, ViewInterface):
 
 
     def react(self,event:tuple):
-        print(self.model.can_start())
         if self.model.can_start():
             self.config(state=NORMAL)
         else:

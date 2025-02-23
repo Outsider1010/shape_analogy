@@ -3,6 +3,7 @@ from src.view.ViewSelectShape import ViewSelectShape
 from src.view.ResultView import ResultView
 
 class ViewShape(ttk.Frame):
+
     def __init__(self, parent,model):
         self.model = model
         super().__init__(parent)
@@ -11,7 +12,6 @@ class ViewShape(ttk.Frame):
             self.grid_rowconfigure(i, weight=1)  
             self.grid_columnconfigure(i, weight=1)  
 
-        
         self.button1 = ViewSelectShape(self,  0,self.model)
         self.button1.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
 
