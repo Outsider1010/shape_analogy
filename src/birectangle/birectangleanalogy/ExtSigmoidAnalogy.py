@@ -6,8 +6,12 @@ from src.birectangle.birectangleanalogy.BiRectangleAnalogy import BiRectangleAna
 from src.birectangle.rectangleanalogy.CenterDimAnalogy import CenterDimAnalogy
 
 
+# TODO: documentation
 class ExtSigmoidAnalogy(BiRectangleAnalogy):
-
+    """
+    A method to solve analogical equations on some birectangles.
+    Birectangles where the inner rectangle does not touch the outer rectangle.
+    """
     def analogy(self, BRA: BiRectangle, BRB: BiRectangle, BRC: BiRectangle) -> BiRectangle:
         outerD = CenterDimAnalogy().analogy(BRA.outerRectangle, BRB.outerRectangle, BRC.outerRectangle)
         wOuterD = outerD.width()
@@ -28,7 +32,7 @@ class ExtSigmoidAnalogy(BiRectangleAnalogy):
         BRA_inner_center = BRA.innerRectangle.center()
         BRB_inner_center = BRB.innerRectangle.center()
         BRC_inner_center = BRC.innerRectangle.center()
-        # Geometrical analogy on the rescaled inner rectangles
+
         xA_rescale = (BRA_inner_center.x - BRA.outerRectangle.x_min) / BRA.outerRectangle.width()
         xB_rescale = (BRB_inner_center.x - BRB.outerRectangle.x_min) / BRB.outerRectangle.width()
         xC_rescale = (BRC_inner_center.x - BRC.outerRectangle.x_min) / BRC.outerRectangle.width()
