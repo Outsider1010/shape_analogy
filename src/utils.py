@@ -2,13 +2,13 @@ import numpy as np
 from PIL import Image
 
 
-def toImage(array, name="default.bmp"):
+def toImage(array, name: str = "default.bmp"):
     if not name.endswith(".bmp"):
         name += ".bmp"
     img = Image.fromarray(array, 'L')
     img.save('resources/' + name)
 
-def resize2D(array, min_w = 2, min_h = 2):
+def resize2D(array, min_w: int = 2, min_h: int = 2):
     assert min_w % 2 == 0, f"Minimum width {min_w} must be even."
     assert min_h % 2 == 0, f"Minimum height {min_h} must be even."
     h, w = array.shape

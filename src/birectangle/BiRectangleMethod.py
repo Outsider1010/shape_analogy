@@ -14,12 +14,12 @@ from src.shapes.shape import Shape
 
 class BiRectangleMethod(ShapeAnalogy):
 
-    def __init__(self, BRAnalogy = ExtSigmoidAnalogy, CutMethod = FirstCuttingIn4Method,
-                 InnerRectangle = LargestRectangleFinder, epsilon = 0.1, maxIteration = 3000):
+    def __init__(self, BRAnalogy = ExtSigmoidAnalogy(), CutMethod = FirstCuttingIn4Method(),
+                 InnerRectangle = LargestRectangleFinder(), epsilon: float = 0.1, maxIteration: int = 3000):
         assert epsilon < 0.5, f"Epsilon value ({epsilon}) is too high (should be < 0.5)"
-        self.biRectangleAnalogy = BRAnalogy()
-        self.cuttingMethod = CutMethod()
-        self.innerRectangleFinder = InnerRectangle()
+        self.biRectangleAnalogy = BRAnalogy
+        self.cuttingMethod = CutMethod
+        self.innerRectangleFinder = InnerRectangle
         self.epsilon = epsilon
         self.maxIteration = maxIteration
 
