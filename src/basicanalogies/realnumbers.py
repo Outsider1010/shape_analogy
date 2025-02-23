@@ -23,7 +23,7 @@ def geometric(a: float, b: float, c: float) -> float:
 
 def bounded(a: float, b: float, c: float) -> float:
     """
-    Realize a particular analogical proportion on ]0, 1[ to solve the equation `a`:`b`::`c`:?
+    Realize a particular analogical proportion on (0, 1) to solve the equation `a`:`b`::`c`:?
     :param a: a real number between 0 and 1 `a`
     :param b: a real number between 0 and 1 `b`
     :param c: a real number between 0 and 1 `c`

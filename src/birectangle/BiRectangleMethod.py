@@ -28,7 +28,7 @@ def set_axis_and_show(x_min, x_max, y_min, y_max, showD = False) -> None:
         plt.figure(x)
         plt.axis('square')
         plt.axis((x_min, x_max, y_min, y_max))
-    plt.show()
+    plt.figure("D").canvas.start_event_loop()
 
 
 class BiRectangleMethod(ShapeAnalogy):
@@ -49,6 +49,8 @@ class BiRectangleMethod(ShapeAnalogy):
         self.plot = plot
 
     def analogy(self, SA : Shape, SB : Shape, SC : Shape) -> PixelShape | None:
+        plt.ion()
+        plt.show()
         res, _, _, _ = self.__analogy(SA, SB, SC, 0)
         # reset the plot keyword (changes if keys are pressed)
         self.plot = self.initPlot
@@ -224,8 +226,11 @@ class BiRectangleMethod(ShapeAnalogy):
             self.plot = 'last'
         if event.key in "0123456789":
             self.plot = int(event.key)
-        # Close all plot windows and clears everything
-        plt.close('all')
+        # simply clear but keeps the window
+        for x in ('A', 'B', 'C', 'D'):
+            fig = plt.figure(x)
+            fig.clear()
+            fig.canvas.stop_event_loop()
 
     def setBiRectangleAnalogy(self, biRectAnalogy: BiRectangleAnalogy) -> None:
         assert isinstance(biRectAnalogy, BiRectangleAnalogy)

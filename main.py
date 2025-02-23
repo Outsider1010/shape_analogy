@@ -1,6 +1,4 @@
 from src.birectangle.BiRectangleMethod import BiRectangleMethod
-from src.birectangle.birectangleanalogy.SigmoidCenterAnalogy import SigmoidCenterAnalogy
-from src.birectangle.birectangleanalogy.SigmoidTopLeftAnalogy import SigmoidTopLeftAnalogy
 from src.shapes.pixelShape import PixelShape
 
 SA = PixelShape(img="resources/ellipse_1.bmp")
