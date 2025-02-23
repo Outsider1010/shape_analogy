@@ -1,17 +1,16 @@
 from tkinter import ttk,DISABLED,NORMAL
 from PIL import Image, ImageTk, ImageOps
 from src.view.ViewInterface import ViewInterface
-import pathlib, os
+
 
 class StartView(ttk.Button, ViewInterface):
 
     def __init__(self, parent, model):
         ttk.Button.__init__(self, parent)
         ViewInterface.__init__(self, model)
-        img_file_name = "../../resources/play.png"
-        current_dir = pathlib.Path(__file__).parent.resolve()
-        img_path = os.path.join(current_dir, img_file_name)
-        imageStart = Image.open(img_path)
+        img_file_name = "resources/play.png"
+       
+        imageStart = Image.open(img_file_name)
         image = ImageOps.contain(imageStart, (100,50), Image.Resampling.LANCZOS)
         photo = ImageTk.PhotoImage(image)
         self.config(image=photo, state=DISABLED, command=self.start)
