@@ -216,9 +216,11 @@ class BiRectangleMethod(ShapeAnalogy):
         :param event: event giving access to the pressed key
         :return: Nothing.
         """
-        if event.key == "enter":
-            self.plot = "none"
-        if event.key == " ":
+        if event.key == 'shift':
+            return
+        if event.key == 'enter':
+            self.plot = 'none'
+        if event.key == ' ':
             self.plot = 'last'
         if event.key in "0123456789":
             self.plot = int(event.key)
