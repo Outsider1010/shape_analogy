@@ -82,3 +82,6 @@ class ShapeAnalogyModel:
         self.analogyMethod.set_inner_rectangle_finder_method(strategy)
     def get_birectangle_inner_rectangle_finder_strategy_values(self):
         return self.analogyMethod.get_inner_rectangle_finder_values()
+    
+    def save_result(self,save_path):
+       self.result.toImage(save_path)
