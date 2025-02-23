@@ -1,9 +1,9 @@
 import logging as lgg
-
-from matplotlib.pyplot import margins
+import numpy as np
 
 from src.ShapeAnalogy import ShapeAnalogy
 from src.birectangle.BiRectangle import BiRectangle
+from src.birectangle.Rectangle import Rectangle
 from src.birectangle.birectangleanalogy.BiRectangleAnalogy import BiRectangleAnalogy
 from src.birectangle.birectangleanalogy.ExtSigmoidAnalogy import ExtSigmoidAnalogy
 from src.birectangle.cuttingmethod.CuttingMethod import CuttingMethod
@@ -19,12 +19,12 @@ PLOT_ASSERT = ("`plot` keyword should be set to `step` to see every step, `last`
                "if only the resulting shape is needed. Or an integer between `0` and `maxDepth` to see only steps with"
                "a depth lower than `plot`.")
 
+
 def set_axis_and_show(x_min, x_max, y_min, y_max, showD = False) -> None:
     for x in ('A', 'B', 'C', 'D'):
         # a figure for shape D may not appear (if the equation was not solved)
         if not showD and x == 'D':
             continue
-        print(x)
         plt.figure(x)
         plt.axis('square')
         plt.axis((x_min, x_max, y_min, y_max))
@@ -35,6 +35,9 @@ class BiRectangleMethod(ShapeAnalogy):
 
     def __init__(self, biRectAnalogy = ExtSigmoidAnalogy(), cutMethod = FirstCuttingIn4Method(),
                  innerRectFinder = LargestRectangleFinder(), epsilon = 0.1, maxDepth = 6, plot='last'):
+        assert isinstance(biRectAnalogy, BiRectangleAnalogy)
+        assert isinstance(cutMethod, CuttingMethod)
+        assert isinstance(innerRectFinder, InnerRectangleFinder)
         assert epsilon < 0.5, f"Epsilon value ({epsilon}) is too high (should be < 0.5)"
         assert (type(plot) == int and 0 <= int(plot) <= maxDepth) or plot in ['step', 'last', 'none'], PLOT_ASSERT
         self.biRectangleAnalogy = biRectAnalogy
@@ -46,120 +49,166 @@ class BiRectangleMethod(ShapeAnalogy):
         self.plot = plot
 
     def analogy(self, SA : Shape, SB : Shape, SC : Shape) -> PixelShape | None:
-        res = self.__analogy(SA, SB, SC, 0)
+        res, _, _, _ = self.__analogy(SA, SB, SC, 0)
+        # reset the plot keyword (changes if keys are pressed)
         self.plot = self.initPlot
         return res
 
-    def __analogy(self, SA : Shape, SB : Shape, SC : Shape, k) -> PixelShape | None:
+    def __analogy(self, SA: Shape, SB: Shape, SC: Shape,
+                  k: int) -> tuple[PixelShape | None, list[Rectangle], list[Rectangle], PixelShape]:
         """
         Main analogy function
         :param SA: the shape A (first shape)
         :param SB: the shape B (second shape)
         :param SC: the shape C (third shape)
         :param k: the current depth
-        :return: A shape D or None if the analogy could not be solved
+        :return: A shape D or None if the analogy could not be solved, two lists of rectangles and a pixelShape
         """
         shapes = (SA, SB, SC)
         d = None
-        empty_ = tuple(s.isEmpty() for s in shapes)
+        # list of couple (rectangles, color) obtained from executions at higher depths,
+        # we plot these to be more precise
+        plt_solved_rects = []
+        plt_unsolved_rects = []
+        # a pixel shape obtained from executions at higher depths (when solved with empty shape)
+        plt_subshape = None
+        emptyA, emptyB, emptyC = tuple(s.isEmpty() for s in shapes)
         asPixels = tuple(s.toPixelShape() for s in shapes)
         outerRectangles = [s.getOuterRectangle() for s in shapes]
-        try:
-            # solving equation ø : ø :: c : ? with solution c (2)
-            if empty_[0] and empty_[1]:
-                if self.__plotting(k):
-                    self.__plot_mat("D", asPixels[2], k)
-                d = asPixels[2]
-            # solving equation ø : b :: ø : ? with solution b (1)
-            elif empty_[0] and empty_[2]:
-                if self.__plotting(k):
-                    self.__plot_mat("D", asPixels[1], k)
-                d = asPixels[1]
-            # unsolvable equations with empty shapes
-            elif any(empty_):
-                lgg.warning(" Unsolvable equation with empty shape(s). Analogy unsolved.")
-            else:
-                birectangles = []
-                for i in range(3):
-                    b = BiRectangle(outerRectangles[i], shapes[i].getInnerRectangle(self.innerRectFinder))
-                    # prevents the inner rectangle from touching the outerRectangle (if epsilon > 0)
-                    b.separate(self.epsilon)
-                    birectangles.append(b)
-                birectangle_d = self.biRectangleAnalogy.analogy(*birectangles)
-                innerRD, outerRD = birectangle_d
-                d = PixelShape(rect=innerRD)
 
-                if k < self.maxDepth:
-                    subRectangles_d = self.cuttingMethod.cutBiRectangle(birectangle_d)
-                    subshapes = tuple(shapes[i].cut(birectangles[i], self.cuttingMethod) for i in range(3))
-                    nbSubShapes = self.cuttingMethod.nbSubShapes()
-                    for i in range(nbSubShapes):
-                        subshapeA: Shape = subshapes[0][i]
-                        subshapeB: Shape = subshapes[1][i]
-                        subshapeC: Shape = subshapes[2][i]
-                        subshapeD = self.__analogy(subshapeA, subshapeB, subshapeC, k + 1)
-                        if subshapeD is not None:
-                            d = d + subshapeD
-                        elif self.__plotting(k):
-                            subRectangles_d[i].plotFilled("#f7f7f7", zorder=1)
-
-                if self.__plotting(k):
-                    for i in range(3):
-                        plt.figure(chr(ord("A") + i))
-                        # plot A, B, C bi-rectangles and the cutting lines
-                        birectangles[i].outerRectangle.plotBorder("r")
-                        birectangles[i].innerRectangle.plotBorder("b")
-                        self.cuttingMethod.plotCuttingLines(birectangles[i])
-                    # switch to shape D
-                    self.__set_keys_and_text(plt.figure("D"), k)
-                    outerRD.plotBorder("r")
-                    innerRD = birectangle_d.innerRectangle
-                    innerRD.plotBorder("b")
-                    innerRD.plotFilled("k", zorder=3)
-                    self.cuttingMethod.plotCuttingLines(birectangle_d)
-                    outerRectangles.append(outerRD)
-            # plot A, B and C in case one of the shapes was empty, and we solved it without entering the 'else'
+        # solvable equations with empty shapes
+        # ø : ø :: c : ? with solution c (2) or ø : b :: ø : ? with solution b (1)
+        if (emptyA and emptyB) or (emptyA and emptyC):
+            solution = 2 if emptyA and emptyB else 1
+            plt_subshape = d = asPixels[solution]
             if self.__plotting(k):
-                for i in range(3):
-                    self.__plot_mat(chr(ord("A") + i), asPixels[i], k)
-        except AssertionError as e:
-            lgg.warning(f" {e}. Analogy unsolved.")
+                self.__setup_fig_with_mat("D", asPixels[solution], k)
+        # unsolvable equations with empty shapes
+        elif emptyA or emptyB or emptyC:
+            lgg.warning(" Unsolvable equation with empty shape(s). Analogy unsolved.")
+        else:
+            try:
+                d = self.__non_empty_analogy(shapes, outerRectangles, plt_solved_rects,
+                                             plt_unsolved_rects, plt_subshape, k)
+            except AssertionError as e:
+                lgg.warning(f" {e}. Analogy unsolved.")
 
         if self.__plotting(k):
-            # to have all shapes fully visible with the same scale
+            for i in range(3):
+                self.__setup_fig_with_mat(chr(ord("A") + i), asPixels[i], k)
             # TODO : improve with one loop
             margin = 5
+            # to have all shapes fully visible with the same scale
             plt_x_min = min(r.x_min for r in outerRectangles) - margin
             plt_x_max = max(r.x_max for r in outerRectangles) + margin
             plt_y_min = min(r.y_min for r in outerRectangles) - margin
             plt_y_max = max(r.y_max for r in outerRectangles) + margin
             set_axis_and_show(plt_x_min, plt_x_max, plt_y_min, plt_y_max, showD=d is not None)
+        return d, plt_solved_rects, plt_unsolved_rects, plt_subshape
+
+    def __non_empty_analogy(self, shapes: tuple[Shape, ...], outerRectangles: list[Rectangle],
+                            plot_solved_rects: list[Rectangle], plot_unsolved_rects: list[Rectangle],
+                            plot_subshape: PixelShape | None, k: int) -> PixelShape:
+        """
+        The main part of the analogy function. Solves the analogy for non-empty shapes.
+        :param shapes: the shapes A, B and C
+        :param outerRectangles: the outerRectangle of each shape (Is modified)
+        :param plot_solved_rects: a list of rectangles for plot purposes. (Is modified)
+        :param plot_unsolved_rects: a list of rectangles for plot purposes (Is modified)
+        :param plot_subshape: a pixel shape for plot purposes (Is modified)
+        :param k: the current shape
+        :return: Nothing.
+        """
+        birectangles = []
+        for i in range(3):
+            b = BiRectangle(outerRectangles[i], shapes[i].getInnerRectangle(self.innerRectFinder))
+            # prevents the inner rectangle from touching the outerRectangle (if epsilon > 0)
+            b.separate(self.epsilon)
+            birectangles.append(b)
+        birectangle_d = self.biRectangleAnalogy.analogy(*birectangles)
+        innerRD, outerRD = birectangle_d
+        outerRectangles.append(outerRD)
+        d = PixelShape(rect=innerRD)
+
+        if k < self.maxDepth:
+            subRectangles_d = self.cuttingMethod.cutBiRectangle(birectangle_d)
+            subshapesA, subshapesB, subshapesC = tuple(shapes[i].cut(birectangles[i], self.cuttingMethod) for i in range(3))
+            nbSubShapes = self.cuttingMethod.nbSubShapes()
+            for i in range(nbSubShapes):
+                subshapeA = subshapesA[i]
+                subshapeB = subshapesB[i]
+                subshapeC = subshapesC[i]
+                (subshapeD, plot_solved_rects2, plot_unsolved_rects2,
+                 plot_subshape2) = self.__analogy(subshapeA, subshapeB, subshapeC, k + 1)
+                # if self.plot equals none, then no reason to store rectangles (no plot will be made)
+                if self.plot != 'none':
+                    # TODO : use linked list to improve 'extend' complexity to O(1)
+                    plot_solved_rects.extend(plot_solved_rects2)
+                    plot_unsolved_rects.extend(plot_unsolved_rects2)
+                    if plot_subshape is None:
+                        plot_subshape = plot_subshape2
+                    elif plot_subshape2 is not None:
+                        plot_subshape += plot_subshape2
+                if subshapeD is not None:
+                    d += subshapeD
+                elif self.plot != 'none':
+                    plot_unsolved_rects.append(subRectangles_d[i])
+
+        if self.plot != 'none':
+            plot_solved_rects.append(innerRD)
+        if self.__plotting(k):
+            for i in range(3):
+                # plot A, B, C, their bi-rectangles and the cutting lines
+                plt.figure(chr(ord("A") + i))
+                birectangles[i].outerRectangle.plotBorder("r")
+                birectangles[i].innerRectangle.plotBorder("b")
+                self.cuttingMethod.plotCuttingLines(birectangles[i])
+            # switch to shape D
+            self.__setup_fig_with_mat("D", plot_subshape, k)
+            outerRD.plotBorder("r")
+            innerRD.plotBorder("b")
+            self.cuttingMethod.plotCuttingLines(birectangle_d)
+            for r in plot_solved_rects:
+                r.plotFilled("k", zorder=2)
+            for r in plot_unsolved_rects:
+                r.plotFilled("#d1d1d1", zorder=1)
         return d
 
-    def __plotting(self, k):
-        return self.plot == 'step' or (self.plot == 'last' and k == 0) or (type(self.plot) == int and k <= self.plot)
-
-    def __set_keys_and_text(self, fig, k) -> None:
+    def __plotting(self, k: int) -> bool:
         """
-        Set key reaction and message
+        :param k: current depth
+        :return: True if a plot should be shown at the end of the current execution
+        """
+        return (self.plot == 'step' or (self.plot == 'last' and k == 0)
+                or (type(self.plot) == int and k <= int(self.plot)))
+
+    def __set_keys_and_text(self, fig, k: int) -> None:
+        """
+        Set key reaction and messages
         :param fig: figure reacting
+        :param k: the current depth (for text purposes)
         :return: Nothing.
         """
         fig.canvas.mpl_connect('key_press_event', self.__on_key_press)
         plt.title('Press Enter to stop plotting, Space to skip to the end \nand any other key to continue step by step')
         plt.xlabel(f"depth = {k}")
 
-    def __plot_mat(self, fig_num: str, mat: PixelShape, k) -> None:
+    def __setup_fig_with_mat(self, fig_num: str, mat: PixelShape, k: int) -> None:
         """
-        Plot a grayscale matrix (used to plot pixelShapes)
+        Switch to a figure and set up the figure text. Also plot a grayscale matrix if given
         :param fig_num: figure id where to plot
         :param mat: the matrix to plot
+        :param k: current depth (for text purposes)
         :return: Nothing.
         """
-        print(fig_num)
         self.__set_keys_and_text(plt.figure(fig_num), k)
-        h, w = mat.dim()
-        plt.imshow(mat.grayscale(), cmap='gray', vmin=0, vmax=255, extent=(- w / 2, w / 2, - h / 2, h / 2))
+        if mat:
+            h, w = mat.dim()
+            mat_to_plot = mat.grayscale()
+            # transparency when not a black pixel
+            alpha = np.ones(mat_to_plot.shape)
+            alpha[mat_to_plot != 0] = 0
+            plt.imshow(mat_to_plot, cmap='gray', vmin=0, vmax=255, alpha=alpha, extent=(- w / 2, w / 2, - h / 2, h / 2))
 
     def __on_key_press(self, event) -> None:
         """
@@ -176,24 +225,28 @@ class BiRectangleMethod(ShapeAnalogy):
         # Close all plot windows and clears everything
         plt.close('all')
 
-    def setBiRectangleAnalogy(self, bra: BiRectangleAnalogy) -> None:
-        self.biRectangleAnalogy = bra
+    def setBiRectangleAnalogy(self, biRectAnalogy: BiRectangleAnalogy) -> None:
+        assert isinstance(biRectAnalogy, BiRectangleAnalogy)
+        self.biRectangleAnalogy = biRectAnalogy
 
     def setCuttingMethod(self, cut_method: CuttingMethod) -> None:
+        assert isinstance(cut_method, CuttingMethod)
         self.cuttingMethod = cut_method
 
-    def setInnerRectangleFinder(self, irf: InnerRectangleFinder) -> None:
-        self.innerRectFinder = irf
+    def setInnerRectangleFinder(self, innerRectFinder: InnerRectangleFinder) -> None:
+        assert isinstance(innerRectFinder, InnerRectangleFinder)
+        self.innerRectFinder = innerRectFinder
 
-    def setEpsilon(self, epsilon) -> None:
+    def setEpsilon(self, epsilon: float) -> None:
         assert epsilon < 0.5, f"Epsilon value ({epsilon}) is too high (should be < 0.5)"
         self.epsilon = epsilon
 
-    def setMaxDepth(self, depth) -> None:
+    def setMaxDepth(self, depth: int) -> None:
+        assert depth >= 0
         self.maxDepth = depth
 
-    def setPlottingBehavior(self, plot):
-        assert plot in ['step', 'last', 'none'], PLOT_ASSERT
+    def setPlottingBehavior(self, plot: int | str):
+        assert (type(plot) == int and 0 <= int(plot) <= self.maxDepth) or plot in ['step', 'last', 'none'], PLOT_ASSERT
         self.plot = plot
         self.initPlot = plot
 
