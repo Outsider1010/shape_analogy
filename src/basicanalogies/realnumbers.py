@@ -60,3 +60,14 @@ def ext_bounded(a: float, b: float, c: float, Ia: tuple[float, float], Ib: tuple
     return b_inf_d + ((b_sup_d - b_inf_d) / (1 +
                                              ((b_sup_c - c) * (b_sup_b - b) * (a - b_inf_a)) / (
                                                          (c - b_inf_c) * (b - b_inf_b) * (b_sup_a - a))))
+
+
+def asc_couple(a: tuple[float, float], b: tuple[float, float], c: tuple[float, float]) -> tuple[float, float]:
+    a1, a2 = a
+    b1, b2 = b
+    c1, c2 = c
+    assert 0 <= a1 <= a2 <= 1 and a1 != 1
+    assert 0 <= b1 <= b2 <= 1 and b1 != 1
+    assert 0 <= c1 <= c2 <= 1 and c1 != 1
+    return bounded(a1, b1, c1), bounded((a2 - a1) / (1 - a1), (b2 - b1) / (1 - b1), (c2 - c1) / (1 - c1))
+
