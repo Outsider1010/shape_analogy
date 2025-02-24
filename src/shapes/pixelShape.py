@@ -18,7 +18,6 @@ class PixelShape(Shape):
     Representation of shapes using a boolean matrix with even dimensions.
     Each pixel is a square of length 1 and equals True if it is included in the shape
     """
-
     def __init__(self, array=None, img=None, rect=None, min_w = 2, min_h = 2):
         assert (array is not None) or (img is not None) or (rect is not None), \
                "One of the parameters (array, img or rect) must be set"
@@ -100,7 +99,20 @@ class PixelShape(Shape):
         return self
 
     def isPointInShape(self, x: float, y:float) -> bool:
-        return self.pixels[int(self.height() / 2 - y), int(x + self.width() / 2)]
+        h, w = self.dim()
+        x_in_mat = int(x + w / 2)
+        y_in_mat = int(h / 2 - y)
+        if x_in_mat < 0 or x_in_mat > w or y_in_mat < 0 or y_in_mat > h:
+            return False
+
+        # supposes that w and h are even else we would check for example if (x - w / 2) is an integer
+        x_is_integer = x.is_integer()
+        y_is_integer = y.is_integer()
+        # we need to check four pixels if both are integers, two if only one is and one if no one is
+        xs_to_check = (x_in_mat - 1, x_in_mat) if x_is_integer else (x_in_mat,)
+        ys_to_check = (y_in_mat - 1, y_in_mat) if y_is_integer else (y_in_mat,)
+
+        return any(0 <= x < w and 0 <= y < h and self.pixels[y, x] for x in xs_to_check for y in ys_to_check)
 
     def resize(self, min_w = 2, min_h = 2):
         return PixelShape(array=resize(self.pixels, min_w, min_h))
