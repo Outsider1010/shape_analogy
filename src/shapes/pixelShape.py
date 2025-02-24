@@ -100,7 +100,7 @@ class PixelShape(Shape):
         return self
 
     def isPointInShape(self, x: float, y:float) -> bool:
-        return self.pixels[int(self.height() / 2 - y), int(x + self.width() / 2)]
+        return self.pixels[int(self.height() / 2 - y), int(x - self.width() / 2)]
 
     def resize(self, min_w = 2, min_h = 2):
         return PixelShape(array=resize(self.pixels, min_w, min_h))
