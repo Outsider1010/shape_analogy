@@ -69,5 +69,7 @@ def asc_couple(a: tuple[float, float], b: tuple[float, float], c: tuple[float, f
     assert 0 <= a1 <= a2 <= 1 and a1 != 1
     assert 0 <= b1 <= b2 <= 1 and b1 != 1
     assert 0 <= c1 <= c2 <= 1 and c1 != 1
-    return bounded(a1, b1, c1), bounded((a2 - a1) / (1 - a1), (b2 - b1) / (1 - b1), (c2 - c1) / (1 - c1))
+    d1, d2 = bounded(a1, b1, c1), bounded((a2 - a1) / (1 - a1), (b2 - b1) / (1 - b1), (c2 - c1) / (1 - c1))
+    d2 = (1 - d1) * d2 + d1
+    return d1, d2
 
