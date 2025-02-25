@@ -22,17 +22,20 @@ PLOT_ASSERT = ("`plot` keyword should be set to `step` to see every step, `last`
 
 class BiRectangleMethod(ShapeAnalogy):
 
-    def __init__(self, biRectAnalogy = ExtSigmoidAnalogy(), cutMethod = FirstCuttingIn4Method(),
-                 innerRectFinder = LargestRectangleFinder(), epsilon = 0.1, plot='last'):
+    def __init__(self, biRectAnalogy: BiRectangleAnalogy = ExtSigmoidAnalogy(),
+                 cutMethod: CuttingMethod = FirstCuttingIn4Method(),
+                 innerRectFinder: InnerRectangleFinder = LargestRectangleFinder(),
+                 epsilon: float = 0.1, maxDepth: int = 7, plot: str | int = 'last'):
         assert isinstance(biRectAnalogy, BiRectangleAnalogy)
         assert isinstance(cutMethod, CuttingMethod)
         assert isinstance(innerRectFinder, InnerRectangleFinder)
         assert epsilon < 0.5, f"Epsilon value ({epsilon}) is too high (should be < 0.5)"
-        assert (type(plot) == int and 0 <= int(plot)) or plot in ['step', 'last', 'none'], PLOT_ASSERT
+        assert (isinstance(plot, int) and 0 <= plot) or plot in ['step', 'last', 'none'], PLOT_ASSERT
         self.biRectangleAnalogy = biRectAnalogy
         self.cuttingMethod = cutMethod
         self.innerRectFinder = innerRectFinder
         self.epsilon = epsilon
+        self.maxDepth = maxDepth
         self.initPlot = plot
         self.plot = plot
 
@@ -120,32 +123,33 @@ class BiRectangleMethod(ShapeAnalogy):
         d = PixelShape(rect=innerRD)
         plt_outerD = Rectangle(outerRD.x_min, outerRD.x_max, outerRD.y_min, outerRD.y_max)
 
-        subRectangles_d = self.cuttingMethod.cutBiRectangle(birectangle_d)
-        subshapesA, subshapesB, subshapesC = tuple(shapes[i].cut(birectangles[i], self.cuttingMethod) for i in range(3))
-        nbSubShapes = self.cuttingMethod.nbSubShapes()
-        for i in range(nbSubShapes):
-            subshapeA = subshapesA[i]
-            subshapeB = subshapesB[i]
-            subshapeC = subshapesC[i]
-            #  (basically prevent infinite loop cause cutting a pixel gives the same pixel)
-            # TODO : find a better way to do that
-            if subshapeA == shapes[0] and subshapeB == shapes[1] and subshapeC == shapes[2]:
-                continue
-            (subshapeD, plot_solved_rects2, plot_unsolved_rects2,
-             plot_subshape2) = self.__analogy(subshapeA, subshapeB, subshapeC, k + 1)
-            # if self.plot equals none, then no reason to store rectangles (no plot will be made)
-            if self.plot != 'none':
-                # TODO : use linked list to improve 'extend' complexity to O(1)
-                plot_solved_rects.extend(plot_solved_rects2)
-                plot_unsolved_rects.extend(plot_unsolved_rects2)
-                if plot_subshape is None:
-                    plot_subshape = plot_subshape2
-                elif plot_subshape2 is not None:
-                    plot_subshape += plot_subshape2
-            if subshapeD is not None:
-                d += subshapeD
-            elif self.plot != 'none':
-                plot_unsolved_rects.append(subRectangles_d[i])
+        if k <= self.maxDepth:
+            subRectangles_d = self.cuttingMethod.cutBiRectangle(birectangle_d)
+            subshapesA, subshapesB, subshapesC = tuple(shapes[i].cut(birectangles[i], self.cuttingMethod) for i in range(3))
+            nbSubShapes = self.cuttingMethod.nbSubShapes()
+            for i in range(nbSubShapes):
+                subshapeA = subshapesA[i]
+                subshapeB = subshapesB[i]
+                subshapeC = subshapesC[i]
+                #  (basically prevent infinite loop cause cutting a pixel gives the same pixel)
+                # TODO : find a better way to do that
+                if subshapeA == shapes[0] and subshapeB == shapes[1] and subshapeC == shapes[2]:
+                    continue
+                (subshapeD, plot_solved_rects2, plot_unsolved_rects2,
+                 plot_subshape2) = self.__analogy(subshapeA, subshapeB, subshapeC, k + 1)
+                # if self.plot equals none, then no reason to store rectangles (no plot will be made)
+                if self.plot != 'none':
+                    # TODO : use linked list to improve 'extend' complexity to O(1)
+                    plot_solved_rects.extend(plot_solved_rects2)
+                    plot_unsolved_rects.extend(plot_unsolved_rects2)
+                    if plot_subshape is None:
+                        plot_subshape = plot_subshape2
+                    elif plot_subshape2 is not None:
+                        plot_subshape += plot_subshape2
+                if subshapeD is not None:
+                    d += subshapeD
+                elif self.plot != 'none':
+                    plot_unsolved_rects.append(subRectangles_d[i])
 
         if self.plot != 'none':
             plot_solved_rects.append(innerRD)
@@ -251,7 +255,7 @@ class BiRectangleMethod(ShapeAnalogy):
         self.epsilon = epsilon
 
     def setPlottingBehavior(self, plot: int | str):
-        assert (type(plot) == int and 0 <= int(plot)) or plot in ['step', 'last', 'none'], PLOT_ASSERT
+        assert (isinstance(plot, int) and 0 <= plot) or plot in ['step', 'last', 'none'], PLOT_ASSERT
         self.plot = plot
         self.initPlot = plot
 

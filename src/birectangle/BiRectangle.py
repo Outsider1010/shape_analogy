@@ -10,10 +10,7 @@ class BiRectangle:
         self.outerRectangle: Rectangle = outerRectangle
 
     def __repr__(self):
-        return "Outer: " + str(self.outerRectangle) + " Inner: " + str(self.innerRectangle)
-
-    def __str__(self):
-        return "Outer: " + str(self.outerRectangle) + "\nInner: " + str(self.innerRectangle)
+        return "Outer: " + str(self.outerRectangle) + " / Inner: " + str(self.innerRectangle)
 
     def __iter__(self):
         return iter((self.innerRectangle, self.outerRectangle))

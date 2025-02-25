@@ -85,7 +85,7 @@ class Rectangle:
         right_condition = self.x_max >= r.x_max
         return bottom_condition and top_condition and left_condition and right_condition
 
-    def plotBorder(self, color: str, alpha = 0.5, zorder = 3) -> None:
+    def plotBorder(self, color: str, alpha: float = 0.5, zorder: int = 3) -> None:
         # TODO: compare the time with the patches version
         plt.plot([self.x_min] * 2, [self.y_min, self.y_max], color, alpha=alpha, zorder=zorder)
         plt.plot([self.x_max] * 2, [self.y_min, self.y_max], color, alpha=alpha, zorder=zorder)
