@@ -1,19 +1,19 @@
 import logging as lgg
+
+import matplotlib.pyplot as plt
 import numpy as np
 
 from src.ShapeAnalogy import ShapeAnalogy
 from src.birectangle.BiRectangle import BiRectangle
 from src.birectangle.Rectangle import Rectangle
 from src.birectangle.birectangleanalogy.BiRectangleAnalogy import BiRectangleAnalogy
-from src.birectangle.birectangleanalogy.ExtSigmoidAnalogy import ExtSigmoidAnalogy
+from src.birectangle.birectangleanalogy.BiSegmentAnalogy import BiSegmentAnalogy
 from src.birectangle.cuttingmethod.CuttingMethod import CuttingMethod
 from src.birectangle.cuttingmethod.FirstCuttingIn4Method import FirstCuttingIn4Method
 from src.birectangle.innerrectanglefinder.InnerRectangleFinder import InnerRectangleFinder
 from src.birectangle.innerrectanglefinder.LargestRectangleFinder import LargestRectangleFinder
 from src.shapes.pixelShape import PixelShape
 from src.shapes.shape import Shape
-import matplotlib.pyplot as plt
-
 
 PLOT_ASSERT = ("`plot` keyword should be set to `step` to see every step, `last` to see only the final step or `none` "
                "if only the resulting shape is needed. Or an integer greater than `0` to see only steps with a depth"
@@ -22,14 +22,14 @@ PLOT_ASSERT = ("`plot` keyword should be set to `step` to see every step, `last`
 
 class BiRectangleMethod(ShapeAnalogy):
 
-    def __init__(self, biRectAnalogy: BiRectangleAnalogy = ExtSigmoidAnalogy(),
+    def __init__(self, biRectAnalogy: BiRectangleAnalogy = BiSegmentAnalogy(),
                  cutMethod: CuttingMethod = FirstCuttingIn4Method(),
                  innerRectFinder: InnerRectangleFinder = LargestRectangleFinder(),
                  epsilon: float = 0.1, maxDepth: int = 7, plot: str | int = 'last'):
         assert isinstance(biRectAnalogy, BiRectangleAnalogy)
         assert isinstance(cutMethod, CuttingMethod)
         assert isinstance(innerRectFinder, InnerRectangleFinder)
-        assert epsilon < 0.5, f"Epsilon value ({epsilon}) is too high (should be < 0.5)"
+        assert 0 <= epsilon < 0.5, f"Epsilon value ({epsilon}) is too high (should be < 0.5)"
         assert (isinstance(plot, int) and 0 <= plot) or plot in ['step', 'last', 'none'], PLOT_ASSERT
         self.biRectangleAnalogy = biRectAnalogy
         self.cuttingMethod = cutMethod
@@ -39,7 +39,7 @@ class BiRectangleMethod(ShapeAnalogy):
         self.initPlot = plot
         self.plot = plot
 
-    def analogy(self, SA : Shape, SB : Shape, SC : Shape) -> PixelShape | None:
+    def analogy(self, SA: Shape, SB: Shape, SC: Shape) -> PixelShape | None:
         res, _, _, _ = self.__analogy(SA, SB, SC, 0)
         # reset the plot keyword (changes if keys are pressed)
         self.plot = self.initPlot
@@ -70,115 +70,89 @@ class BiRectangleMethod(ShapeAnalogy):
         # solvable equations with empty shapes
         # ø : ø :: c : ? with solution c (2) or ø : b :: ø : ? with solution b (1)
         if (emptyA and emptyB) or (emptyA and emptyC):
+            # 2 = C and 1 = B
             solution = 2 if emptyA and emptyB else 1
             plt_subshape = d = asPixels[solution]
-            if self.__plotting(k):
-                self.__setup_fig_with_mat("D", asPixels[solution], k)
+            outerRectangles.append(outerRectangles[solution])
         # unsolvable equations with empty shapes
         elif emptyA or emptyB or emptyC:
             lgg.warning(" Unsolvable equation with empty shape(s). Analogy unsolved.")
         else:
             try:
-                d = self.__non_empty_analogy(shapes, outerRectangles, plt_solved_rects, plt_unsolved_rects,
-                                             plt_subshape, k)
+                birectangles = []
+                for i in range(3):
+                    b = BiRectangle(outerRectangles[i], shapes[i].getInnerRectangle(self.innerRectFinder))
+                    # prevents the inner rectangle from touching the outerRectangle (if epsilon > 0)
+                    b.separate(self.epsilon)
+                    birectangles.append(b)
+                birectangle_d = self.biRectangleAnalogy.analogy(*birectangles)
+                birectangles.append(birectangle_d)
+                innerRD, outerRD = birectangle_d
+                d = PixelShape(rect=innerRD)
+                plt_outerD = outerRD.x_min, outerRD.x_max, outerRD.y_min, outerRD.y_max
+
+                if k <= self.maxDepth:
+                    subRectangles_d = self.cuttingMethod.cutBiRectangle(birectangle_d)
+                    subshapesA, subshapesB, subshapesC = tuple(
+                        shapes[i].cut(birectangles[i], self.cuttingMethod) for i in range(3))
+                    nbSubShapes = self.cuttingMethod.nbSubShapes()
+                    for i in range(nbSubShapes):
+                        subshapeA = subshapesA[i]
+                        subshapeB = subshapesB[i]
+                        subshapeC = subshapesC[i]
+                        #  (prevent useless executions cause cutting a pixel gives the same pixel if strictness = 1)
+                        if subshapeA == shapes[0] and subshapeB == shapes[1] and subshapeC == shapes[2]:
+                            continue
+                        (subshapeD, plt_solved_rects2, plt_unsolved_rects2,
+                         plt_subshape2) = self.__analogy(subshapeA, subshapeB, subshapeC, k + 1)
+                        # if self.plot equals none, then no reason to store rectangles (no plot will be made)
+                        if self.plot != 'none':
+                            # TODO : use linked list to improve 'extend' complexity to O(1)
+                            plt_solved_rects.extend(plt_solved_rects2)
+                            plt_unsolved_rects.extend(plt_unsolved_rects2)
+                            if plt_subshape is None:
+                                plt_subshape = plt_subshape2
+                            elif plt_subshape2 is not None:
+                                plt_subshape += plt_subshape2
+                        # we solved the sub analogy
+                        if subshapeD is not None:
+                            d += subshapeD
+                        elif self.plot != 'none':
+                            plt_unsolved_rects.append(subRectangles_d[i])
+
+                if self.plot != 'none':
+                    plt_solved_rects.append(innerRD)
+                if self.__plotting(k):
+                    for i in range(4):
+                        # plot bi-rectangles and cutting lines of A, B, C and D
+                        plt.figure(chr(ord("A") + i))
+                        birectangles[i].outerRectangle.plotBorder("r")
+                        birectangles[i].innerRectangle.plotBorder("b")
+                        self.cuttingMethod.plotCuttingLines(birectangles[i])
+                    for r in plt_solved_rects:
+                        plt_outerD = (min(plt_outerD[0], r.x_min), max(plt_outerD[1], r.x_max),
+                                      min(plt_outerD[2], r.y_min), max(plt_outerD[3], r.y_max))
+                        r.plotFilled("k", zorder=2)
+                    for r in plt_unsolved_rects:
+                        plt_outerD = (min(plt_outerD[0], r.x_min), max(plt_outerD[1], r.x_max),
+                                      min(plt_outerD[2], r.y_min), max(plt_outerD[3], r.y_max))
+                        r.plotFilled("#FFA500", zorder=1)
+                outerRectangles.append(Rectangle(*plt_outerD))
             except AssertionError as e:
                 lgg.warning(f" {e}. Analogy unsolved.")
 
         if self.__plotting(k):
-            for i in range(3):
-                self.__setup_fig_with_mat(chr(ord("A") + i), asPixels[i], k)
-            margin = 20
-            for i in range(4):
-                plt.figure(chr(ord("A") + i))
-                # a figure for shape D may not appear (if the equation was not solved)
-                if d is None and i == 3:
-                    continue
+            margin = 15
+            if d is None:
+                # noinspection PyTypeChecker
+                plt.figure("D").canvas.mpl_connect('key_press_event', self.__on_key_press)
+            for i in range(4 if d is not None else 3):
+                self.__setup_fig_with_mat(chr(ord("A") + i), asPixels[i] if i < 3 else plt_subshape, k)
                 plt.axis('square')
                 plt.axis((outerRectangles[i].x_min - margin, outerRectangles[i].x_max + margin,
                           outerRectangles[i].y_min - margin, outerRectangles[i].y_max + margin))
             plt.show()
         return d, plt_solved_rects, plt_unsolved_rects, plt_subshape
-
-    def __non_empty_analogy(self, shapes: tuple[Shape, ...], outerRectangles: list[Rectangle],
-                            plot_solved_rects: list[Rectangle], plot_unsolved_rects: list[Rectangle],
-                            plot_subshape: PixelShape | None, k: int) -> PixelShape:
-        """
-        The main part of the analogy function. Solves the analogy for non-empty shapes.
-        :param shapes: the shapes A, B and C
-        :param outerRectangles: the outerRectangle of each shape (Is modified)
-        :param plot_solved_rects: a list of rectangles for plot purposes. (Is modified)
-        :param plot_unsolved_rects: a list of rectangles for plot purposes (Is modified)
-        :param plot_subshape: a pixel shape for plot purposes (Is modified)
-        :param k: the current shape
-        :return: Nothing.
-        """
-        birectangles = []
-        for i in range(3):
-            b = BiRectangle(outerRectangles[i], shapes[i].getInnerRectangle(self.innerRectFinder))
-            # prevents the inner rectangle from touching the outerRectangle (if epsilon > 0)
-            b.separate(self.epsilon)
-            birectangles.append(b)
-        birectangle_d = self.biRectangleAnalogy.analogy(*birectangles)
-        innerRD, outerRD = birectangle_d
-        d = PixelShape(rect=innerRD)
-        plt_outerD = Rectangle(outerRD.x_min, outerRD.x_max, outerRD.y_min, outerRD.y_max)
-
-        if k <= self.maxDepth:
-            subRectangles_d = self.cuttingMethod.cutBiRectangle(birectangle_d)
-            subshapesA, subshapesB, subshapesC = tuple(shapes[i].cut(birectangles[i], self.cuttingMethod) for i in range(3))
-            nbSubShapes = self.cuttingMethod.nbSubShapes()
-            for i in range(nbSubShapes):
-                subshapeA = subshapesA[i]
-                subshapeB = subshapesB[i]
-                subshapeC = subshapesC[i]
-                #  (basically prevent infinite loop cause cutting a pixel gives the same pixel)
-                # TODO : find a better way to do that
-                if subshapeA == shapes[0] and subshapeB == shapes[1] and subshapeC == shapes[2]:
-                    continue
-                (subshapeD, plot_solved_rects2, plot_unsolved_rects2,
-                 plot_subshape2) = self.__analogy(subshapeA, subshapeB, subshapeC, k + 1)
-                # if self.plot equals none, then no reason to store rectangles (no plot will be made)
-                if self.plot != 'none':
-                    # TODO : use linked list to improve 'extend' complexity to O(1)
-                    plot_solved_rects.extend(plot_solved_rects2)
-                    plot_unsolved_rects.extend(plot_unsolved_rects2)
-                    if plot_subshape is None:
-                        plot_subshape = plot_subshape2
-                    elif plot_subshape2 is not None:
-                        plot_subshape += plot_subshape2
-                if subshapeD is not None:
-                    d += subshapeD
-                elif self.plot != 'none':
-                    plot_unsolved_rects.append(subRectangles_d[i])
-
-        if self.plot != 'none':
-            plot_solved_rects.append(innerRD)
-        if self.__plotting(k):
-            for i in range(3):
-                # plot A, B, C, their bi-rectangles and the cutting lines
-                plt.figure(chr(ord("A") + i))
-                birectangles[i].outerRectangle.plotBorder("r")
-                birectangles[i].innerRectangle.plotBorder("b")
-                self.cuttingMethod.plotCuttingLines(birectangles[i])
-            # switch to shape D
-            self.__setup_fig_with_mat("D", plot_subshape, k)
-            outerRD.plotBorder("r")
-            innerRD.plotBorder("b")
-            self.cuttingMethod.plotCuttingLines(birectangle_d)
-            for r in plot_solved_rects:
-                plt_outerD.x_min = min(plt_outerD.x_min, r.x_min)
-                plt_outerD.x_max = max(plt_outerD.x_max, r.x_max)
-                plt_outerD.y_min = min(plt_outerD.y_min, r.y_min)
-                plt_outerD.y_max = max(plt_outerD.y_max, r.y_max)
-                r.plotFilled("k", zorder=2)
-            for r in plot_unsolved_rects:
-                plt_outerD.x_min = min(plt_outerD.x_min, r.x_min)
-                plt_outerD.x_max = max(plt_outerD.x_max, r.x_max)
-                plt_outerD.y_min = min(plt_outerD.y_min, r.y_min)
-                plt_outerD.y_max = max(plt_outerD.y_max, r.y_max)
-                r.plotFilled("#d1d1d1", zorder=1)
-        outerRectangles.append(plt_outerD)
-        return d
 
     def __plotting(self, k: int) -> bool:
         """
@@ -258,6 +232,3 @@ class BiRectangleMethod(ShapeAnalogy):
         assert (isinstance(plot, int) and 0 <= plot) or plot in ['step', 'last', 'none'], PLOT_ASSERT
         self.plot = plot
         self.initPlot = plot
-
-
-

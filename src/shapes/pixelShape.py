@@ -12,15 +12,17 @@ from PIL import Image
 # defines how we represent too small (< 1) rectangles
 # True -> We color the pixel only if it is at least more than half
 # False -> Every pixel containing a potential point of the shape is colored
-STRICT = True
+STRICTNESS = 2
 
 def coordRangeToMatrixIndexes(arr: np.ndarray, x_min: float, x_max: float,
                               y_min: float, y_max: float) -> tuple[float, float, float, float]:
     h, w = arr.shape
-    if STRICT:
+    if STRICTNESS == 0:
+        return int(x_min + w / 2), ceil(x_max + w / 2), int(h / 2 - y_max), ceil(h / 2 - y_min)
+    elif STRICTNESS == 1:
         return round(x_min + w / 2), round(x_max + w / 2), round(h / 2 - y_max), round(h / 2 - y_min)
     else:
-        return int(x_min + w / 2), ceil(x_max + w / 2), int(h / 2 - y_max), ceil(h / 2 - y_min)
+        return ceil(x_min + w / 2), int(x_max + w / 2), ceil(h / 2 - y_max), int(h / 2 - y_min)
 
 def setRangeValue(arr: np.ndarray, value : np.ndarray | bool,
                   x_min: float, x_max: float, y_min: float, y_max: float) -> None:
