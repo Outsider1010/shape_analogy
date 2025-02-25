@@ -30,7 +30,8 @@ class BarycenterRectangleFinder(InnerRectangleFinder):
 
         Cx, Cy = center.x, center.y
 
-        Cx, Cy = 3, 1.5
+        # Test
+        # Cx, Cy = 3, 1.5
 
         # Look for the nearest point from center, which is also on the shape.
         if not shape.isPointInShape(Cx, Cy):
@@ -69,15 +70,13 @@ class BarycenterRectangleFinder(InnerRectangleFinder):
                 else:
                     nearestPixel[1] -= .5
 
-            Cx, Py = nearestPixel[0], nearestPixel[1]
+            center = Point(nearestPixel[0], nearestPixel[1])
+            Cx, Cy = center.x, center.y
 
             # [3.] Finding the longest segment.
 
 
-
-        # print("nouvelles coordonnées : ", Px, " : ", Py)
-
-
+        print("Center : ", center)
 
         # =================================================
         #                   Expanding r
