@@ -14,44 +14,73 @@ class BarycenterRectangleFinder(InnerRectangleFinder):
         matrix = shape.pixels
 
         # =================================================
-        #               Calculate the centroid
+        #               Calculating the centroid
         # =================================================
 
-        w2, h2 = shape.dim()
-
-        # ==========
-        #   STEP 1
-        # ==========
-        # Identify the border of the shape.
         h, w = shape.dim()
 
         ys, xs = np.where(matrix)
 
-        ys2 = (h / 2 - ys) - .5
-        xs2 = (xs - w / 2) + .5
+        ys = (h / 2 - ys) - .5
+        xs = (xs - w / 2) + .5
 
-        print(ys2, xs2)
+        center = Point(np.mean(xs), np.mean(ys))
 
-        # ==========
-        #   STEP 2
-        # ==========
-        # Calculate the centroid
-
-        center = Point(np.mean(xs2), np.mean(ys2))
-
-        print(center)
+        # print(center)
 
         Cx, Cy = center.x, center.y
 
-        Cx, Cy = 1.5, 2.5
+        Cx, Cy = 3, 1.5
 
         # Look for the nearest point from center, which is also on the shape.
         if not shape.isPointInShape(Cx, Cy):
+            # [1.] Finding the nearest pixel's center.
+
+            points = np.array([xs, ys]).T
+            print(points)
+
+            distances = np.linalg.norm(points - np.array([Cx, Cy]), axis=1)
+            nearest_idx = np.argmin(distances)
+            nearestPixel = points[nearest_idx]
+
+            print("Pixel le plus proche : ", nearestPixel)
+
+            # [2.] Moving the newfound point to the nearest extremity of the pixel's border.
+
+            dx = Cx - nearestPixel[0]
+            dy = Cy - nearestPixel[1]
+
+            # Conditions
+            dx_positive = dx > 0
+            dx_more_half_pix_size = np.abs(dx) >= .5
+
+            dy_positive = dy > 0
+            dy_more_half_pix_size = np.abs(dy) >= .5
+
+            if dx_more_half_pix_size:
+                if dx_positive:
+                    nearestPixel[0] += .5
+                else:
+                    nearestPixel[0] -= .5
+
+            if dy_positive:
+                if dy_more_half_pix_size:
+                    nearestPixel[1] += .5
+                else:
+                    nearestPixel[1] -= .5
+
+            Cx, Py = nearestPixel[0], nearestPixel[1]
+
+            # [3.] Finding the longest segment.
 
 
-        print("nouvelles coordonnées : ", Cx, " : ", Cy)
+
+        # print("nouvelles coordonnées : ", Px, " : ", Py)
+
+
+
         # =================================================
-        #                     Expand r
+        #                   Expanding r
         # =================================================
 
         Hx, Hy = Cx, Cy
