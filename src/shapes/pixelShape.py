@@ -1,5 +1,7 @@
+from decimal import Decimal
+
 import numpy as np
-from math import ceil
+from math import ceil, floor
 
 from matplotlib import pyplot as plt
 from skimage.transform import radon
@@ -13,22 +15,33 @@ from PIL import Image
 # defines how we represent too small (< 1) rectangles
 # True -> We color the pixel only if it is at least more than half
 # False -> Every pixel containing a potential point of the shape is colored
-STRICTNESS = 2
+STRICTNESS = 1
 
-def coordRangeToMatrixIndexes(arr: np.ndarray, x_min: float, x_max: float,
-                              y_min: float, y_max: float) -> tuple[float, float, float, float]:
+def col_round(x):
+  frac = x - floor(x)
+  if frac < 0.5: return floor(x)
+  return ceil(x)
+
+def coordRangeToMatrixIndexes(arr: np.ndarray, x_min: Decimal, x_max: Decimal,
+                              y_min: Decimal, y_max: Decimal) -> tuple[int, int, int, int]:
     h, w = arr.shape
+    mi_w = Decimal(w / 2)
+    mi_h = Decimal(h / 2)
+    prec = Decimal('0.0000001')
+    x_min = x_min.quantize(prec)
+    x_max = x_max.quantize(prec)
+    y_min = y_min.quantize(prec)
+    y_max = y_max.quantize(prec)
     if STRICTNESS == 0:
-        return int(x_min + w / 2), ceil(x_max + w / 2), int(h / 2 - y_max), ceil(h / 2 - y_min)
+        return int(x_min + mi_w), ceil(x_max + mi_w), int(mi_h - y_max), ceil(mi_h - y_min)
     elif STRICTNESS == 1:
-        return round(x_min + w / 2), round(x_max + w / 2), round(h / 2 - y_max), round(h / 2 - y_min)
+        return col_round(x_min + mi_w), col_round(x_max + mi_w), col_round(mi_h - y_max), col_round(mi_h - y_min)
     else:
-        return ceil(x_min + w / 2), int(x_max + w / 2), ceil(h / 2 - y_max), int(h / 2 - y_min)
+        return ceil(x_min + mi_w), int(x_max + mi_w), ceil(mi_h - y_max), int(mi_h - y_min)
 
 def setRangeValue(arr: np.ndarray, value : np.ndarray | bool,
-                  x_min: float, x_max: float, y_min: float, y_max: float) -> None:
+                  x_min: Decimal, x_max: Decimal, y_min: Decimal, y_max: Decimal) -> None:
     x1, x2, y1, y2 = coordRangeToMatrixIndexes(arr, x_min, x_max, y_min, y_max)
-
     if isinstance(value, bool):
         arr[y1:y2, x1:x2] = value
     else:
@@ -51,6 +64,8 @@ class PixelShape(Shape):
 
         if rect is not None:
             h, w = 2 * ceil(max(abs(rect.y_min), abs(rect.y_max))), 2 * ceil(max(abs(rect.x_min), abs(rect.x_max)))
+            h = max(h, 2)
+            w = max(w, 2)
             array = np.zeros((h, w), dtype=bool)
             setRangeValue(array, True, rect.x_min, rect.x_max, rect.y_min, rect.y_max)
 
@@ -60,6 +75,8 @@ class PixelShape(Shape):
 
     def fromShape(self, r: Rectangle):
         h, w = 2 * ceil(max(abs(r.y_min), abs(r.y_max))), 2 * ceil(max(abs(r.x_min), abs(r.x_max)))
+        h = max(h, 2)
+        w = max(w, 2)
         array = np.zeros((h, w), dtype=bool)
         setRangeValue(array, self.pixels, r.x_min, r.x_max, r.y_min, r.y_max)
         return PixelShape(array=array)
@@ -68,8 +85,8 @@ class PixelShape(Shape):
         h1, w1 = self.dim()
         h2, w2 = other.dim()
         array = np.zeros((max(h1, h2), max(w1, w2)), dtype=bool)
-        setRangeValue(array, self.pixels, - w1 / 2, w1 / 2, - h1 / 2, h1 / 2)
-        setRangeValue(array, other.pixels, - w2 / 2, w2 / 2, - h2 / 2, h2 / 2)
+        setRangeValue(array, self.pixels, Decimal(- w1 / 2), Decimal(w1 / 2), Decimal(- h1 / 2), Decimal(h1 / 2))
+        setRangeValue(array, other.pixels, Decimal(- w2 / 2), Decimal(w2 / 2), Decimal(- h2 / 2), Decimal(h2 / 2))
         return PixelShape(array)
 
     def getOuterRectangle(self) -> Rectangle:
@@ -78,15 +95,15 @@ class PixelShape(Shape):
             return Rectangle(0, 0, 0, 0)
         h, w = self.pixels.shape
         ind = np.unravel_index(np.argmax(self.pixels), self.pixels.shape)[0]
-        y_max = h / 2 - ind
+        y_max = Decimal(h / 2 - ind)
         temp = np.rot90(self.pixels[ind:])
         ind = np.unravel_index(np.argmax(temp), temp.shape)[0]
-        x_max = w / 2 - ind
+        x_max = Decimal(w / 2 - ind)
         temp = np.rot90(temp[ind:])
         ind = np.unravel_index(np.argmax(temp), temp.shape)[0]
-        y_min = ind - h / 2
+        y_min = Decimal(ind - h / 2)
         temp = np.rot90(temp[ind:])
-        x_min = np.unravel_index(np.argmax(temp), temp.shape)[0] - w / 2
+        x_min = Decimal(np.unravel_index(np.argmax(temp), temp.shape)[0] - w / 2)
         return Rectangle(x_min, x_max, y_min, y_max)
 
     def getInnerRectangle(self, strategy) -> Rectangle:
@@ -95,7 +112,7 @@ class PixelShape(Shape):
     def cut(self, birectangle: BiRectangle, strategy):
         return strategy.cutPixels(self, birectangle)
 
-    def isPointInShape(self, x: float, y: float) -> bool:
+    def isPointInShape(self, x: Decimal | float, y: Decimal | float) -> bool:
         h, w = self.dim()
         x_in_mat = int(x + w / 2)
         y_in_mat = int(h / 2 - y)

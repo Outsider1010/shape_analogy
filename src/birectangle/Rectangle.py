@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from matplotlib import pyplot as plt
 
 from src.birectangle.Point import Point
@@ -7,7 +9,12 @@ class Rectangle:
     """
     An axis-aligned rectangle
     """
-    def __init__(self, x_min: float, x_max: float, y_min: float, y_max: float):
+    def __init__(self, x_min: Decimal | float, x_max: Decimal | float, y_min: Decimal | float, y_max: Decimal | float):
+        prec = Decimal('0.0000001')
+        x_min = Decimal(x_min).quantize(prec)
+        x_max = Decimal(x_max).quantize(prec)
+        y_min = Decimal(y_min).quantize(prec)
+        y_max = Decimal(y_max).quantize(prec)
         assert x_min <= x_max, f"Negative width: w = {x_max - x_min}"
         assert y_min <= y_max, f"Negative height: h = {y_max - y_min}"
         self.x_min = x_min
@@ -15,10 +22,10 @@ class Rectangle:
         self.y_min = y_min
         self.y_max = y_max
 
-    def width(self) -> float:
+    def width(self) -> Decimal:
         return self.x_max - self.x_min
 
-    def height(self) -> float:
+    def height(self) -> Decimal:
         return self.y_max - self.y_min
 
     def center(self) -> Point:
@@ -36,7 +43,7 @@ class Rectangle:
     def bottomRight(self) -> Point:
         return Point(self.x_max, self.y_min)
 
-    def area(self) -> float:
+    def area(self) -> Decimal:
         return self.width() * self.height()
 
     def __eq__(self, other):
@@ -47,12 +54,16 @@ class Rectangle:
         # return f"{self.bottomLeft()}, {self.topRight()}"
         return f"topLeft={self.topLeft()}, w={round(self.width(), 4)}, h={round(self.height(), 4)}"
 
+    # allows x_min, x_max, y_min, y_max = rectangle
+    def __iter__(self):
+        return iter((self.x_min, self.x_max, self.y_min, self.y_max))
+
     @staticmethod
-    def fromCenter(center: Point, w: float, h: float):
+    def fromCenter(center: Point, w: Decimal, h: Decimal):
         return Rectangle(center.x - w/2, center.x + w/2, center.y - h/2, center.y + h/2)
 
     @staticmethod
-    def fromTopLeft(topLeft: Point, w: float, h: float):
+    def fromTopLeft(topLeft: Point, w: Decimal, h: Decimal):
         return Rectangle(topLeft.x, topLeft.x + w, topLeft.y - h, topLeft.y)
 
     def containsRectangle(self, r) -> bool:
