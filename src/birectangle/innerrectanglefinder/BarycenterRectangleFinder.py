@@ -1,3 +1,4 @@
+from src.birectangle.Segment import Segment
 from src.birectangle.innerrectanglefinder.InnerRectangleFinder import InnerRectangleFinder
 from src.birectangle.Rectangle import Rectangle
 from src.birectangle.Point import Point
@@ -26,7 +27,7 @@ class BarycenterRectangleFinder(InnerRectangleFinder):
 
         center = Point(np.mean(xs), np.mean(ys))
 
-        # print(center)
+        print("Center init : ", center)
 
         Cx, Cy = center.x, center.y
 
@@ -92,15 +93,26 @@ class BarycenterRectangleFinder(InnerRectangleFinder):
 
         # Expand until it reaches the shape border.
         while moved:
-
             moved = False
 
-            if shape.isPointInShape(Hx - step, Hy + step):
+            # [1.] Left above point
+            H_in_shape = shape.isPointInShape(Hx - step, Hy + step)
+            aboveSeg = Segment(Point(Hx - step, Hy + step), Point(Bx, Hy + step))
+            belowSeg = Segment(Point(Hx - step, By), Point(Bx, By))
+            aboveSeg_in_shape = shape.isHorizontalSegmentInShape(aboveSeg)
+            belowSeg_in_shape = shape.isHorizontalSegmentInShape(belowSeg)
+            if H_in_shape and aboveSeg_in_shape and belowSeg_in_shape:
                 Hx -= step
                 Hy += step
                 moved = True
 
-            if shape.isPointInShape(Bx + step, By - step):
+            # [2.] Right bottom point
+            B_in_shape =  shape.isPointInShape(Bx + step, By - step)
+            leftSeg = Segment(Point(Hx, By), Point(Hx, Hy))
+            rightSeg = Segment(Point(Bx, By), Point(Bx, Hy))
+            leftSeg_in_shape = shape.isVerticalSegmentInShape(leftSeg)
+            rightSeg_in_shape = shape.isVerticalSegmentInShape(rightSeg)
+            if B_in_shape and leftSeg_in_shape and rightSeg_in_shape:
                 Bx += step
                 By -= step
                 moved = True

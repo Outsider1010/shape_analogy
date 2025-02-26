@@ -1,4 +1,6 @@
 from src.birectangle.BiRectangleMethod import BiRectangleMethod
+from src.birectangle.Point import Point
+from src.birectangle.Segment import Segment
 from src.birectangle.innerrectanglefinder.BarycenterRectangleFinder import BarycenterRectangleFinder
 from src.shapes.pixelShape import PixelShape
 
@@ -19,3 +21,7 @@ else:
 
 barycenter = BarycenterRectangleFinder()
 barycenter.findInnerRectanglePixels(SA)
+
+'''
+print(SA.isHorizontalSegmentInShape(Segment(Point(0,.3), Point(3,.3))))
+'''
