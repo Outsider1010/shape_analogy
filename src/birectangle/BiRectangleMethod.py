@@ -1,4 +1,5 @@
 import logging as lgg
+from decimal import Decimal
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,6 +13,8 @@ from src.birectangle.cuttingmethod.CuttingMethod import CuttingMethod
 from src.birectangle.cuttingmethod.FirstCuttingIn4Method import FirstCuttingIn4Method
 from src.birectangle.innerrectanglefinder.InnerRectangleFinder import InnerRectangleFinder
 from src.birectangle.innerrectanglefinder.LargestRectangleFinder import LargestRectangleFinder
+from src.birectangle.rectangleanalogy.CenterDimAnalogy import CenterDimAnalogy
+from src.birectangle.rectangleanalogy.RectangleAnalogy import RectangleAnalogy
 from src.shapes.pixelShape import PixelShape
 from src.shapes.shape import Shape
 
@@ -30,17 +33,22 @@ class BiRectangleMethod(ShapeAnalogy):
     def __init__(self, biRectAnalogy: BiRectangleAnalogy = BiSegmentAnalogy(),
                  cutMethod: CuttingMethod = FirstCuttingIn4Method(),
                  innerRectFinder: InnerRectangleFinder = LargestRectangleFinder(),
-                 epsilon: float = 0.1, maxDepth: int = 7, keep = 1, plot: str | int = 'last'):
+                 rectangleAnalogy: RectangleAnalogy = CenterDimAnalogy(), epsilon: float = 0.01,
+                 maxDepth: int = 7, keep: int = 1, innerReduction: bool = False,
+                 plot: str | int = 'last', ratioAnalogy: bool = False):
         assert isinstance(biRectAnalogy, BiRectangleAnalogy)
         assert isinstance(cutMethod, CuttingMethod)
         assert isinstance(innerRectFinder, InnerRectangleFinder)
+        assert isinstance(rectangleAnalogy, RectangleAnalogy)
         assert 0 <= epsilon < 0.5, f"Epsilon value ({epsilon}) is too high (should be < 0.5)"
         assert (isinstance(plot, int) and 0 <= plot) or plot in ['step', 'last', 'none'], PLOT_ASSERT
         assert 0 <= keep <= 3, f"'Keep' ({keep}) value is 0, 1, 2 or 3"
+        assert not ratioAnalogy or innerReduction, f"Ratio analogy needs innerReduction to be true."
         self.biRectangleAnalogy = biRectAnalogy
         self.cuttingMethod = cutMethod
         self.innerRectFinder = innerRectFinder
-        self.epsilon = epsilon
+        self.rectangleAnalogy = rectangleAnalogy
+        self.epsilon = Decimal(epsilon)
         self.maxDepth = maxDepth
         self.initPlot = plot
         self.plot = plot
@@ -52,6 +60,8 @@ class BiRectangleMethod(ShapeAnalogy):
         # 2 : OuterRectangle at depth >= 1 are still the bounding boxes but the analogy is made inside the super outer rectangle (of lower depth)
         # 3 : OuterRectangle at depth >= 1 are still the bounding boxes but the analogy is made inside the cuts rectangles
         self.keep = keep
+        self.innerReduction = innerReduction
+        self.ratioAnalogy = ratioAnalogy
 
     def analogy(self, SA: Shape, SB: Shape, SC: Shape) -> PixelShape | None:
         res, _, _ = self.__analogy(SA, SB, SC, 0, None, None)
@@ -93,11 +103,21 @@ class BiRectangleMethod(ShapeAnalogy):
         else:
             try:
                 birectangles = []
+                r_x_min = r_x_max = r_y_min = r_y_max = Decimal(1)
                 for i in range(3):
                     b = BiRectangle(outerRectangles[i], shapes[i].getInnerRectangle(self.innerRectFinder))
-                    # prevents the inner rectangle from touching the outerRectangle (if epsilon > 0)
-                    b.separate(self.epsilon)
                     birectangles.append(b)
+                    if self.innerReduction:
+                        r_x_min = Decimal.min(r_x_min, b.center_x_min_ratio())
+                        r_x_max = Decimal.min(r_x_max, b.center_x_max_ratio())
+                        r_y_min = Decimal.min(r_y_min, b.center_y_min_ratio())
+                        r_y_max = Decimal.min(r_y_max, b.center_y_max_ratio())
+                for b in birectangles:
+                    if self.innerReduction:
+                        b.reduceInnerTo(r_x_min, r_x_max, r_y_min, r_y_max)
+                    if not self.ratioAnalogy:
+                        b.separate(self.epsilon)
+
                 if k == 0 or self.keep == 0:
                     outerRD = None
                 elif self.keep == 1:
@@ -111,9 +131,17 @@ class BiRectangleMethod(ShapeAnalogy):
                         birectangles2.append(b)
                     # outerRD is the innerRectangle of the resulting birectangle
                     outerRD, _ = self.biRectangleAnalogy.analogy(birectangles2[0], birectangles2[1], birectangles2[2],
-                                                                 superRectangles[3] if self.keep == 2 else cutRectangles[3])
+                                                                 superRectangles[3] if self.keep == 2 else
+                                                                 cutRectangles[3])
 
-                birectangle_d = self.biRectangleAnalogy.analogy(birectangles[0], birectangles[1], birectangles[2], outerRD)
+                if self.ratioAnalogy:
+                    if not outerRD:
+                        outerRD = self.rectangleAnalogy.analogy(*outerRectangles)
+                    birectangle_d = BiRectangle(outerRD, outerRD)
+                    birectangle_d.reduceInnerTo(r_x_min, r_x_max, r_y_min, r_y_max)
+                else:
+                    birectangle_d = self.biRectangleAnalogy.analogy(birectangles[0], birectangles[1], birectangles[2],
+                                                                    outerRD)
                 birectangles.append(birectangle_d)
                 innerRD, outerRD = birectangle_d
                 plt_outerD = outerRD.x_min, outerRD.x_max, outerRD.y_min, outerRD.y_max
@@ -138,7 +166,7 @@ class BiRectangleMethod(ShapeAnalogy):
                             continue
                         (subshapeD, plt_solved_rects2,
                          plt_unsolved_rects2) = self.__analogy(subshapeA, subshapeB, subshapeC, k + 1,
-                                                  (subRectanglesA[i], subRectanglesB[i],
+                                                               (subRectanglesA[i], subRectanglesB[i],
                                                                 subRectanglesC[i], subRectanglesD[i]), outerRectangles)
                         # if self.plot equals none, then no reason to store rectangles (no plot will be made)
                         if self.plot != 'none':
@@ -246,9 +274,9 @@ class BiRectangleMethod(ShapeAnalogy):
         assert isinstance(innerRectFinder, InnerRectangleFinder)
         self.innerRectFinder = innerRectFinder
 
-    def setEpsilon(self, epsilon: float) -> None:
+    def setEpsilon(self, epsilon: Decimal | float) -> None:
         assert epsilon < 0.5, f"Epsilon value ({epsilon}) is too high (should be < 0.5)"
-        self.epsilon = epsilon
+        self.epsilon = Decimal(epsilon)
 
     def setPlottingBehavior(self, plot: int | str):
         assert (isinstance(plot, int) and 0 <= plot) or plot in ['step', 'last', 'none'], PLOT_ASSERT

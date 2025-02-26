@@ -1,4 +1,7 @@
-def arithmetic(a: float, b: float, c: float) -> float:
+from decimal import Decimal
+
+
+def arithmetic(a: Decimal, b: Decimal, c: Decimal) -> Decimal:
     """
     Realize the arithmetic analogical proportion on R (the set of real numbers) to solve the equation `a`:`b`::`c`:?
     :param a: a real number `a`
@@ -9,7 +12,7 @@ def arithmetic(a: float, b: float, c: float) -> float:
     return c + b - a
 
 
-def geometric(a: float, b: float, c: float) -> float:
+def geometric(a: Decimal, b: Decimal, c: Decimal) -> Decimal:
     """
     Realize the geometric analogical proportion on R* (the set of real numbers excluding 0)
     to solve the equation `a`:`b`::`c`:?
@@ -21,7 +24,7 @@ def geometric(a: float, b: float, c: float) -> float:
     return c * b / a
 
 
-def bounded(a: float, b: float, c: float) -> float:
+def bounded(a: Decimal, b: Decimal, c: Decimal) -> Decimal:
     """
     Realize a particular analogical proportion on (0, 1) to solve the equation `a`:`b`::`c`:?
     :param a: a real number between 0 and 1 `a`
@@ -36,8 +39,8 @@ def bounded(a: float, b: float, c: float) -> float:
     return 1 / (1 + (1 - c) * (1 - b) * a / ((1 - a) * b * c))
 
 
-def ext_bounded(a: float, b: float, c: float, Ia: tuple[float, float], Ib: tuple[float, float],
-                Ic: tuple[float, float], Id: tuple[float, float]) -> float:
+def ext_bounded(a: Decimal, b: Decimal, c: Decimal, Ia: tuple[Decimal, Decimal], Ib: tuple[Decimal, Decimal],
+                Ic: tuple[Decimal, Decimal], Id: tuple[Decimal, Decimal]) -> Decimal:
     """
     Realize a particular analogical proportion on dynamic intervals to solve the equation `a`:`b`::`c`:?
     :param a: a real number `a` within the interval `Ia` (exclusive)
@@ -62,7 +65,7 @@ def ext_bounded(a: float, b: float, c: float, Ia: tuple[float, float], Ib: tuple
                                                          (c - b_inf_c) * (b - b_inf_b) * (b_sup_a - a))))
 
 
-def asc_couple(a: tuple[float, float], b: tuple[float, float], c: tuple[float, float]) -> tuple[float, float]:
+def asc_couple(a: tuple[Decimal, Decimal], b: tuple[Decimal, Decimal], c: tuple[Decimal, Decimal]) -> tuple[Decimal, Decimal]:
     a1, a2 = a
     b1, b2 = b
     c1, c2 = c
