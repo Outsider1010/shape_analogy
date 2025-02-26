@@ -39,3 +39,6 @@ class FullVerticalCut(CuttingMethod):
         plt.plot([innerR.x_max] * 2, [innerR.y_max, outerR.y_max], "g", linestyle="--")
         plt.plot([innerR.x_min] * 2, [outerR.y_min, innerR.y_min], "g", linestyle="--")
         plt.plot([innerR.x_max] * 2, [outerR.y_min, innerR.y_min], "g", linestyle="--")
+
+    def plt_colors(self) -> list[str]:
+        return ["#ff007f", "b", "#ffff00", "#8000ff"]

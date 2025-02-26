@@ -43,3 +43,6 @@ class FullSideNonDisjointCut(CuttingMethod):
         plt.plot([innerR.x_max] * 2, [innerR.y_max, outerR.y_max], "c", linestyle="--")
         plt.plot([innerR.x_min] * 2, [outerR.y_min, innerR.y_min], "c", linestyle="--")
         plt.plot([innerR.x_max] * 2, [outerR.y_min, innerR.y_min], "c", linestyle="--")
+
+    def plt_colors(self) -> list[str]:
+        return ["#ff007f", "b", "#ffff00", "#8000ff"]

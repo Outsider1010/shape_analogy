@@ -39,3 +39,6 @@ class FullHorizontalCut(CuttingMethod):
         plt.plot([outerR.x_min, innerR.x_min], [innerR.y_min] * 2, "g", linestyle="--")
         plt.plot([innerR.x_max, outerR.x_max], [innerR.y_min] * 2, "g", linestyle="--")
         plt.plot([innerR.x_max, outerR.x_max], [innerR.y_max] * 2, "g", linestyle="--")
+
+    def plt_colors(self) -> list[str]:
+        return ["#ff007f", "b", "#ffff00", "#8000ff"]
