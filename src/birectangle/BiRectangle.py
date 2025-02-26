@@ -17,7 +17,7 @@ class BiRectangle:
 
     def separate(self, epsilon: float) -> None:
         innerR, outerR = self
-        innerR.set_x(innerR.x_min + epsilon * (innerR.x_min == outerR.x_min),
-                     innerR.x_max - epsilon * (innerR.x_max == outerR.x_max))
-        innerR.set_y(innerR.y_min + epsilon * (innerR.y_min == outerR.y_min),
-                     innerR.y_max - epsilon * (innerR.y_max == outerR.y_max))
+        self.innerRectangle = Rectangle(innerR.x_min + epsilon * (innerR.x_min == outerR.x_min),
+                                        innerR.x_max - epsilon * (innerR.x_max == outerR.x_max),
+                                        innerR.y_min + epsilon * (innerR.y_min == outerR.y_min),
+                                        innerR.y_max - epsilon * (innerR.y_max == outerR.y_max))

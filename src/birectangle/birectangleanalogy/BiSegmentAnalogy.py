@@ -13,10 +13,11 @@ class BiSegmentAnalogy(BiRectangleAnalogy):
     def __init__(self, rectangleAnalogy = CenterDimAnalogy()):
         self.rectAnalogy = rectangleAnalogy
 
-    def analogy(self, BRA: BiRectangle, BRB: BiRectangle, BRC: BiRectangle) -> BiRectangle:
-        outerD = self.rectAnalogy.analogy(BRA.outerRectangle, BRB.outerRectangle, BRC.outerRectangle)
-        wOuterD = outerD.width()
-        hOuterD = outerD.height()
+    def analogy(self, BRA: BiRectangle, BRB: BiRectangle, BRC: BiRectangle, outerRectD: Rectangle | None = None) -> BiRectangle:
+        if not outerRectD:
+            outerRectD = self.rectAnalogy.analogy(BRA.outerRectangle, BRB.outerRectangle, BRC.outerRectangle)
+        wOuterD = outerRectD.width()
+        hOuterD = outerRectD.height()
 
         x_minA_rescale = (BRA.innerRectangle.x_min - BRA.outerRectangle.x_min) / BRA.outerRectangle.width()
         x_minB_rescale = (BRB.innerRectangle.x_min - BRB.outerRectangle.x_min) / BRB.outerRectangle.width()
@@ -30,8 +31,8 @@ class BiSegmentAnalogy(BiRectangleAnalogy):
                                                     (x_minB_rescale, x_maxB_rescale),
                                                     (x_minC_rescale, x_maxC_rescale))
 
-        x_minD = outerD.x_min + x_minD_rescale * wOuterD
-        x_maxD = outerD.x_min + x_maxD_rescale * wOuterD
+        x_minD = outerRectD.x_min + x_minD_rescale * wOuterD
+        x_maxD = outerRectD.x_min + x_maxD_rescale * wOuterD
 
         y_minA_rescale = (BRA.innerRectangle.y_min - BRA.outerRectangle.y_min) / BRA.outerRectangle.height()
         y_minB_rescale = (BRB.innerRectangle.y_min - BRB.outerRectangle.y_min) / BRB.outerRectangle.height()
@@ -45,7 +46,7 @@ class BiSegmentAnalogy(BiRectangleAnalogy):
                                                     (y_minB_rescale, y_maxB_rescale),
                                                     (y_minC_rescale, y_maxC_rescale))
 
-        y_minD = outerD.y_min + y_minD_rescale * hOuterD
-        y_maxD = outerD.y_min + y_maxD_rescale * hOuterD
+        y_minD = outerRectD.y_min + y_minD_rescale * hOuterD
+        y_maxD = outerRectD.y_min + y_maxD_rescale * hOuterD
 
-        return BiRectangle(outerD, Rectangle(x_minD, x_maxD, y_minD, y_maxD))
+        return BiRectangle(outerRectD, Rectangle(x_minD, x_maxD, y_minD, y_maxD))
