@@ -1,3 +1,5 @@
+from matplotlib import pyplot as plt
+
 from src.birectangle.BiRectangle import BiRectangle
 from src.birectangle.Rectangle import Rectangle
 from src.birectangle.cuttingmethod.CuttingMethod import CuttingMethod
@@ -22,12 +24,18 @@ class FullHorizontalCut(CuttingMethod):
         return 4
 
     def cutBiRectangle(self, biRectangle: BiRectangle) -> list[Rectangle]:
-        big_r = biRectangle.outerRectangle
-        little_r = biRectangle.innerRectangle
-        return [Rectangle(big_r.x_min, big_r.x_max, little_r.y_max, big_r.y_max),
-                Rectangle(big_r.x_min, little_r.x_min, little_r.y_min, little_r.y_max),
-                Rectangle(little_r.x_max, big_r.x_max, little_r.y_min, little_r.y_max),
-                Rectangle(big_r.x_min, big_r.x_max, big_r.y_min, little_r.y_min)]
+        innerR, outerR = biRectangle
+        return [Rectangle(outerR.x_min, outerR.x_max, innerR.y_max, outerR.y_max),
+                Rectangle(outerR.x_min, innerR.x_min, innerR.y_min, innerR.y_max),
+                Rectangle(innerR.x_max, outerR.x_max, innerR.y_min, innerR.y_max),
+                Rectangle(outerR.x_min, outerR.x_max, outerR.y_min, innerR.y_min)]
 
     def cutPixels(self, pixelShape: PixelShape, biRectangle: BiRectangle) -> list[PixelShape]:
         return [pixelShape.fromShape(r) for r in self.cutBiRectangle(biRectangle)]
+
+    def plotCuttingLines(self, biRectangle: BiRectangle) -> None:
+        innerR, outerR = biRectangle
+        plt.plot([outerR.x_min, innerR.x_min], [innerR.y_max] * 2, "g", linestyle="--")
+        plt.plot([outerR.x_min, innerR.x_min], [innerR.y_min] * 2, "g", linestyle="--")
+        plt.plot([innerR.x_max, outerR.x_max], [innerR.y_min] * 2, "g", linestyle="--")
+        plt.plot([innerR.x_max, outerR.x_max], [innerR.y_max] * 2, "g", linestyle="--")

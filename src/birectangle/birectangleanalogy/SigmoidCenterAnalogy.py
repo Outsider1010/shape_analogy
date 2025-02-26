@@ -9,10 +9,11 @@ from src.birectangle.Point import Point
 # TODO: documentation
 class SigmoidCenterAnalogy(BiRectangleAnalogy):
 
-    def analogy(self, BRA: BiRectangle, BRB: BiRectangle, BRC: BiRectangle) -> BiRectangle:
-        outerD = CenterDimAnalogy().analogy(BRA.outerRectangle, BRB.outerRectangle, BRC.outerRectangle)
-        wOuterD = outerD.width()
-        hOuterD = outerD.height()
+    def analogy(self, BRA: BiRectangle, BRB: BiRectangle, BRC: BiRectangle, outerRectD: Rectangle | None = None) -> BiRectangle:
+        if not outerRectD:
+            outerRectD = CenterDimAnalogy().analogy(BRA.outerRectangle, BRB.outerRectangle, BRC.outerRectangle)
+        wOuterD = outerRectD.width()
+        hOuterD = outerRectD.height()
 
         BRA_inner_center = BRA.innerRectangle.center()
         BRB_inner_center = BRB.innerRectangle.center()
@@ -22,13 +23,13 @@ class SigmoidCenterAnalogy(BiRectangleAnalogy):
         xB_rescale = (BRB_inner_center.x - BRB.outerRectangle.x_min) / BRB.outerRectangle.width()
         xC_rescale = (BRC_inner_center.x - BRC.outerRectangle.x_min) / BRC.outerRectangle.width()
         xD_rescale = bounded(xA_rescale, xB_rescale, xC_rescale)
-        xD = outerD.x_min + wOuterD * xD_rescale
+        xD = outerRectD.x_min + wOuterD * xD_rescale
 
         yA_rescale = (- BRA_inner_center.y + BRA.outerRectangle.y_max) / BRA.outerRectangle.height()
         yB_rescale = (- BRB_inner_center.y + BRB.outerRectangle.y_max) / BRB.outerRectangle.height()
         yC_rescale = (- BRC_inner_center.y + BRC.outerRectangle.y_max) / BRC.outerRectangle.height()
         yD_rescale = bounded(yA_rescale, yB_rescale, yC_rescale)
-        yD = outerD.y_max - hOuterD * yD_rescale
+        yD = outerRectD.y_max - hOuterD * yD_rescale
 
         wA_rescale = BRA.innerRectangle.width() / BRA.outerRectangle.width()
         wB_rescale = BRB.innerRectangle.width() / BRB.outerRectangle.width()
@@ -44,5 +45,5 @@ class SigmoidCenterAnalogy(BiRectangleAnalogy):
 
         innerD = Rectangle.fromCenter(Point(xD, yD), wD, hD)
 
-        return BiRectangle(outerD, innerD)
+        return BiRectangle(outerRectD, innerD)
 

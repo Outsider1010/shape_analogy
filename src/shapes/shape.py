@@ -45,10 +45,10 @@ class Shape(ABC):
         pass
 
     @abstractmethod
-    def toPixelShape(self):
+    def plot(self):
         """
-        Method to transform any shape to an approximate PixelShape
-        :return: A PixelShape
+        Plot the shape with matplotlib
+        :return: Nothing
         """
         pass
 

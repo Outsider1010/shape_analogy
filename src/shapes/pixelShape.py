@@ -1,6 +1,7 @@
 import numpy as np
 from math import ceil
 
+from matplotlib import pyplot as plt
 from skimage.transform import radon
 
 from src.birectangle.BiRectangle import BiRectangle
@@ -94,9 +95,6 @@ class PixelShape(Shape):
     def cut(self, birectangle: BiRectangle, strategy):
         return strategy.cutPixels(self, birectangle)
 
-    def toPixelShape(self):
-        return self
-
     def isPointInShape(self, x: float, y: float) -> bool:
         h, w = self.dim()
         x_in_mat = int(x + w / 2)
@@ -149,6 +147,14 @@ class PixelShape(Shape):
 
     def dim(self) -> tuple[int, int]:
         return self.pixels.shape
+
+    def plot(self) -> None:
+        h, w = self.dim()
+        mat_to_plot = self.grayscale()
+        # transparency when not a black pixel
+        alpha = np.ones(mat_to_plot.shape)
+        alpha[mat_to_plot != 0] = 0
+        plt.imshow(mat_to_plot, cmap='gray', vmin=0, vmax=255, alpha=alpha, extent=(- w / 2, w / 2, - h / 2, h / 2))
 
     def toImage(self, name: str = "default.bmp"):
         if not name.endswith(".bmp"):
