@@ -8,6 +8,9 @@ from src.birectangle.BiRectangle import BiRectangle
 from src.birectangle.Rectangle import Rectangle
 from .shape import Shape
 from PIL import Image
+
+from ..birectangle.Segment import Segment
+
 # DO NOT IMPORT STRATEGIES (to avoid circular imports)
 
 # defines how we represent too small (< 1) rectangles
@@ -111,6 +114,46 @@ class PixelShape(Shape):
 
         return any(0 <= x < w and 0 <= y < h and self.pixels[y, x] for x in xs_to_check for y in ys_to_check)
 
+    def isHorizontalSegmentInShape(self, seg: Segment) -> bool:
+        assert seg.A.y == seg.B.y, "Must be a horizontal segment"
+
+        h, w = self.dim()
+
+        y = int(np.floor(h / 2 - seg.A.y))
+        x_min, x_max = sorted([int(np.floor(seg.A.x + w / 2)), int(np.floor(seg.B.x + w / 2))])
+
+        if not (0 <= y < h):
+            return False
+
+        for x in range(x_min, x_max):
+            if not (0 <= x < w):
+                continue
+
+            if self.pixels[y, x] != 1:
+                return False
+
+        return True
+
+    def isVerticalSegmentInShape(self, seg : Segment) -> bool:
+        assert seg.A.x == seg.B.x, "Must be a vertical segment"
+
+        h, w = self.dim()
+
+        x = int(np.floor(seg.A.x + w / 2))
+        y_min, y_max = sorted([int(np.floor(h / 2 - seg.A.y)), int(np.floor(h / 2 - seg.B.y))])
+
+        if not (0 <= x < w):
+            return False
+
+        for y in range(y_min, y_max):
+            if not (0 <= y < h):
+                continue
+
+            if self.pixels[y, x] != 1:
+                return False
+
+        return True
+
     def resize(self, min_w: int = 2, min_h: int = 2):
         assert min_w % 2 == 0, f"Minimum width {min_w} must be even."
         assert min_h % 2 == 0, f"Minimum height {min_h} must be even."
@@ -189,3 +232,4 @@ class PixelShape(Shape):
         # )
         # fig.tight_layout()
         # plt.show()
+
