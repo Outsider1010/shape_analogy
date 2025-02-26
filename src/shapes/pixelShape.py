@@ -1,6 +1,7 @@
 import numpy as np
 from math import ceil
 
+from matplotlib import pyplot as plt
 from skimage.transform import radon
 
 from src.birectangle.BiRectangle import BiRectangle
@@ -15,15 +16,17 @@ from ..birectangle.Segment import Segment
 # defines how we represent too small (< 1) rectangles
 # True -> We color the pixel only if it is at least more than half
 # False -> Every pixel containing a potential point of the shape is colored
-STRICT = True
+STRICTNESS = 2
 
 def coordRangeToMatrixIndexes(arr: np.ndarray, x_min: float, x_max: float,
                               y_min: float, y_max: float) -> tuple[float, float, float, float]:
     h, w = arr.shape
-    if STRICT:
+    if STRICTNESS == 0:
+        return int(x_min + w / 2), ceil(x_max + w / 2), int(h / 2 - y_max), ceil(h / 2 - y_min)
+    elif STRICTNESS == 1:
         return round(x_min + w / 2), round(x_max + w / 2), round(h / 2 - y_max), round(h / 2 - y_min)
     else:
-        return int(x_min + w / 2), ceil(x_max + w / 2), int(h / 2 - y_max), ceil(h / 2 - y_min)
+        return ceil(x_min + w / 2), int(x_max + w / 2), ceil(h / 2 - y_max), int(h / 2 - y_min)
 
 def setRangeValue(arr: np.ndarray, value : np.ndarray | bool,
                   x_min: float, x_max: float, y_min: float, y_max: float) -> None:
@@ -94,9 +97,6 @@ class PixelShape(Shape):
 
     def cut(self, birectangle: BiRectangle, strategy):
         return strategy.cutPixels(self, birectangle)
-
-    def toPixelShape(self):
-        return self
 
     def isPointInShape(self, x: float, y: float) -> bool:
         h, w = self.dim()
@@ -190,6 +190,14 @@ class PixelShape(Shape):
 
     def dim(self) -> tuple[int, int]:
         return self.pixels.shape
+
+    def plot(self) -> None:
+        h, w = self.dim()
+        mat_to_plot = self.grayscale()
+        # transparency when not a black pixel
+        alpha = np.ones(mat_to_plot.shape)
+        alpha[mat_to_plot != 0] = 0
+        plt.imshow(mat_to_plot, cmap='gray', vmin=0, vmax=255, alpha=alpha, extent=(- w / 2, w / 2, - h / 2, h / 2))
 
     def toImage(self, name: str = "default.bmp"):
         if not name.endswith(".bmp"):

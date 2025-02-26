@@ -12,10 +12,11 @@ class ExtSigmoidAnalogy(BiRectangleAnalogy):
     A method to solve analogical equations on some birectangles.
     Birectangles where the inner rectangle does not touch the outer rectangle.
     """
-    def analogy(self, BRA: BiRectangle, BRB: BiRectangle, BRC: BiRectangle) -> BiRectangle:
-        outerD = CenterDimAnalogy().analogy(BRA.outerRectangle, BRB.outerRectangle, BRC.outerRectangle)
-        wOuterD = outerD.width()
-        hOuterD = outerD.height()
+    def analogy(self, BRA: BiRectangle, BRB: BiRectangle, BRC: BiRectangle, outerRectD: Rectangle | None = None) -> BiRectangle:
+        if not outerRectD:
+            outerRectD = CenterDimAnalogy().analogy(BRA.outerRectangle, BRB.outerRectangle, BRC.outerRectangle)
+        wOuterD = outerRectD.width()
+        hOuterD = outerRectD.height()
 
         wA_rescale = BRA.innerRectangle.width() / BRA.outerRectangle.width()
         wB_rescale = BRB.innerRectangle.width() / BRB.outerRectangle.width()
@@ -39,7 +40,7 @@ class ExtSigmoidAnalogy(BiRectangleAnalogy):
         xD_rescale = ext_bounded(xA_rescale, xB_rescale, xC_rescale, (wA_rescale / 2, 1 - wA_rescale / 2),
                                  (wB_rescale / 2, 1 - wB_rescale / 2), (wC_rescale / 2, 1 - wC_rescale / 2),
                                  (wD_rescale / 2, 1 - wD_rescale / 2))
-        xD = outerD.x_min + wOuterD * xD_rescale
+        xD = outerRectD.x_min + wOuterD * xD_rescale
 
         yA_rescale = (- BRA_inner_center.y + BRA.outerRectangle.y_max) / BRA.outerRectangle.height()
         yB_rescale = (- BRB_inner_center.y + BRB.outerRectangle.y_max) / BRB.outerRectangle.height()
@@ -47,8 +48,8 @@ class ExtSigmoidAnalogy(BiRectangleAnalogy):
         yD_rescale = ext_bounded(yA_rescale, yB_rescale, yC_rescale, (hA_rescale / 2, 1 - hA_rescale / 2),
                                  (hB_rescale / 2, 1 - hB_rescale / 2), (hC_rescale / 2, 1 - hC_rescale / 2),
                                  (hD_rescale / 2, 1 - hD_rescale / 2))
-        yD = outerD.y_max - hOuterD * yD_rescale
+        yD = outerRectD.y_max - hOuterD * yD_rescale
 
         innerD = Rectangle.fromCenter(Point(xD, yD), wD, hD)
 
-        return BiRectangle(outerD, innerD)
+        return BiRectangle(outerRectD, innerD)

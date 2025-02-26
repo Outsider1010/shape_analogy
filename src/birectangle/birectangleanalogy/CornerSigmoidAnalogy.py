@@ -11,21 +11,22 @@ class CornerAnalogy(BiRectangleAnalogy):
     """
     Pierre-Alexandre analogy on bi-rectangles
     """
-    def analogy(self, BRA: BiRectangle, BRB: BiRectangle, BRC: BiRectangle) -> BiRectangle:
-        outerD = TopLeftDimAnalogy().analogy(BRA.outerRectangle, BRB.outerRectangle, BRC.outerRectangle)
+    def analogy(self, BRA: BiRectangle, BRB: BiRectangle, BRC: BiRectangle, outerRectD: Rectangle | None = None) -> BiRectangle:
+        if not outerRectD:
+            outerRectD = TopLeftDimAnalogy().analogy(BRA.outerRectangle, BRB.outerRectangle, BRC.outerRectangle)
 
         # Geometrical analogy on the rescaled inner rectangles
         xA_rescale = (BRA.innerRectangle.x_min - BRA.outerRectangle.x_min) / BRA.outerRectangle.width()
         xB_rescale = (BRB.innerRectangle.x_min - BRB.outerRectangle.x_min) / BRB.outerRectangle.width()
         xC_rescale = (BRC.innerRectangle.x_min - BRC.outerRectangle.x_min) / BRC.outerRectangle.width()
         xD_rescale = bounded(xA_rescale, xB_rescale, xC_rescale)
-        xD = outerD.x_min + outerD.width() * xD_rescale
+        xD = outerRectD.x_min + outerRectD.width() * xD_rescale
 
         yA_rescale = (- BRA.innerRectangle.y_max + BRA.outerRectangle.y_max) / BRA.outerRectangle.height()
         yB_rescale = (- BRB.innerRectangle.y_max + BRB.outerRectangle.y_max) / BRB.outerRectangle.height()
         yC_rescale = (- BRC.innerRectangle.y_max + BRC.outerRectangle.y_max) / BRC.outerRectangle.height()
         yD_rescale = bounded(yA_rescale, yB_rescale, yC_rescale)
-        yD = outerD.y_max - outerD.height() * yD_rescale
+        yD = outerRectD.y_max - outerRectD.height() * yD_rescale
 
         wA_rescale = (BRA.innerRectangle.width() + BRA.innerRectangle.x_min
                       - BRA.outerRectangle.x_min) / BRA.outerRectangle.width()
@@ -36,7 +37,7 @@ class CornerAnalogy(BiRectangleAnalogy):
 
         # if-elif added
         wD_rescale = bounded(wA_rescale, wB_rescale, wC_rescale)
-        wD = outerD.x_min - xD + outerD.width() * wD_rescale
+        wD = outerRectD.x_min - xD + outerRectD.width() * wD_rescale
 
         hA_rescale = (BRA.innerRectangle.height() - BRA.innerRectangle.y_max
                       + BRA.outerRectangle.y_max) / BRA.outerRectangle.height()
@@ -47,9 +48,9 @@ class CornerAnalogy(BiRectangleAnalogy):
 
         # if-elif added
         hD_rescale = bounded(hA_rescale, hB_rescale, hC_rescale)
-        hD = yD - outerD.y_max + outerD.height() * hD_rescale
+        hD = yD - outerRectD.y_max + outerRectD.height() * hD_rescale
 
         innerD = Rectangle.fromTopLeft(Point(xD, yD), wD, hD)
 
-        return BiRectangle(outerD, innerD)
+        return BiRectangle(outerRectD, innerD)
 
