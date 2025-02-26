@@ -127,12 +127,12 @@ class BiRectangleMethod(ShapeAnalogy):
                     subshapesA, subshapesB, subshapesC = tuple(
                         shapes[i].cut(birectangles[i], self.cuttingMethod) for i in range(3))
                     nbSubShapes = self.cuttingMethod.nbSubShapes()
-                    plt_colors = self.cuttingMethod.plt_colors()
-
+                    color_indexes = np.zeros(nbSubShapes, dtype=int)
                     for i in range(nbSubShapes):
                         subshapeA = subshapesA[i]
                         subshapeB = subshapesB[i]
                         subshapeC = subshapesC[i]
+                        color_indexes[i] = color_indexes[i - 1]
                         #  (prevent useless executions cause cutting a pixel gives the same pixel if strictness = 0)
                         if subshapeA == shapes[0] and subshapeB == shapes[1] and subshapeC == shapes[2]:
                             continue
@@ -142,12 +142,8 @@ class BiRectangleMethod(ShapeAnalogy):
                                                                 subRectanglesC[i], subRectanglesD[i]), outerRectangles)
                         # if self.plot equals none, then no reason to store rectangles (no plot will be made)
                         if self.plot != 'none':
-                            for r in plt_solved_rects2:
-                                plt_solved_rects.append(r)
-                                if self.__plotting(k):
-                                    plt_outerD = (min(plt_outerD[0], r.x_min), max(plt_outerD[1], r.x_max),
-                                                  min(plt_outerD[2], r.y_min), max(plt_outerD[3], r.y_max))
-                                    r.plotFilled(plt_colors[i], zorder=2)
+                            color_indexes[i] += len(plt_solved_rects2)
+                            plt_solved_rects.extend(plt_solved_rects2)
                             plt_unsolved_rects.extend(plt_unsolved_rects2)
                         # we solved the sub analogy
                         if subshapeD is not None:
@@ -155,8 +151,6 @@ class BiRectangleMethod(ShapeAnalogy):
                         elif self.plot != 'none':
                             plt_unsolved_rects.append(subRectanglesD[i])
 
-                if self.plot != 'none':
-                    plt_solved_rects.append(innerRD)
                 if self.__plotting(k):
                     for i in range(4):
                         # plot bi-rectangles and cutting lines of A, B, C and D
@@ -165,6 +159,15 @@ class BiRectangleMethod(ShapeAnalogy):
                         birectangles[i].innerRectangle.plotBorder(C_INNER_R_BORDER)
                         self.cuttingMethod.plotCuttingLines(birectangles[i])
                     innerRD.plotFilled(C_INNER_R_FILL, zorder=3)
+                    plt_colors = self.cuttingMethod.plt_colors()
+                    j = 0
+                    for i in range(len(plt_solved_rects)):
+                        r = plt_solved_rects[i]
+                        if i == color_indexes[j]:
+                            j += 1
+                        plt_outerD = (min(plt_outerD[0], r.x_min), max(plt_outerD[1], r.x_max),
+                                      min(plt_outerD[2], r.y_min), max(plt_outerD[3], r.y_max))
+                        r.plotFilled(plt_colors[j], zorder=2)
                     for r in plt_unsolved_rects:
                         plt_outerD = (min(plt_outerD[0], r.x_min), max(plt_outerD[1], r.x_max),
                                       min(plt_outerD[2], r.y_min), max(plt_outerD[3], r.y_max))
@@ -173,6 +176,8 @@ class BiRectangleMethod(ShapeAnalogy):
                     plt.axis('square')
                     plt.axis((plt_outerD[0] - self.__margin, plt_outerD[1] + self.__margin,
                               plt_outerD[2] - self.__margin, plt_outerD[3] + self.__margin))
+                if self.plot != 'none':
+                    plt_solved_rects.append(innerRD)
             except AssertionError as e:
                 lgg.warning(f" {e}. Analogy unsolved.")
 
