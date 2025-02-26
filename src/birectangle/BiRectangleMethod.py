@@ -19,6 +19,11 @@ PLOT_ASSERT = ("`plot` keyword should be set to `step` to see every step, `last`
                "if only the resulting shape is needed. Or an integer greater than `0` to see only steps with a depth"
                "lower than `plot`.")
 
+C_OUTER_R = "r"
+C_INNER_R_BORDER = "#ba55d2"
+C_INNER_R_FILL = "k"
+C_UNSOLVED_R = "#FFA500"
+
 
 class BiRectangleMethod(ShapeAnalogy):
 
@@ -111,6 +116,7 @@ class BiRectangleMethod(ShapeAnalogy):
                 birectangle_d = self.biRectangleAnalogy.analogy(birectangles[0], birectangles[1], birectangles[2], outerRD)
                 birectangles.append(birectangle_d)
                 innerRD, outerRD = birectangle_d
+                plt_outerD = outerRD.x_min, outerRD.x_max, outerRD.y_min, outerRD.y_max
                 d = PixelShape(rect=innerRD)
                 if len(outerRectangles) == 3:
                     outerRectangles.append(outerRD)
@@ -121,6 +127,8 @@ class BiRectangleMethod(ShapeAnalogy):
                     subshapesA, subshapesB, subshapesC = tuple(
                         shapes[i].cut(birectangles[i], self.cuttingMethod) for i in range(3))
                     nbSubShapes = self.cuttingMethod.nbSubShapes()
+                    plt_colors = self.cuttingMethod.plt_colors()
+
                     for i in range(nbSubShapes):
                         subshapeA = subshapesA[i]
                         subshapeB = subshapesB[i]
@@ -134,8 +142,12 @@ class BiRectangleMethod(ShapeAnalogy):
                                                                 subRectanglesC[i], subRectanglesD[i]), outerRectangles)
                         # if self.plot equals none, then no reason to store rectangles (no plot will be made)
                         if self.plot != 'none':
-                            # TODO : use linked list to improve 'extend' complexity to O(1)
-                            plt_solved_rects.extend(plt_solved_rects2)
+                            for r in plt_solved_rects2:
+                                plt_solved_rects.append(r)
+                                if self.__plotting(k):
+                                    plt_outerD = (min(plt_outerD[0], r.x_min), max(plt_outerD[1], r.x_max),
+                                                  min(plt_outerD[2], r.y_min), max(plt_outerD[3], r.y_max))
+                                    r.plotFilled(plt_colors[i], zorder=2)
                             plt_unsolved_rects.extend(plt_unsolved_rects2)
                         # we solved the sub analogy
                         if subshapeD is not None:
@@ -146,21 +158,17 @@ class BiRectangleMethod(ShapeAnalogy):
                 if self.plot != 'none':
                     plt_solved_rects.append(innerRD)
                 if self.__plotting(k):
-                    plt_outerD = outerRD.x_min, outerRD.x_max, outerRD.y_min, outerRD.y_max
                     for i in range(4):
                         # plot bi-rectangles and cutting lines of A, B, C and D
                         plt.figure(chr(ord("A") + i))
-                        birectangles[i].outerRectangle.plotBorder("r")
-                        birectangles[i].innerRectangle.plotBorder("b")
+                        birectangles[i].outerRectangle.plotBorder(C_OUTER_R)
+                        birectangles[i].innerRectangle.plotBorder(C_INNER_R_BORDER)
                         self.cuttingMethod.plotCuttingLines(birectangles[i])
-                    for r in plt_solved_rects:
-                        plt_outerD = (min(plt_outerD[0], r.x_min), max(plt_outerD[1], r.x_max),
-                                      min(plt_outerD[2], r.y_min), max(plt_outerD[3], r.y_max))
-                        r.plotFilled("k", zorder=2)
+                    innerRD.plotFilled(C_INNER_R_FILL, zorder=3)
                     for r in plt_unsolved_rects:
                         plt_outerD = (min(plt_outerD[0], r.x_min), max(plt_outerD[1], r.x_max),
                                       min(plt_outerD[2], r.y_min), max(plt_outerD[3], r.y_max))
-                        r.plotFilled("#FFA500", zorder=1)
+                        r.plotFilled(C_UNSOLVED_R, zorder=1)
                     self.__set_keys_and_text(plt.figure('D'), k)
                     plt.axis('square')
                     plt.axis((plt_outerD[0] - self.__margin, plt_outerD[1] + self.__margin,

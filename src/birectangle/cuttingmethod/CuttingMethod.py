@@ -39,6 +39,12 @@ class CuttingMethod(ABC):
         """
         pass
 
+    def plt_colors(self) -> list[str]:
+        """
+        :return: a list of colors for the different regions
+        """
+        return ["k"] * self.nbSubShapes()
+
     @abstractmethod
     def nbSubShapes(self) -> int:
         """
