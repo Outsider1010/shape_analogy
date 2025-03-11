@@ -10,7 +10,7 @@ from src.birectangle.Rectangle import Rectangle
 from src.birectangle.birectangleanalogy.BiRectangleAnalogy import BiRectangleAnalogy
 from src.birectangle.birectangleanalogy.BiSegmentAnalogy import BiSegmentAnalogy
 from src.birectangle.cuttingmethod.CuttingMethod import CuttingMethod
-from src.birectangle.cuttingmethod.FirstCuttingIn4Method import FirstCuttingIn4Method
+from src.birectangle.cuttingmethod.CutIn4EqualParts1 import CutIn4EqualParts1
 from src.birectangle.innerrectanglefinder.InnerRectangleFinder import InnerRectangleFinder
 from src.birectangle.innerrectanglefinder.LargestRectangleFinder import LargestRectangleFinder
 from src.birectangle.rectangleanalogy.CenterDimAnalogy import CenterDimAnalogy
@@ -31,7 +31,7 @@ C_UNSOLVED_R = "#FFA500"
 class BiRectangleMethod(ShapeAnalogy):
 
     def __init__(self, biRectAnalogy: BiRectangleAnalogy = BiSegmentAnalogy(),
-                 cutMethod: CuttingMethod = FirstCuttingIn4Method(),
+                 cutMethod: CuttingMethod = CutIn4EqualParts1(),
                  innerRectFinder: InnerRectangleFinder = LargestRectangleFinder(),
                  rectangleAnalogy: RectangleAnalogy = CenterDimAnalogy(), epsilon: float = 0.01,
                  maxDepth: int = 7, keep: int = 1, innerReduction: bool = False,
@@ -186,7 +186,7 @@ class BiRectangleMethod(ShapeAnalogy):
                         birectangles[i].outerRectangle.plotBorder(C_OUTER_R)
                         birectangles[i].innerRectangle.plotBorder(C_INNER_R_BORDER)
                         self.cuttingMethod.plotCuttingLines(birectangles[i])
-                    innerRD.plotFilled(C_INNER_R_FILL, zorder=3)
+                    innerRD.plotFilled(C_INNER_R_FILL, zorder=4)
                     plt_colors = self.cuttingMethod.plt_colors()
                     j = 0
                     for i in range(len(plt_solved_rects)):

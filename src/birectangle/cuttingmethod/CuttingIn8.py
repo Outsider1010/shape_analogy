@@ -6,7 +6,7 @@ from src.birectangle.cuttingmethod.CuttingMethod import CuttingMethod
 from src.shapes.pixelShape import PixelShape
 
 
-class CuttingIn8Method(CuttingMethod):
+class CuttingIn8(CuttingMethod):
     """
     # #################
     # #     |   |     #
