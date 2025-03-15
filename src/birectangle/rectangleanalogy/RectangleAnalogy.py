@@ -10,4 +10,4 @@ class RectangleAnalogy(ABC):
 
     @abstractmethod
     def analogy(self, FA: Rectangle, FB: Rectangle, FC: Rectangle) -> Rectangle:
-        pass
+        raise NotImplementedError

@@ -53,3 +53,14 @@ class BiRectangle:
         assert outerR.containsRectangle(r), (f"Inner rectangle should be contained by outer rectangle after ratio.\n"
                               f"Outer : {outerR}\nInner : {r}")
         self.innerRectangle = r
+
+    def innerEquiv(self, toCoordSysR: Rectangle) -> Rectangle:
+        w = self.outerRectangle.width()
+        h = self.outerRectangle.height()
+        x_min_rescale = (self.innerRectangle.x_min - self.outerRectangle.x_min) / w
+        x_max_rescale = (self.innerRectangle.x_max - self.outerRectangle.x_min) / w
+        y_min_rescale = (self.innerRectangle.y_min - self.outerRectangle.y_min) / h
+        y_max_rescale = (self.innerRectangle.y_max - self.outerRectangle.y_min) / h
+
+        return Rectangle(toCoordSysR.x_min + x_min_rescale * w, toCoordSysR.x_min + x_max_rescale * w,
+                         toCoordSysR.y_min + y_min_rescale * w, toCoordSysR.y_min + y_max_rescale * w)

@@ -6,8 +6,8 @@ from math import ceil, floor
 from matplotlib import pyplot as plt
 from skimage.transform import radon
 
-from src.birectangle.BiRectangle import BiRectangle
 from src.birectangle.Rectangle import Rectangle
+from .UnionRectangles import UnionRectangles
 from .shape import Shape
 from PIL import Image
 # DO NOT IMPORT STRATEGIES (to avoid circular imports)
@@ -81,6 +81,16 @@ class PixelShape(Shape):
         setRangeValue(array, self.pixels, r.x_min, r.x_max, r.y_min, r.y_max)
         return PixelShape(array=array)
 
+    def toRectangles(self):
+        h, w = self.dim()
+        ys, xs = np.where(self.pixels)
+        ys = h / 2 - ys
+        xs = xs - w / 2
+        res = UnionRectangles()
+        for i in range(ys.shape[0]):
+            res += Rectangle(float(xs[i]), float(xs[i] + 1), float(ys[i] - 1), float(ys[i]))
+        return res
+
     def __add__(self, other):
         h1, w1 = self.dim()
         h2, w2 = other.dim()
@@ -109,8 +119,8 @@ class PixelShape(Shape):
     def getInnerRectangle(self, strategy) -> Rectangle:
         return strategy.findInnerRectanglePixels(self)
 
-    def cut(self, birectangle: BiRectangle, strategy):
-        return strategy.cutPixels(self, birectangle)
+    def equiv(self, fromCoordSysR: Rectangle, toCoordSysR: Rectangle):
+        raise NotImplementedError
 
     def isPointInShape(self, x: Decimal | float, y: Decimal | float) -> bool:
         h, w = self.dim()
@@ -148,9 +158,9 @@ class PixelShape(Shape):
         y1, x1 = np.where(self.pixels)
         y2, x2 = np.where(other.pixels)
         y1 = h1 / 2 - y1
-        x1 = x1 + w1 / 2
+        x1 = x1 - w1 / 2
         y2 = h2 / 2 - y2
-        x2 = x2 + w2 / 2
+        x2 = x2 - w2 / 2
         return y1.shape == y2.shape and x1.shape == x2.shape and np.all(y1 == y2) and np.all(x1 == x2)
 
     def width(self) -> int:

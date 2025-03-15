@@ -11,4 +11,4 @@ class BiRectangleAnalogy(ABC):
 
     @abstractmethod
     def analogy(self, BRA: BiRectangle, BRB: BiRectangle, BRC: BiRectangle, outerRectD: Rectangle | None = None) -> BiRectangle:
-        pass
+        raise NotImplementedError

@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from src.birectangle.BiRectangle import BiRectangle
 from src.birectangle.Rectangle import Rectangle
 from src.shapes.pixelShape import PixelShape
+from src.shapes.shape import Shape
 
 
 class CuttingMethod(ABC):
@@ -17,18 +18,17 @@ class CuttingMethod(ABC):
         :param biRectangle: a bi-rectangle, i.e. a couple of rectangles (one containing the other)
         :return: a list of rectangles
         """
-        pass
+        raise NotImplementedError
 
-    @abstractmethod
-    def cutPixels(self, pixelShape: PixelShape, biRectangle: BiRectangle) -> list[PixelShape]:
+    def cut(self, shape: Shape, biRectangle: BiRectangle) -> list[PixelShape]:
         """
-        Return the different part of the shape `pixelShape` contained inside each rectangle obtained by cutting
+        Return the different part of the shape contained inside each rectangle obtained by cutting
         up the area between the outer and inner rectangles of the bi-rectangle.
-        :param pixelShape: The shape
+        :param shape: The shape
         :param biRectangle: The bi-rectangle
-        :return: a list of subshapes of `pixelShape`
+        :return: a list of subshapes of shape
         """
-        pass
+        return [shape.fromShape(r) for r in self.cutBiRectangle(biRectangle)]
 
     @abstractmethod
     def plotCuttingLines(self, biRectangle: BiRectangle) -> None:
@@ -37,7 +37,7 @@ class CuttingMethod(ABC):
         :param biRectangle: the bi-rectangle being cut
         :return: Nothing.
         """
-        pass
+        raise NotImplementedError
 
     def plt_colors(self) -> list[str]:
         """
@@ -50,4 +50,4 @@ class CuttingMethod(ABC):
         """
         :return: The number of rectangles obtained after cutting
         """
-        pass
+        raise NotImplementedError

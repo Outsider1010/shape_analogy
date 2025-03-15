@@ -11,10 +11,18 @@ class Rectangle:
     """
     def __init__(self, x_min: Decimal | float, x_max: Decimal | float, y_min: Decimal | float, y_max: Decimal | float):
         prec = Decimal('0.0000001')
-        x_min = Decimal(x_min).quantize(prec)
-        x_max = Decimal(x_max).quantize(prec)
-        y_min = Decimal(y_min).quantize(prec)
-        y_max = Decimal(y_max).quantize(prec)
+        if isinstance(x_min, float):
+            x_min = Decimal(str(x_min))
+        if isinstance(x_max, float):
+            x_max = Decimal(str(x_max))
+        if isinstance(y_min, float):
+            y_min = Decimal(str(y_min))
+        if isinstance(y_max, float):
+            y_max = Decimal(str(y_max))
+        x_min = x_min.quantize(prec)
+        x_max = x_max.quantize(prec)
+        y_min = y_min.quantize(prec)
+        y_max = y_max.quantize(prec)
         assert x_min <= x_max, f"Negative width: w = {x_max - x_min}"
         assert y_min <= y_max, f"Negative height: h = {y_max - y_min}"
         self.x_min = x_min
@@ -65,6 +73,9 @@ class Rectangle:
     @staticmethod
     def fromTopLeft(topLeft: Point, w: Decimal, h: Decimal):
         return Rectangle(topLeft.x, topLeft.x + w, topLeft.y - h, topLeft.y)
+
+    def isPointInRectangle(self, x: Decimal | float, y: Decimal | float) -> bool:
+        return self.x_min <= x <= self.x_max and self.y_min <= y <= self.y_max
 
     def containsRectangle(self, r) -> bool:
         """

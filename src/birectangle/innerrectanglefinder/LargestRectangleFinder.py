@@ -3,6 +3,7 @@ from largestinteriorrectangle import lir
 from src.birectangle.innerrectanglefinder.InnerRectangleFinder import InnerRectangleFinder
 from src.birectangle.Rectangle import Rectangle
 from src.birectangle.Point import Point
+from src.shapes.UnionRectangles import UnionRectangles
 from src.shapes.pixelShape import PixelShape
 
 
@@ -10,6 +11,11 @@ class LargestRectangleFinder(InnerRectangleFinder):
     """
     Find the largest interior axis aligned rectangle of a shape.
     """
+
+    def findInnerRectangleUnionR(self, shape: UnionRectangles) -> Rectangle:
+        # TODO
+        raise NotImplementedError
+
     def findInnerRectanglePixels(self, shape: PixelShape) -> Rectangle:
         # find the largest interior rectangle
         topLeft_x, topLeft_y, w, h = lir(shape.pixels)

@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 
-from src.birectangle.BiRectangle import BiRectangle
 from src.birectangle.Rectangle import Rectangle
 # DO NOT IMPORT STRATEGIES
 
@@ -15,7 +14,7 @@ class Shape(ABC):
         :param strategy: The method used to find the rectangle
         :return: A (axis-aligned) rectangle of the shape
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def getOuterRectangle(self) -> Rectangle:
@@ -23,18 +22,15 @@ class Shape(ABC):
         Find the axis-aligned minimum bounding box of the shape
         :return: the AABB minimizing area
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
-    def cut(self, birectangle: BiRectangle, strategy):
-        """
-        Cut the space between the inner and outer rectangle of `birectangle` into rectangles
-        and return the subshapes inside each rectangle
-        :param birectangle: The birectangle
-        :param strategy: The strategy used to cut
-        :return: The list of subshapes
-        """
-        pass
+    def fromShape(self, r: Rectangle):
+        raise NotImplementedError
+
+    @abstractmethod
+    def equiv(self, fromCoordSysR: Rectangle, toCoordSysR: Rectangle):
+        raise NotImplementedError
 
     @abstractmethod
     def isEmpty(self) -> bool:
@@ -42,7 +38,7 @@ class Shape(ABC):
         Check if the shape doesn't have any point.
         :return: True if the shape doesn't have any point
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def plot(self):
@@ -59,7 +55,7 @@ class Shape(ABC):
         :param maxAngle:
         :return: a sinogram (2D array of positive numbers) of the shape
         """
-        pass
+        raise NotImplementedError
 
 
 
