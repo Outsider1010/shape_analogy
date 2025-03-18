@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 from src.birectangle.Rectangle import Rectangle
 from src.shapes.UnionRectangles import UnionRectangles
-from src.shapes.pixelShape import PixelShape
 
 
 class InnerRectangleFinder(ABC):
@@ -11,7 +10,7 @@ class InnerRectangleFinder(ABC):
     """
 
     @abstractmethod
-    def findInnerRectanglePixels(self, shape: PixelShape) -> Rectangle:
+    def findInnerRectanglePixels(self, shape) -> Rectangle:
         raise NotImplementedError
 
     @abstractmethod

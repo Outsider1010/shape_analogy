@@ -24,10 +24,11 @@ class BiRectangle:
     def separate(self, epsilon: Decimal) -> None:
         if epsilon != 0:
             innerR, outerR = self
-            self.innerRectangle = Rectangle(innerR.x_min + epsilon * (innerR.x_min == outerR.x_min),
-                                            innerR.x_max - epsilon * (innerR.x_max == outerR.x_max),
-                                            innerR.y_min + epsilon * (innerR.y_min == outerR.y_min),
-                                            innerR.y_max - epsilon * (innerR.y_max == outerR.y_max))
+            w, h = innerR.width(), innerR.height()
+            self.innerRectangle = Rectangle(innerR.x_min + epsilon * (innerR.x_min == outerR.x_min) * w,
+                                            innerR.x_max - epsilon * (innerR.x_max == outerR.x_max) * w,
+                                            innerR.y_min + epsilon * (innerR.y_min == outerR.y_min) * h,
+                                            innerR.y_max - epsilon * (innerR.y_max == outerR.y_max) * h)
 
     def center_x_min_ratio(self) -> Decimal:
         return self.innerRectangle.width() / (2 * (self.innerRectangle.center().x - self.outerRectangle.x_min))

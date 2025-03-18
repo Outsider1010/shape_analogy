@@ -70,7 +70,6 @@ class PixelShape(Shape):
             setRangeValue(array, True, rect.x_min, rect.x_max, rect.y_min, rect.y_max)
 
         h, w = array.shape
-        assert w % 2 == 0 and h % 2 == 0, f"Dimensions (w = {w}, h = {h}) must be even."
         self.pixels: np.ndarray[bool] = array
 
     def fromShape(self, r: Rectangle):
@@ -81,14 +80,13 @@ class PixelShape(Shape):
         setRangeValue(array, self.pixels, r.x_min, r.x_max, r.y_min, r.y_max)
         return PixelShape(array=array)
 
-    def toRectangles(self):
-        h, w = self.dim()
-        ys, xs = np.where(self.pixels)
-        ys = h / 2 - ys
-        xs = xs - w / 2
+    def toRectangles(self, lir):
+        r = lir.findInnerRectanglePixels(self)
         res = UnionRectangles()
-        for i in range(ys.shape[0]):
-            res += Rectangle(float(xs[i]), float(xs[i] + 1), float(ys[i] - 1), float(ys[i]))
+        while r.area() > 0:
+            res.addRectangle(r)
+            setRangeValue(self.pixels, False, r.x_min, r.x_max, r.y_min, r.y_max)
+            r = lir.findInnerRectanglePixels(self)
         return res
 
     def __add__(self, other):

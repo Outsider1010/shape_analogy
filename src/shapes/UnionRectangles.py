@@ -12,13 +12,19 @@ class UnionRectangles(Shape):
     Each pixel is a square of length 1 and equals True if it is included in the shape
     """
     def __init__(self, rects: Iterable[Rectangle] = None):
-        self.rectangles = set(rects)
+        if rects is None:
+            self.rectangles = []
+        else:
+            self.rectangles = list(rects)
 
     def addRectangle(self, r: Rectangle):
-        self.rectangles.add(r)
+        self.rectangles.append(r)
 
     def __add__(self, other):
-        return UnionRectangles(self.rectangles.union(other.rectangles))
+        return UnionRectangles(self.rectangles + other.rectangles)
+
+    def __repr__(self):
+        return str(self.rectangles)
 
     def getOuterRectangle(self) -> Rectangle:
         if len(self.rectangles) == 0:
@@ -30,8 +36,9 @@ class UnionRectangles(Shape):
         while r:
             x_min = min(x_min, r.x_min)
             x_max = max(x_max, r.x_max)
-            y_min = min(y_min, r.x_min)
-            y_max = max(y_max, r.x_max)
+            y_min = min(y_min, r.y_min)
+            y_max = max(y_max, r.y_max)
+            r = next(i, None)
         return Rectangle(x_min, x_max, y_min, y_max)
 
     def getInnerRectangle(self, strategy) -> Rectangle:
@@ -40,12 +47,9 @@ class UnionRectangles(Shape):
     def fromShape(self, frame: Rectangle):
         res = UnionRectangles()
         for r in self.rectangles:
-            x_min = max(frame.x_min, r.x_min)
-            x_max = min(frame.x_max, r.x_max)
-            y_min = max(frame.y_min, r.y_min)
-            y_max = min(frame.y_max, r.y_max)
-            if x_min < x_max and y_min < y_max:
-                res.addRectangle(Rectangle(x_min, x_max, y_min, y_max))
+            x = frame.intersection(r)
+            if x is not None and x.area() > 0:
+                res.addRectangle(x)
         return res
 
     def equiv(self, fromCoordSysR: Rectangle | None, toCoordSysR: Rectangle | None):
