@@ -1,4 +1,4 @@
-from tkinter import ttk,Toplevel,Label,Button,Spinbox,StringVar
+from tkinter import ttk,Toplevel,Label,Button,Spinbox,StringVar,Radiobutton
 from src.ShapeAnalogyModel import ShapeAnalogyModel
 from PIL import Image, ImageTk,ImageTk,ImageOps
 from src.birectangle.cuttingmethod.CuttingIn8Method import CuttingIn8Method
@@ -78,7 +78,7 @@ class BiRectangleOption():
     def select_inner_rectangle_finder_strategy(self,event):
         self.model.set_birectangle_inner_rectangle_finder_strategy(self.birect_inner_rectangle_finder.get())
     def setupWindows(self):
-        keep = StringVar()
+        plot = StringVar()
         self.windows.grid_rowconfigure(0, weight=1)
         self.windows.grid_rowconfigure(1,weight=2)
         self.windows.grid_columnconfigure(0, weight=1)
@@ -148,10 +148,11 @@ class BiRectangleOption():
         parameterLabel.grid(column=1,row=0,sticky="ew")
         epsilonLabel.grid(column=0,row=0)
         epsilonBox.grid(column=0,row=1)
-        
-        #keep
-        keepFrame = ttk.Frame(parametersFrame)
-        keepLabel = Label(keepFrame,text="keep")
+
+        #plot checkbox
+        framePlotCheck  = ttk.Frame(parametersFrame)
+        allStepCheckBox = Radiobutton(framePlotCheck,text="All step",variable=plot,value="step")
+        lastStepCheckBox = Radiobutton(framePlotCheck,text="last step",variable=plot,value="last")
 class TomographyOption(ttk.Frame):
     def __init__(self, root,model:ShapeAnalogyModel):
         super().__init__(root)
