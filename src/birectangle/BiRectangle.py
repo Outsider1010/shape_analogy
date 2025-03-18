@@ -6,23 +6,18 @@ class BiRectangle:
             innerRectangle), (f"Inner rectangle should be contained by outer rectangle.\n"
                               f"Outer : {outerRectangle}\nInner : {innerRectangle}")
 
-        self.innerRectangle = innerRectangle
-        self.outerRectangle = outerRectangle
+        self.innerRectangle: Rectangle = innerRectangle
+        self.outerRectangle: Rectangle = outerRectangle
 
     def __repr__(self):
-        return "Outer: " + str(self.outerRectangle) + " Inner: " + str(self.innerRectangle)
+        return "Outer: " + str(self.outerRectangle) + " / Inner: " + str(self.innerRectangle)
 
-    def __str__(self):
-        return "Outer: " + str(self.outerRectangle) + "\nInner: " + str(self.innerRectangle)
+    def __iter__(self):
+        return iter((self.innerRectangle, self.outerRectangle))
 
-    def separate(self, epsilon: float):
-        if self.innerRectangle.x_min == self.outerRectangle.x_min:
-            self.innerRectangle.x_min += epsilon
-        if self.innerRectangle.x_max == self.outerRectangle.x_max:
-            self.innerRectangle.x_max -= epsilon
-        if self.innerRectangle.y_min == self.outerRectangle.y_min:
-            self.innerRectangle.y_min += epsilon
-        if self.innerRectangle.y_max == self.outerRectangle.y_max:
-            self.innerRectangle.y_max -= epsilon
-
-
+    def separate(self, epsilon: float) -> None:
+        innerR, outerR = self
+        self.innerRectangle = Rectangle(innerR.x_min + epsilon * (innerR.x_min == outerR.x_min),
+                                        innerR.x_max - epsilon * (innerR.x_max == outerR.x_max),
+                                        innerR.y_min + epsilon * (innerR.y_min == outerR.y_min),
+                                        innerR.y_max - epsilon * (innerR.y_max == outerR.y_max))

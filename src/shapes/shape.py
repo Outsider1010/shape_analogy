@@ -45,6 +45,14 @@ class Shape(ABC):
         pass
 
     @abstractmethod
+    def plot(self):
+        """
+        Plot the shape with matplotlib
+        :return: Nothing
+        """
+        pass
+
+    @abstractmethod
     def toSinogram(self, maxAngle: float):
         """
         Create a sinogram of the shape

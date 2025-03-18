@@ -1,3 +1,5 @@
+from matplotlib import pyplot as plt
+
 from src.birectangle.Point import Point
 
 
@@ -37,14 +39,6 @@ class Rectangle:
     def area(self) -> float:
         return self.width() * self.height()
 
-    def rectangle_from_ratios(self, r_x_min, r_x_max, r_y_min, r_y_max):
-        w, h = self.width(), self.height()
-        x_min = self.x_min + w * r_x_min
-        x_max = self.x_max - w * r_x_max
-        y_min = self.y_min + h * r_y_min
-        y_max = self.y_max - h * r_y_max
-        return Rectangle(x_min, x_max, y_min, y_max)
-
     def __eq__(self, other):
         return (isinstance(other, Rectangle) and self.x_min == other.x_min and self.x_max == other.x_max
                 and self.y_min == other.y_min and self.y_max == other.y_max)
@@ -73,19 +67,13 @@ class Rectangle:
         right_condition = self.x_max >= r.x_max
         return bottom_condition and top_condition and left_condition and right_condition
 
+    def plotBorder(self, color: str, alpha: float = 0.5, zorder: int = 3) -> None:
+        # TODO: compare the time with the patches version
+        plt.plot([self.x_min] * 2, [self.y_min, self.y_max], color, alpha=alpha, zorder=zorder)
+        plt.plot([self.x_max] * 2, [self.y_min, self.y_max], color, alpha=alpha, zorder=zorder)
+        plt.plot([self.x_min, self.x_max], [self.y_max] * 2, color, alpha=alpha, zorder=zorder)
+        plt.plot([self.x_min, self.x_max], [self.y_min] * 2, color, alpha=alpha, zorder=zorder)
 
-def greatest_common_rectangle_ratio(r_a: Rectangle, big_r_a: Rectangle,
-                                    r_b: Rectangle, big_r_b: Rectangle,
-                                    r_c: Rectangle, big_r_c: Rectangle):
-    w_a, h_a = big_r_a.width(), big_r_a.height()
-    w_b, h_b = big_r_b.width(), big_r_b.height()
-    w_c, h_c = big_r_c.width(), big_r_c.height()
-    r_x_min = max((r_a.x_min - big_r_a.x_min) / w_a, (r_b.x_min - big_r_b.x_min) / w_b,
-                  (r_c.x_min - big_r_c.x_min) / w_c)
-    r_x_max = max((big_r_a.x_max - r_a.x_max) / w_a, (big_r_b.x_max - r_b.x_max) / w_b,
-                  (big_r_c.x_max - r_c.x_max) / w_c)
-    r_y_min = max((r_a.y_min - big_r_a.y_min) / h_a, (r_b.y_min - big_r_b.y_min) / h_b,
-                  (r_c.y_min - big_r_c.y_min) / h_c)
-    r_y_max = max((big_r_a.y_max - r_a.y_max) / h_a, (big_r_b.y_max - r_b.y_max) / h_b,
-                  (big_r_c.y_max - r_c.y_max) / h_c)
-    return r_x_min, r_x_max, r_y_min, r_y_max
+    def plotFilled(self, color: str, zorder: int) -> None:
+        plt.fill([self.x_min, self.x_min, self.x_max, self.x_max],
+                 [self.y_min, self.y_max, self.y_max, self.y_min], color, zorder=zorder)

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from src.birectangle.BiRectangle import BiRectangle
+from src.birectangle.Rectangle import Rectangle
 
 
 class BiRectangleAnalogy(ABC):
@@ -9,5 +10,5 @@ class BiRectangleAnalogy(ABC):
     """
 
     @abstractmethod
-    def analogy(self, BRA: BiRectangle, BRB: BiRectangle, BRC: BiRectangle) -> BiRectangle:
+    def analogy(self, BRA: BiRectangle, BRB: BiRectangle, BRC: BiRectangle, outerRectD: Rectangle | None = None) -> BiRectangle:
         pass
