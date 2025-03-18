@@ -1,4 +1,4 @@
-from tkinter import ttk,Toplevel,Label,Button,Spinbox,StringVar,Radiobutton
+from tkinter import ttk,Toplevel,Label,Button,Spinbox,StringVar,Radiobutton,Entry
 from src.ShapeAnalogyModel import ShapeAnalogyModel
 from PIL import Image, ImageTk,ImageTk,ImageOps
 from src.birectangle.cuttingmethod.CuttingIn8Method import CuttingIn8Method
@@ -153,6 +153,12 @@ class BiRectangleOption():
         framePlotCheck  = ttk.Frame(parametersFrame)
         allStepCheckBox = Radiobutton(framePlotCheck,text="All step",variable=plot,value="step")
         lastStepCheckBox = Radiobutton(framePlotCheck,text="last step",variable=plot,value="last")
+        noneStepCheckBox = Radiobutton(framePlotCheck,text="No step",variable=plot,value="none")
+        rangeStepCheckBox = Radiobutton(framePlotCheck,text="Step only with detph < ")
+        vcmd = framePlotCheck.register(self.isDigit)
+        entryRange = Entry(framePlotCheck,validate="all",validatecommand=(vcmd,'%P'))
+    def isDigit(self, digit):
+        return str.isdigit(digit) or digit == "" and digit != "0"
 class TomographyOption(ttk.Frame):
     def __init__(self, root,model:ShapeAnalogyModel):
         super().__init__(root)
