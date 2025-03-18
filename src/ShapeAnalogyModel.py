@@ -27,6 +27,7 @@ class ShapeAnalogyModel:
         if self.can_start():
             self.result, full_array = self.analogyMethod.analogy(*self.shapes)
             if self.result is not None:
+                self.resizeToCorrectSize()
                 self.result.toImage()
                 event="S"
             if full_array is not None:
@@ -56,32 +57,10 @@ class ShapeAnalogyModel:
         self.analogyMethod = self.methods[method]
         self.notify(None)
     
-    def get_birectangle_cutting_strategy(self) -> list:
-        return self.analogyMethod.get_cutting_method()
-    
-    def set_birectangle_cutting_strategy(self,strategy) -> None: 
-        self.analogyMethod.set_cutting_method(strategy)
-        
-    def get_birectangle_cutting_strategy_values(self) -> str:
-        return self.analogyMethod.get_cutting_values()
-
-    def get_birectangle_birectangleAnalogy_strategy(self):
-        return self.analogyMethod.get_birectangle_analogy_method()
-    
-    def set_birectangle_birectangleAnalogy_strategy(self,strategy):
-        self.analogyMethod.set_birectangle_analogy_method(strategy)
-    
-    def get_birectangle_birectangleAnalogy_strategy_values(self):
-        return self.analogyMethod.get_birectangleAnalogy_values()
-
-    def get_birectangle_inner_rectangle_finder_strategy(self):
-        return self.analogyMethod.get_inner_rectangle_finder_method()
-
-    def set_birectangle_inner_rectangle_finder_strategy(self,strategy):
-        self.analogyMethod.set_inner_rectangle_finder_method(strategy)
-
-    def get_birectangle_inner_rectangle_finder_strategy_values(self):
-        return self.analogyMethod.get_inner_rectangle_finder_values()
-    
     def save_result(self,save_path):
        self.result.toImage(save_path)
+    
+    def resizeToCorrectSize(self):
+        maxWidth = max(self.shape[2],max(self.shape[0],self.shape[1],key=lambda x: x.width()),key = lambda x:x.width())
+        maxHeight = max(self.shape[2],max(self.shape[0],self.shape[1],key=lambda x: x.height()),key = lambda x:x.height())
+        self.result.resize(maxWidth + (maxWidth%2),maxHeight+maxWidth%2)

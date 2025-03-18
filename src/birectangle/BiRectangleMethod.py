@@ -12,14 +12,9 @@ from src.birectangle.cuttingmethod.CuttingMethod import CuttingMethod
 from src.birectangle.cuttingmethod.FirstCuttingIn4Method import FirstCuttingIn4Method
 from src.birectangle.innerrectanglefinder.InnerRectangleFinder import InnerRectangleFinder
 from src.birectangle.innerrectanglefinder.LargestRectangleFinder import LargestRectangleFinder
-from src.birectangle.birectangleanalogy.SigmoidTopLeftAnalogy import SigmoidTopLeftAnalogy
-from src.birectangle.birectangleanalogy.SigmoidCenterAnalogy import SigmoidCenterAnalogy
-from src.birectangle.birectangleanalogy.ExtSigmoidAnalogy import ExtSigmoidAnalogy
+
 from src.birectangle.cuttingmethod.FirstCuttingIn4Method import FirstCuttingIn4Method
-from src.birectangle.cuttingmethod.CuttingIn8Method import CuttingIn8Method
-from src.birectangle.pointanalogy.ArithmeticPointAnalogy import ArithmeticPointAnalogy
-from src.birectangle.rectangleanalogy.CenterDimAnalogy import CenterDimAnalogy
-from src.birectangle.rectangleanalogy.TopLeftDimAnalogy import TopLeftDimAnalogy
+
 from src.shapes.pixelShape import PixelShape
 from src.shapes.shape import Shape
 
@@ -49,28 +44,6 @@ class BiRectangleMethod(ShapeAnalogy):
         self.cuttingMethod = cutMethod
         self.innerRectFinder = innerRectFinder
         self.epsilon = epsilon
-<<<<<<< HEAD
-        self.maxIteration = maxIteration
-        self.birectangleAnalogyStrategy = {
-            "Sigmoid center":SigmoidCenterAnalogy(),
-            "Extended sigmoid":ExtSigmoidAnalogy(),
-            "Sigmoid top left analogy":SigmoidTopLeftAnalogy()
-        }
-        self.cuttingStrategy = {
-            "Cut4":FirstCuttingIn4Method(),
-            "Cut8":CuttingIn8Method()
-        }
-        self.innerRectangleFinderStrategy = {
-            "Largest rectangle": LargestRectangleFinder()
-        }
-        self.pointAnalogyStraty = {
-            "Arithmetic analogy": ArithmeticPointAnalogy()
-        }
-        self.rectangleAnalogy = {
-            "Center dimension analogy": CenterDimAnalogy(),
-            "Top left dimension analogy": TopLeftDimAnalogy()
-        }
-=======
         self.maxDepth = maxDepth
         self.initPlot = plot
         self.plot = plot
@@ -82,7 +55,6 @@ class BiRectangleMethod(ShapeAnalogy):
         # 2 : OuterRectangle at depth >= 1 are still the bounding boxes but the analogy is made inside the super outer rectangle (of lower depth)
         # 3 : OuterRectangle at depth >= 1 are still the bounding boxes but the analogy is made inside the cuts rectangles
         self.keep = keep
->>>>>>> main
 
     def analogy(self, SA: Shape, SB: Shape, SC: Shape) -> PixelShape | None:
         res, _, _ = self.__analogy(SA, SB, SC, 0, None, None)
@@ -285,35 +257,24 @@ class BiRectangleMethod(ShapeAnalogy):
         assert (isinstance(plot, int) and 0 <= plot) or plot in ['step', 'last', 'none'], PLOT_ASSERT
         self.plot = plot
         self.initPlot = plot
-    def get_cutting_method(self):
-        return list(self.cuttingStrategy.keys())
     
+    def set_maxDepth(self,depth):
+        self.maxDepth = depth
     
     def set_cutting_method(self,strategy):
         self.cuttingMethod = self.cuttingStrategy[strategy]
 
-    def get_cutting_values(self):
-        return ([key for key, value in self.cuttingStrategy.items() if value.__class__ == self.cuttingMethod.__class__])[0]
-    
-    
-    def get_birectangle_analogy_method(self):
-        return list(self.birectangleAnalogyStrategy.keys()) 
-    
     
     def set_birectangle_analogy_method(self,strategy):
         self.biRectangleAnalogy = self.birectangleAnalogyStrategy[strategy]
     
-    
-    def get_birectangleAnalogy_values(self):
-         return ([key for key, value in self.birectangleAnalogyStrategy.items() if value.__class__ == self.biRectangleAnalogy.__class__])[0]
-    
-     
-    def get_inner_rectangle_finder_method(self):
-        return list(self.innerRectangleFinderStrategy.keys())
-    
-    
+
     def set_inner_rectangle_finder_method(self,strategy):
         self.innerRectangleFinder = self.innerRectangleFinderStrategy[strategy]
     
-    def get_inner_rectangle_finder_values(self):
-        return ([key for key, value in self.innerRectangleFinderStrategy.items() if value.__class__ == self.innerRectangleFinder.__class__])[0]
+    def set_keep(self,keep):
+        self.keep = keep
+    def set_epsilon(self,epsilon):
+        self.epsilon = epsilon
+    def set_plot(self,plot):
+        self.plot = plot
