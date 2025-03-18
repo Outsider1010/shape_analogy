@@ -10,7 +10,7 @@ class Rectangle:
     An axis-aligned rectangle
     """
     def __init__(self, x_min: Decimal | float, x_max: Decimal | float, y_min: Decimal | float, y_max: Decimal | float):
-        prec = Decimal('0.0000001')
+        prec = Decimal('0.00000001')
         if isinstance(x_min, float):
             x_min = Decimal(str(x_min))
         if isinstance(x_max, float):
@@ -19,10 +19,10 @@ class Rectangle:
             y_min = Decimal(str(y_min))
         if isinstance(y_max, float):
             y_max = Decimal(str(y_max))
-        x_min = x_min.quantize(prec)
-        x_max = x_max.quantize(prec)
-        y_min = y_min.quantize(prec)
-        y_max = y_max.quantize(prec)
+        x_min = Decimal(x_min).quantize(prec)
+        x_max = Decimal(x_max).quantize(prec)
+        y_min = Decimal(y_min).quantize(prec)
+        y_max = Decimal(y_max).quantize(prec)
         assert x_min <= x_max, f"Negative width: w = {x_max - x_min}"
         assert y_min <= y_max, f"Negative height: h = {y_max - y_min}"
         self.x_min = x_min
@@ -63,8 +63,8 @@ class Rectangle:
 
 
     def __repr__(self):
-        # return f"{self.bottomLeft()}, {self.topRight()}"
-        return f"topLeft={self.topLeft()}, w={round(self.width(), 4)}, h={round(self.height(), 4)}"
+        return f"{self.bottomLeft()}, {self.topRight()}"
+        # return f"topLeft={self.topLeft()}, w={self.width()}, h={self.height()}"
 
     # allows x_min, x_max, y_min, y_max = rectangle
     def __iter__(self):
@@ -92,6 +92,17 @@ class Rectangle:
         left_condition = self.x_min <= r.x_min
         right_condition = self.x_max >= r.x_max
         return bottom_condition and top_condition and left_condition and right_condition
+
+    def intersection(self, r):
+        x_min = max(self.x_min, r.x_min)
+        x_max = min(self.x_max, r.x_max)
+        y_min = max(self.y_min, r.y_min)
+        y_max = min(self.y_max, r.y_max)
+        return Rectangle(x_min, x_max, y_min, y_max) if x_min <= x_max and y_min <= y_max else None
+
+    def nonPointIntersection(self, r) -> bool:
+        x = self.intersection(r)
+        return x is not None and (x.width() > 0 or x.height() > 0)
 
     def plotBorder(self, color: str, alpha: float = 0.5, zorder: int = 3) -> None:
         # TODO: compare the time with the patches version
