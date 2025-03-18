@@ -83,10 +83,12 @@ class PixelShape(Shape):
     def toRectangles(self, lir):
         r = lir.findInnerRectanglePixels(self)
         res = UnionRectangles()
+        p = np.copy(self.pixels)
         while r.area() > 0:
             res.addRectangle(r)
             setRangeValue(self.pixels, False, r.x_min, r.x_max, r.y_min, r.y_max)
             r = lir.findInnerRectanglePixels(self)
+        self.pixels = p
         return res
 
     def __add__(self, other):
@@ -160,6 +162,9 @@ class PixelShape(Shape):
         y2 = h2 / 2 - y2
         x2 = x2 - w2 / 2
         return y1.shape == y2.shape and x1.shape == x2.shape and np.all(y1 == y2) and np.all(x1 == x2)
+
+    def __repr__(self):
+        return str(self.pixels)
 
     def width(self) -> int:
         return self.pixels.shape[1]

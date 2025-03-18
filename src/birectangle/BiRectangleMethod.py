@@ -36,8 +36,8 @@ class BiRectangleMethod(ShapeAnalogy):
                  cutMethod: CuttingMethod = CutIn4EqualParts1(),
                  innerRectFinder: InnerRectangleFinder = LargestRectangleFinder(),
                  rectangleAnalogy: RectangleAnalogy = CenterDimAnalogy(), epsilon: float = 0.01,
-                 maxDepth: int = 7, keep: int = 2, innerReduction: bool = False,
-                 plot: str | int = 'last', ratioAnalogy: bool = False, nbIterations = 5):
+                 maxDepth: int = 7, keep: int = 3, innerReduction: bool = False,
+                 plot: str | int = 'last', ratioAnalogy: bool = False, nbIterations = 1024):
         assert isinstance(biRectAnalogy, BiRectangleAnalogy)
         assert isinstance(cutMethod, CuttingMethod)
         assert isinstance(innerRectFinder, InnerRectangleFinder)
@@ -89,7 +89,8 @@ class BiRectangleMethod(ShapeAnalogy):
         plt_solved_rects = []
         # list of rectangles where we could not solve the analogy
         plt_unsolved_rects = []
-
+        plt_x_min = plt_y_min = np.inf
+        plt_x_max = plt_y_max = -np.inf
         empty = tuple(s.isEmpty() for s in shapes)
         if k == 0 or self.keep != 1:
             outerRectangles = [s.getOuterRectangle() for s in shapes]
@@ -146,12 +147,12 @@ class BiRectangleMethod(ShapeAnalogy):
                                                                     outerRD)
                 birectangles.append(birectangle_d)
                 innerRD, outerRD = birectangle_d
-                plt_outerD = outerRD.x_min, outerRD.x_max, outerRD.y_min, outerRD.y_max
+                plt_x_min, plt_x_max, plt_y_min, plt_y_max = outerRD.x_min, outerRD.x_max, outerRD.y_min, outerRD.y_max
                 d = PixelShape(rect=innerRD)
                 if len(outerRectangles) == 3:
                     outerRectangles.append(outerRD)
 
-                if k <= self.maxDepth:
+                if k < self.maxDepth:
                     subRectanglesA, subRectanglesB, subRectanglesC, subRectanglesD = tuple(
                         self.cuttingMethod.cutBiRectangle(biRect) for biRect in birectangles)
                     subshapesA, subshapesB, subshapesC = tuple(
@@ -195,32 +196,44 @@ class BiRectangleMethod(ShapeAnalogy):
                         r = plt_solved_rects[i]
                         if i == color_indexes[j]:
                             j += 1
-                        plt_outerD = (min(plt_outerD[0], r.x_min), max(plt_outerD[1], r.x_max),
-                                      min(plt_outerD[2], r.y_min), max(plt_outerD[3], r.y_max))
+                        plt_x_min = min(plt_x_min, r.x_min)
+                        plt_x_max = max(plt_x_max, r.x_max)
+                        plt_y_min = min(plt_y_min, r.y_min)
+                        plt_y_max = max(plt_y_max, r.y_max)
                         r.plotFilled(plt_colors[j], zorder=2)
                         r.plotFilled(C_INNER_R_FILL, zorder=2)
                     for r in plt_unsolved_rects:
-                        plt_outerD = (min(plt_outerD[0], r.x_min), max(plt_outerD[1], r.x_max),
-                                      min(plt_outerD[2], r.y_min), max(plt_outerD[3], r.y_max))
+                        plt_x_min = min(plt_x_min, r.x_min)
+                        plt_x_max = max(plt_x_max, r.x_max)
+                        plt_y_min = min(plt_y_min, r.y_min)
+                        plt_y_max = max(plt_y_max, r.y_max)
                         r.plotFilled(C_UNSOLVED_R, zorder=1)
                     self.__set_keys_and_text(plt.figure('D'), k)
-                    plt.axis('square')
-                    plt.axis((plt_outerD[0] - self.__margin, plt_outerD[1] + self.__margin,
-                              plt_outerD[2] - self.__margin, plt_outerD[3] + self.__margin))
                 if self.plot != 'none':
                     plt_solved_rects.append(innerRD)
             except AssertionError as e:
                 lgg.warning(f" {e}. Analogy unsolved.")
 
         if self.__plotting(k):
-            if d is None:
-                plt.figure("D").canvas.mpl_connect('key_press_event', self.__on_key_press)
             for i in range(3):
                 self.__set_keys_and_text(plt.figure(chr(ord("A") + i)), k)
                 shapes[i].plot()
+                r = outerRectangles[i]
+                plt_x_min = min(plt_x_min, r.x_min)
+                plt_x_max = max(plt_x_max, r.x_max)
+                plt_y_min = min(plt_y_min, r.y_min)
+                plt_y_max = max(plt_y_max, r.y_max)
                 plt.axis('square')
-                plt.axis((outerRectangles[i].x_min - self.__margin, outerRectangles[i].x_max + self.__margin,
-                          outerRectangles[i].y_min - self.__margin, outerRectangles[i].y_max + self.__margin))
+                plt.axis((plt_x_min - self.__margin, plt_x_max + self.__margin,
+                          plt_y_min - self.__margin, plt_y_max + self.__margin))
+            if d is None:
+                plt.figure("D").canvas.mpl_connect('key_press_event', self.__on_key_press)
+            else:
+                plt.figure('D')
+                plt.axis('square')
+                plt.axis((plt_x_min - self.__margin, plt_x_max + self.__margin,
+                          plt_y_min - self.__margin, plt_y_max + self.__margin))
+
             plt.show()
         return d, plt_solved_rects, plt_unsolved_rects
 
@@ -288,6 +301,7 @@ class BiRectangleMethod(ShapeAnalogy):
             # super rectangles are the outer rectangles of the super-shapes
             # cut rectangles are the rectangles obtained by cutting
             shapes, superRectangles, cutRectangles = equations.popleft()
+
             empty = tuple(s.isEmpty() for s in shapes)
             if (empty[0] and empty[1]) or (empty[0] and empty[2]):
                 x = 2 if empty[0] and empty[1] else 1
@@ -327,7 +341,7 @@ class BiRectangleMethod(ShapeAnalogy):
                     else:
                         birectangles2 = []
                         for i in range(3):
-                            b = BiRectangle(outerRectangles[i] if self.keep == 2 else cutRectangles[i], outerRectangles[i])
+                            b = BiRectangle(superRectangles[i] if self.keep == 2 else cutRectangles[i], outerRectangles[i])
                             # prevents the inner rectangle from touching the outerRectangle (if epsilon > 0)
                             b.separate(self.epsilon)
                             birectangles2.append(b)

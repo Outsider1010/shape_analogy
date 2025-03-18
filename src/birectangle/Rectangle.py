@@ -59,8 +59,8 @@ class Rectangle:
                 and self.y_min == other.y_min and self.y_max == other.y_max)
 
     def __repr__(self):
-        return f"{self.bottomLeft()}, {self.topRight()}"
-        # return f"topLeft={self.topLeft()}, w={self.width()}, h={self.height()}"
+        # return f"{self.bottomLeft()}, {self.topRight()}"
+        return f"topLeft={self.topLeft()}, w={self.width()}, h={self.height()}"
 
     # allows x_min, x_max, y_min, y_max = rectangle
     def __iter__(self):

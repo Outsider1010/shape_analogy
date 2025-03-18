@@ -40,7 +40,6 @@ class LargestRectangleFinder(InnerRectangleFinder):
                 if ys[i] == r.y_max:
                     i_y_max = i
             matrix[i_y_min:i_y_max, i_x_min:i_x_max] = True
-
         h_adj = np.zeros_like(matrix, dtype=int)
         v_adj = np.zeros_like(matrix, dtype=int)
 
@@ -62,8 +61,8 @@ class LargestRectangleFinder(InnerRectangleFinder):
             _h2 = v_adj[i, j]
             j1 = j + _w1 - 1
             i2 = i + _h2 - 1
-            _h1 = v_adj[i, j1]
-            _w2 = h_adj[i2, j]
+            _h1 = min(v_adj[i, j1], _h2)
+            _w2 = min(h_adj[i2, j], _w1)
             area1 = (ys[i + _h1] - ys[i]) * (xs[j1 + 1] - xs[j])
             area2 = (ys[i2 + 1] - ys[i]) * (xs[j + _w2] - xs[j])
             if area1 > best_area:
