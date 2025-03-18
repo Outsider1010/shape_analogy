@@ -1,5 +1,8 @@
+import math
 from decimal import Decimal
 from typing import Iterable
+
+import numpy as np
 
 from src.birectangle.BiRectangle import BiRectangle
 from src.birectangle.Rectangle import Rectangle
@@ -75,8 +78,70 @@ class UnionRectangles(Shape):
             r.plotFilled("k", 1)
 
     def toPixels(self) -> {}:
-        # TODO
-        pass
+        # 1. On calcule le rectangle englobant.
+        outer = self.getOuterRectangle()
+
+        x_min = float(outer.x_min)
+        x_max = float(outer.x_max)
+        y_min = float(outer.y_min)
+        y_max = float(outer.y_max)
+
+        # Bornes pour la grille de pixels.
+        px_min = math.floor(x_min)
+        px_max = math.ceil(x_max)
+        py_min = math.floor(y_min)
+        py_max = math.ceil(y_max)
+
+        width = px_max - px_min
+        height = py_max - py_min
+
+        # 2. On initialise la matrice de pixels.
+        pixels = np.zeros((height, width), dtype = np.uint8)
+
+        # 3. On parcourt chaque rectangle.
+        for rect in self.rectangles:
+            rx_min = float(rect.x_min)
+            rx_max = float(rect.x_max)
+            ry_min = float(rect.y_min)
+            ry_max = float(rect.y_max)
+
+            # Indices pour la zone du rectangle dans la matrice.
+            # Par exemple pour i_max = min(width, math.ceil(rx_max) - px_min) :
+            #   math.ceil(rx_max): prend la valeur entière supérieure de rx_max pour inclure le dernier pixel.
+            #   - px_min: ajuste par rapport à l'origine de la matrice (repère cartésien).
+            #   min(width, ...): nous empêche de dépasser la largeur de la matrice.
+            i_min = max(0, math.floor(rx_min) - px_min)
+            i_max = min(width, math.ceil(rx_max) - px_min)
+            j_min = max(0, math.floor(ry_min) - py_min)
+            j_max = min(height, math.ceil(ry_max) - py_min)
+
+            for j in range(j_min, j_max):
+                for i in range(i_min, i_max):
+                    pixel_x_min = px_min + i
+                    pixel_x_max = pixel_x_min + 1
+                    pixel_y_min = py_min + j
+                    pixel_y_max = pixel_y_min + 1
+
+                    inter_x_min = max(rx_min, pixel_x_min)
+                    inter_x_max = min(rx_max, pixel_x_max)
+                    inter_y_min = max(ry_min, pixel_y_min)
+                    inter_y_max = min(ry_max, pixel_y_max)
+
+                    inter_width = max(0, inter_x_max - inter_x_min)
+                    inter_height = max(0, inter_y_max - inter_y_min)
+                    inter_area = inter_width * inter_height
+
+                    coverage = inter_area
+
+                    # Calcul de la teinte :
+                    # Si le pixel est totalement recouvert (coverage == 1), valeur = 255,
+                    # Sinon pour un recouvrement partiel, valeur = coverage * 255.
+                    new_value = int(round(coverage * 255))
+
+                    # Comme le pixel peut être recouvert par plusieurs rectangles, on garde le maximum.
+                    pixels[j, i] = max(pixels[j, i], new_value)
+
+        return pixels
 
     def toImage(self, name: str = "default.bmp"):
         self.toPixels().toImage(name)
