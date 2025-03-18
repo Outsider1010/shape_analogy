@@ -81,51 +81,51 @@ class UnionRectangles(Shape):
         for r in self.rectangles:
             r.plotFilled("k", 1)
 
-    def toPixels(self) -> {}:
-        # 1. On calcule le rectangle englobant.
+    def toPixels(self) -> np.ndarray:
+        # 1. Calcule le rectangle englobant.
         outer = self.getOuterRectangle()
 
-        x_min = float(outer.x_min)
-        x_max = float(outer.x_max)
-        y_min = float(outer.y_min)
-        y_max = float(outer.y_max)
+        x_min_outer = float(outer.x_min)
+        x_max_outer = float(outer.x_max)
+        y_min_outer = float(outer.y_min)
+        y_max_outer = float(outer.y_max)
 
-        # Bornes pour la grille de pixels.
-        px_min = math.floor(x_min)
-        px_max = math.ceil(x_max)
-        py_min = math.floor(y_min)
-        py_max = math.ceil(y_max)
+        # 2. Détermine la taille de la grille de pixels.
+        w = 2 * math.ceil(max(abs(x_min_outer), abs(x_max_outer)))
+        h = 2 * math.ceil(max(abs(y_min_outer), abs(y_max_outer)))
+        w = max(w, 2)
+        h = max(h, 2)
 
-        width = px_max - px_min
-        height = py_max - py_min
+        # La grille est centrée, donc:
+        # Le coin inférieur gauche en coordonnées réelles est (-w/2, -h/2)
+        grid_x_min = -w / 2
+        grid_y_min = -h / 2
 
-        # 2. On initialise la matrice de pixels.
-        pixels = np.zeros((height, width), dtype = np.uint8)
+        # 3. Initialise la matrice de pixels.
+        pixels = np.full((h, w), 255, dtype=np.uint8)
 
-        # 3. On parcourt chaque rectangle.
+        # 4. Pour chaque rectangle, on détermine la zone respective de la matrice.
         for rect in self.rectangles:
             rx_min = float(rect.x_min)
             rx_max = float(rect.x_max)
             ry_min = float(rect.y_min)
             ry_max = float(rect.y_max)
 
-            # Indices pour la zone du rectangle dans la matrice.
-            # Par exemple pour i_max = min(width, math.ceil(rx_max) - px_min) :
-            #   math.ceil(rx_max): prend la valeur entière supérieure de rx_max pour inclure le dernier pixel.
-            #   - px_min: ajuste par rapport à l'origine de la matrice (repère cartésien).
-            #   min(width, ...): nous empêche de dépasser la largeur de la matrice.
-            i_min = max(0, math.floor(rx_min) - px_min)
-            i_max = min(width, math.ceil(rx_max) - px_min)
-            j_min = max(0, math.floor(ry_min) - py_min)
-            j_max = min(height, math.ceil(ry_max) - py_min)
+            # Conversion des bornes réelles en indices de matrice.
+            i_min = max(0, math.floor(rx_min - grid_x_min))
+            i_max = min(w, math.ceil(rx_max - grid_x_min))
+            j_min = max(0, math.floor(ry_min - grid_y_min))
+            j_max = min(h, math.ceil(ry_max - grid_y_min))
 
             for j in range(j_min, j_max):
                 for i in range(i_min, i_max):
-                    pixel_x_min = px_min + i
+                    # Bornes en coordonnées réelles du pixel.
+                    pixel_x_min = grid_x_min + i
                     pixel_x_max = pixel_x_min + 1
-                    pixel_y_min = py_min + j
+                    pixel_y_min = grid_y_min + j
                     pixel_y_max = pixel_y_min + 1
 
+                    # Puis on calcule l'intersection entre le pixel et le rectangle.
                     inter_x_min = max(rx_min, pixel_x_min)
                     inter_x_max = min(rx_max, pixel_x_max)
                     inter_y_min = max(ry_min, pixel_y_min)
@@ -133,17 +133,15 @@ class UnionRectangles(Shape):
 
                     inter_width = max(0, inter_x_max - inter_x_min)
                     inter_height = max(0, inter_y_max - inter_y_min)
+                    # Aire de l'intersection.
                     inter_area = inter_width * inter_height
 
+                    # Calcule de la fraction de recouvrement.
                     coverage = inter_area
+                    new_value = 255 - int(round(coverage * 255))
 
-                    # Calcul de la teinte :
-                    # Si le pixel est totalement recouvert (coverage == 1), valeur = 255,
-                    # Sinon pour un recouvrement partiel, valeur = coverage * 255.
-                    new_value = int(round(coverage * 255))
-
-                    # Comme le pixel peut être recouvert par plusieurs rectangles, on garde le maximum.
-                    pixels[j, i] = max(pixels[j, i], new_value)
+                    # Heuristique : si plusieurs rectangles recouvrent le même pixel, on garde la teinte la plus sombre.
+                    pixels[j, i] = min(pixels[j, i], new_value)
 
         return pixels
 

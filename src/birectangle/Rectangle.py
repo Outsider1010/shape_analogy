@@ -58,10 +58,6 @@ class Rectangle:
         return (isinstance(other, Rectangle) and self.x_min == other.x_min and self.x_max == other.x_max
                 and self.y_min == other.y_min and self.y_max == other.y_max)
 
-    def __hash__(self):
-        return hash((self.x_min, self.x_max, self.y_min, self.y_max))
-
-
     def __repr__(self):
         return f"{self.bottomLeft()}, {self.topRight()}"
         # return f"topLeft={self.topLeft()}, w={self.width()}, h={self.height()}"
