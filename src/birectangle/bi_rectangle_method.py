@@ -33,7 +33,8 @@ class BiRectangleMethod(ShapeAnalogy):
     def __init__(self, biRectAnalogy: BiRectangleAnalogy = BiSegmentAnalogy(),
                  cutMethod: CuttingMethod = CutIn4EqualParts1(), maxDepth: int = 5, nbIterations: int = 1365,
                  innerRectFinder: InnerRectangleFinder = LargestRectangleFinder(), epsilon: float = 0.01,
-                 keep: int = 0, innerReduction: bool = False, algo: str = 'iter', plot: str | int = 'last'):
+                 keep: int = 0, innerReduction: bool = False, algo: str = 'iter', plot: str | int = 'last',
+                 sameAxis = True):
         assert isinstance(biRectAnalogy, BiRectangleAnalogy)
         assert isinstance(cutMethod, CuttingMethod)
         assert isinstance(innerRectFinder, InnerRectangleFinder)
@@ -48,6 +49,7 @@ class BiRectangleMethod(ShapeAnalogy):
         self.epsilon = Decimal(epsilon)
         self.maxDepth = maxDepth
         self.initPlot = self.plot = plot
+        self.sameAxis = sameAxis
         self.algo = algo
         self.__margin = 5
         self.nbIterations = nbIterations
@@ -98,7 +100,7 @@ class BiRectangleMethod(ShapeAnalogy):
         plt_unsolved_rects = []
         plt_x_min = plt_y_min = np.inf
         plt_x_max = plt_y_max = -np.inf
-        if self.plot != 'none':
+        if self.plot != 'none' and self.sameAxis:
             for s in shapes:
                 R = s.getOuterRectangle()
                 plt_x_min = min(R.x_min, plt_x_min)
@@ -149,6 +151,11 @@ class BiRectangleMethod(ShapeAnalogy):
                     for i in range(4):
                         # plot bi-rectangles and cutting lines of A, B, C and D
                         plt.figure(chr(ord("A") + i))
+                        if self.sameAxis:
+                            plt_x_min = min(plt_x_min, birectangles[i].outerRectangle.x_min)
+                            plt_x_max = max(plt_x_max, birectangles[i].outerRectangle.x_max)
+                            plt_y_min = min(plt_y_min, birectangles[i].outerRectangle.y_min)
+                            plt_y_max = max(plt_y_max, birectangles[i].outerRectangle.y_max)
                         birectangles[i].outerRectangle.plotBorder(C_OUTER_R)
                         birectangles[i].innerRectangle.plotBorder(C_INNER_R_BORDER)
                         self.cuttingMethod.plotCuttingLines(birectangles[i])
@@ -177,8 +184,13 @@ class BiRectangleMethod(ShapeAnalogy):
                 self.__set_keys_and_text(plt.figure(chr(ord("A") + i)), k)
                 shapes[i].plot()
                 plt.axis('square')
-                plt.axis((plt_x_min - self.__margin, plt_x_max + self.__margin,
-                          plt_y_min - self.__margin, plt_y_max + self.__margin))
+                if self.sameAxis:
+                    plt.axis((plt_x_min - self.__margin, plt_x_max + self.__margin,
+                              plt_y_min - self.__margin, plt_y_max + self.__margin))
+                else:
+                    R = shapes[i].getOuterRectangle()
+                    plt.axis((R.x_min - self.__margin, R.x_max + self.__margin,
+                              R.y_min - self.__margin, R.y_max + self.__margin))
             plt.show()
         return d, plt_unsolved_rects
 
@@ -191,7 +203,7 @@ class BiRectangleMethod(ShapeAnalogy):
         plt_unsolved_rects = []
         plt_x_min = plt_y_min = np.inf
         plt_x_max = plt_y_max = -np.inf
-        if self.plot != 'none':
+        if self.plot != 'none' and self.sameAxis:
             for s in shapes:
                 R = s.getOuterRectangle()
                 plt_x_min = min(R.x_min, plt_x_min)
@@ -206,7 +218,7 @@ class BiRectangleMethod(ShapeAnalogy):
             # super rectangles are the outer rectangles of the super-shapes
             # cut rectangles are the rectangles obtained by cutting
             shapes, superRectangles, cutRectangles = equations.popleft()
-
+            
             empty = tuple(s.isEmpty() for s in shapes)
             if (empty[0] and empty[1]) or (empty[0] and empty[2]):
                 x = 2 if empty[0] and empty[1] else 1
@@ -224,6 +236,11 @@ class BiRectangleMethod(ShapeAnalogy):
                     if first and self.plot != 'none':
                         for i in range(4):
                             plt.figure(chr(ord("A") + i))
+                            if self.sameAxis:
+                                plt_x_min = min(plt_x_min, birectangles[i].outerRectangle.x_min)
+                                plt_x_max = max(plt_x_max, birectangles[i].outerRectangle.x_max)
+                                plt_y_min = min(plt_y_min, birectangles[i].outerRectangle.y_min)
+                                plt_y_max = max(plt_y_max, birectangles[i].outerRectangle.y_max)
                             birectangles[i].outerRectangle.plotBorder(C_OUTER_R)
                             birectangles[i].innerRectangle.plotBorder(C_INNER_R_BORDER)
                             self.cuttingMethod.plotCuttingLines(birectangles[i])
@@ -259,12 +276,19 @@ class BiRectangleMethod(ShapeAnalogy):
                 plt_y_min = min(plt_y_min, y_min)
                 plt_y_max = max(plt_y_max, y_max)
                 plt.axis('square')
-                plt.axis((plt_x_min, plt_x_max, plt_y_min, plt_y_max))
+                plt.axis((plt_x_min - self.__margin, plt_x_max + self.__margin,
+                          plt_y_min - self.__margin, plt_y_max + self.__margin))
             for i in range(3):
                 plt.figure(chr(ord("A") + i))
                 init_shapes[i].plot()
                 plt.axis('square')
-                plt.axis((plt_x_min, plt_x_max, plt_y_min, plt_y_max))
+                if self.sameAxis:
+                    plt.axis((plt_x_min - self.__margin, plt_x_max + self.__margin,
+                              plt_y_min - self.__margin, plt_y_max + self.__margin))
+                else:
+                    R = shapes[i].getOuterRectangle()
+                    plt.axis((R.x_min - self.__margin, R.x_max + self.__margin,
+                              R.y_min - self.__margin, R.y_max + self.__margin))
             plt.show()
         return d
 

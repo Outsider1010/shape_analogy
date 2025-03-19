@@ -9,8 +9,18 @@ from src.birectangle.rectangle import Rectangle
 
 class BiRectangle:
     def __init__(self, outerRectangle: Rectangle, innerRectangle: Rectangle):
-        assert outerRectangle.containsRectangle(
-            innerRectangle), (f"Inner rectangle should be contained by outer rectangle.\n"
+        b = outerRectangle.containsRectangle(innerRectangle)
+        if not b:
+            limit = Decimal('1E-25')
+            if not outerRectangle.y_min <= innerRectangle.y_min and outerRectangle.y_min - innerRectangle.y_min < limit:
+                innerRectangle.y_min = outerRectangle.y_min
+            if not outerRectangle.x_min <= innerRectangle.x_min and outerRectangle.x_min - innerRectangle.x_min < limit:
+                innerRectangle.x_min = outerRectangle.x_min
+            if not outerRectangle.y_max >= innerRectangle.y_max and innerRectangle.y_max - outerRectangle.y_max < limit:
+                innerRectangle.y_max = outerRectangle.y_max
+            if not outerRectangle.x_max >= innerRectangle.x_max and innerRectangle.x_max - outerRectangle.x_max < limit:
+                innerRectangle.x_max = outerRectangle.x_max
+        assert outerRectangle.containsRectangle(innerRectangle), (f"Inner rectangle should be contained by outer rectangle.\n"
                               f"Outer : {outerRectangle}\nInner : {innerRectangle}")
 
         self.innerRectangle: Rectangle = innerRectangle
@@ -55,6 +65,17 @@ class BiRectangle:
                                 np.array([2 * float(r_y_min * outerR.y_min), 2 * float(r_y_max * outerR.y_max)]))
 
         r = Rectangle.fromCenter(Point(cx, cy), w, h)
+        b = outerR.containsRectangle(r)
+        if not b:
+            limit = Decimal('1E-25')
+            if not outerR.y_min <= r.y_min and outerR.y_min - r.y_min < limit:
+                r.y_min = outerR.y_min
+            if not outerR.x_min <= r.x_min and outerR.x_min - r.x_min < limit:
+                r.x_min = outerR.x_min
+            if not outerR.y_max >= r.y_max and r.y_max - outerR.y_max < limit:
+                r.y_max = outerR.y_max
+            if not outerR.x_max >= r.x_max and r.x_max - outerR.x_max < limit:
+                r.x_max = outerR.x_max
         assert outerR.containsRectangle(r), (f"Inner rectangle should be contained by outer rectangle after ratio.\n"
                               f"Outer : {outerR}\nInner : {r}")
         self.innerRectangle = r

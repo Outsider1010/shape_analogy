@@ -5,5 +5,5 @@ SA = PixelShape(img="resources/circle_4.bmp")
 SB = PixelShape(img="resources/circle_1.bmp")
 SC = PixelShape(img="resources/circle_3.bmp")
 
-m = BiRectangleMethod()
+m = BiRectangleMethod(algo='iter', plot='step', keep=1, epsilon=0.0001)
 m.analogy(SA, SB, SC)

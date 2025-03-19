@@ -10,7 +10,6 @@ class Rectangle:
     An axis-aligned rectangle
     """
     def __init__(self, x_min: Decimal | float, x_max: Decimal | float, y_min: Decimal | float, y_max: Decimal | float):
-        prec = Decimal('0.00000001')
         if isinstance(x_min, float):
             x_min = Decimal(str(x_min))
         if isinstance(x_max, float):
@@ -19,10 +18,10 @@ class Rectangle:
             y_min = Decimal(str(y_min))
         if isinstance(y_max, float):
             y_max = Decimal(str(y_max))
-        x_min = Decimal(x_min).quantize(prec)
-        x_max = Decimal(x_max).quantize(prec)
-        y_min = Decimal(y_min).quantize(prec)
-        y_max = Decimal(y_max).quantize(prec)
+        x_min = Decimal(x_min)
+        x_max = Decimal(x_max)
+        y_min = Decimal(y_min)
+        y_max = Decimal(y_max)
         assert x_min <= x_max, f"Negative width: w = {x_max - x_min}"
         assert y_min <= y_max, f"Negative height: h = {y_max - y_min}"
         self.x_min = x_min

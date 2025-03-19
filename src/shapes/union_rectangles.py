@@ -97,7 +97,7 @@ class UnionRectangles(Shape):
 
     def plot(self, color='k') -> None:
         for r in self.rectangles:
-            r.plotFilled(color, 1)
+            r.plotFilled(color, 2)
 
     def toPixels(self):
         # 1. Calcule le rectangle englobant.

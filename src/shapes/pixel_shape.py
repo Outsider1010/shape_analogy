@@ -27,11 +27,6 @@ def coordRangeToMatrixIndexes(arr: np.ndarray, x_min: Decimal, x_max: Decimal,
     h, w = arr.shape
     mi_w = Decimal(w / 2)
     mi_h = Decimal(h / 2)
-    prec = Decimal('0.0000001')
-    x_min = x_min.quantize(prec)
-    x_max = x_max.quantize(prec)
-    y_min = y_min.quantize(prec)
-    y_max = y_max.quantize(prec)
     if STRICTNESS == 0:
         return int(x_min + mi_w), ceil(x_max + mi_w), int(mi_h - y_max), ceil(mi_h - y_min)
     elif STRICTNESS == 1:
