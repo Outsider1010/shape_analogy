@@ -63,5 +63,7 @@ class BiRectangle:
         y_min_rescale = (self.innerRectangle.y_min - self.outerRectangle.y_min) / h
         y_max_rescale = (self.innerRectangle.y_max - self.outerRectangle.y_min) / h
 
-        return Rectangle(toCoordSysR.x_min + x_min_rescale * w, toCoordSysR.x_min + x_max_rescale * w,
-                         toCoordSysR.y_min + y_min_rescale * w, toCoordSysR.y_min + y_max_rescale * w)
+        w2 = toCoordSysR.width()
+        h2 = toCoordSysR.height()
+        return Rectangle(toCoordSysR.x_min + x_min_rescale * w2, toCoordSysR.x_min + x_max_rescale * w2,
+                         toCoordSysR.y_min + y_min_rescale * h2, toCoordSysR.y_min + y_max_rescale * h2)

@@ -8,16 +8,16 @@ from collections import deque
 from src.ShapeAnalogy import ShapeAnalogy
 from src.birectangle.BiRectangle import BiRectangle
 from src.birectangle.Rectangle import Rectangle
-from src.birectangle.birectangleanalogy.BiRectangleAnalogy import BiRectangleAnalogy
-from src.birectangle.birectangleanalogy.BiSegmentAnalogy import BiSegmentAnalogy
+from src.birectangle.birectangleanalogy.bi_rectangle_analogy import BiRectangleAnalogy
+from src.birectangle.birectangleanalogy.bi_segment_analogy import BiSegmentAnalogy
 from src.birectangle.cuttingmethod.CuttingMethod import CuttingMethod
 from src.birectangle.cuttingmethod.CutIn4EqualParts1 import CutIn4EqualParts1
 from src.birectangle.innerrectanglefinder.InnerRectangleFinder import InnerRectangleFinder
 from src.birectangle.innerrectanglefinder.LargestRectangleFinder import LargestRectangleFinder
 from src.birectangle.rectangleanalogy.CenterDimAnalogy import CenterDimAnalogy
 from src.birectangle.rectangleanalogy.RectangleAnalogy import RectangleAnalogy
-from src.shapes.UnionRectangles import UnionRectangles
-from src.shapes.pixelShape import PixelShape
+from src.shapes.union_rectangles import UnionRectangles
+from src.shapes.pixel_shape import PixelShape
 from src.shapes.shape import Shape
 
 PLOT_ASSERT = ("`plot` keyword should be set to `step` to see every step, `last` to see only the final step or `none` "
@@ -36,15 +36,15 @@ class BiRectangleMethod(ShapeAnalogy):
                  cutMethod: CuttingMethod = CutIn4EqualParts1(),
                  innerRectFinder: InnerRectangleFinder = LargestRectangleFinder(),
                  rectangleAnalogy: RectangleAnalogy = CenterDimAnalogy(), epsilon: float = 0.01,
-                 maxDepth: int = 7, keep: int = 3, innerReduction: bool = False,
-                 plot: str | int = 'last', ratioAnalogy: bool = False, nbIterations = 1024):
+                 maxDepth: int = 7, keep: int = 0, innerReduction: bool = False,
+                 plot: str | int = 'last', ratioAnalogy: bool = False, nbIterations = 1365):
         assert isinstance(biRectAnalogy, BiRectangleAnalogy)
         assert isinstance(cutMethod, CuttingMethod)
         assert isinstance(innerRectFinder, InnerRectangleFinder)
         assert isinstance(rectangleAnalogy, RectangleAnalogy)
         assert 0 <= epsilon < 0.5, f"Epsilon value ({epsilon}) is too high (should be < 0.5)"
         assert (isinstance(plot, int) and 0 <= plot) or plot in ['step', 'last', 'none'], PLOT_ASSERT
-        assert 0 <= keep <= 3, f"'Keep' ({keep}) value is 0, 1, 2 or 3"
+        assert 0 <= keep <= 4, f"'Keep' ({keep}) value is 0, 1, 2 or 3"
         assert not ratioAnalogy or innerReduction, f"Ratio analogy needs innerReduction to be true."
         self.biRectangleAnalogy = biRectAnalogy
         self.cuttingMethod = cutMethod
@@ -62,6 +62,7 @@ class BiRectangleMethod(ShapeAnalogy):
         # 1 : OuterRectangle at depth >= 1 are now the rectangles obtained by cutting (no analogy on outer rectangles)
         # 2 : OuterRectangle at depth >= 1 are still the bounding boxes but the analogy is made inside the super outer rectangle (of lower depth)
         # 3 : OuterRectangle at depth >= 1 are still the bounding boxes but the analogy is made inside the cuts rectangles
+        # 4 : OuterRectangle at depth >= 1 are now the super outer rectangles (no analogy on outer rectangles)
         self.keep = keep
         self.innerReduction = innerReduction
         self.ratioAnalogy = ratioAnalogy
@@ -92,10 +93,12 @@ class BiRectangleMethod(ShapeAnalogy):
         plt_x_min = plt_y_min = np.inf
         plt_x_max = plt_y_max = -np.inf
         empty = tuple(s.isEmpty() for s in shapes)
-        if k == 0 or self.keep != 1:
+        if k == 0 or (self.keep != 1 and self.keep != 4):
             outerRectangles = [s.getOuterRectangle() for s in shapes]
-        else:
+        elif self.keep == 1:
             outerRectangles = cutRectangles
+        else: # keep == 4
+            outerRectangles = superRectangles
         # solvable equations with empty shapes ø : ø :: c : ? with solution c and ø : b :: ø : ? with solution b
         if all(empty):
             d = PixelShape(array=np.zeros((2, 2), dtype=np.bool))
@@ -123,7 +126,7 @@ class BiRectangleMethod(ShapeAnalogy):
 
                 if k == 0 or self.keep == 0:
                     outerRD = None
-                elif self.keep == 1:
+                elif self.keep == 1 or self.keep == 4:
                     outerRD = outerRectangles[3]
                 else:
                     birectangles2 = []

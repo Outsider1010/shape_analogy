@@ -1,7 +1,7 @@
 from src.basicanalogies.realnumbers import asc_couple
 from src.birectangle.BiRectangle import BiRectangle
 from src.birectangle.Rectangle import Rectangle
-from src.birectangle.birectangleanalogy.BiRectangleAnalogy import BiRectangleAnalogy
+from src.birectangle.birectangleanalogy.bi_rectangle_analogy import BiRectangleAnalogy
 from src.birectangle.rectangleanalogy.CenterDimAnalogy import CenterDimAnalogy
 
 

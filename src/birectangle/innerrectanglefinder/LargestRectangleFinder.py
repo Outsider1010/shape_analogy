@@ -6,7 +6,7 @@ from largestinteriorrectangle import lir
 from src.birectangle.innerrectanglefinder.InnerRectangleFinder import InnerRectangleFinder
 from src.birectangle.Rectangle import Rectangle
 from src.birectangle.Point import Point
-from src.shapes.UnionRectangles import UnionRectangles
+from src.shapes.union_rectangles import UnionRectangles
 
 
 class LargestRectangleFinder(InnerRectangleFinder):
@@ -59,23 +59,33 @@ class LargestRectangleFinder(InnerRectangleFinder):
             j = cx[k]
             _w1 = h_adj[i, j]
             _h2 = v_adj[i, j]
-            j1 = j + _w1 - 1
-            i2 = i + _h2 - 1
-            _h1 = min(v_adj[i, j1], _h2)
-            _w2 = min(h_adj[i2, j], _w1)
-            area1 = (ys[i + _h1] - ys[i]) * (xs[j1 + 1] - xs[j])
-            area2 = (ys[i2 + 1] - ys[i]) * (xs[j + _w2] - xs[j])
+            j1 = j + _w1
+            i2 = i + _h2
+
+            max_h1 = min(v_adj[i, j1 - 1], _h2)
+            max_w2 = min(h_adj[i2 - 1, j], _w1)
+
+            _h1 = 1
+            while _h1 < max_h1 and np.all(matrix[i + _h1, j:j1]):
+                _h1 += 1
+
+            _w2 = 1
+            while _w2 < max_w2 and np.all(matrix[i:i2, j + _w2]):
+                _w2 += 1
+
+            area1 = (ys[i + _h1] - ys[i]) * (xs[j1] - xs[j])
+            area2 = (ys[i2] - ys[i]) * (xs[j + _w2] - xs[j])
             if area1 > best_area:
                 x = xs[j]
                 y = ys[i]
-                w = xs[j1 + 1] - xs[j]
+                w = xs[j1] - xs[j]
                 h = ys[i + _h1] - ys[i]
                 best_area = area1
             if area2 > best_area:
                 x = xs[j]
                 y = ys[i]
                 w = xs[j + _w2] - xs[j]
-                h = ys[i2 + 1] - ys[i]
+                h = ys[i2] - ys[i]
                 best_area = area2
         return Rectangle.fromTopLeft(Point(Decimal(str(x)), Decimal(str(h + y))), w, h)
 
