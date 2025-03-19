@@ -100,6 +100,34 @@ class UnionRectangles(Shape):
         for r in self.rectangles:
             r.plotFilled(color, 2)
 
+    @staticmethod
+    def union_area(rects: list[tuple]) -> float:
+        """
+        Calcule l'aire de l'union d'une liste de rectangles (définis par (x_min, x_max, y_min, y_max))
+        en découpant le domaine en intervalles sur les axes x et y.
+        """
+        if not rects:
+            return 0
+
+        # On récupère tous les abscisses et ordonnées de bords.
+        xs = sorted(set([r[0] for r in rects] + [r[1] for r in rects]))
+        ys = sorted(set([r[2] for r in rects] + [r[3] for r in rects]))
+
+        area = 0
+        # Pour chaque sous-rectangle formé par ces coupures.
+        for i in range(len(xs) - 1):
+            for j in range(len(ys) - 1):
+                cell_x_min, cell_x_max = xs[i], xs[i + 1]
+                cell_y_min, cell_y_max = ys[j], ys[j + 1]
+                # On prend le centre de la cellule pour le test.
+                cx = (cell_x_min + cell_x_max) / 2
+                cy = (cell_y_min + cell_y_max) / 2
+                for (rx_min, rx_max, ry_min, ry_max) in rects:
+                    if rx_min <= cx <= rx_max and ry_min <= cy <= ry_max:
+                        area += (cell_x_max - cell_x_min) * (cell_y_max - cell_y_min)
+                        break
+        return area
+
     def toPixels(self):
         """
             Calcule l'aire de l'union d'une liste de rectangles (définis par (x_min, x_max, y_min, y_max))
@@ -181,9 +209,9 @@ class UnionRectangles(Shape):
                         intersections.append((inter_x_min, inter_x_max, inter_y_min, inter_y_max))
 
                 # Calcul de l'aire totale couverte dans le pixel (union des zones).
-                covered_area = self.union_area(intersections)
+                covered_area = UnionRectangles.union_area(intersections)
 
-                # L'air est comprise entre 0 et 1 mais parfois la valeur numérique peut déborder, donc je fais un min.
+                # L'aire est comprise entre 0 et 1 mais parfois la valeur numérique peut déborder, donc je fais un min.
                 covered_area = min(covered_area, 1)
 
                 # Calcule la nouvelle valeur de teinte en fonction de la fraction de recouvrement.
