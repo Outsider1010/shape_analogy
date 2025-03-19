@@ -6,7 +6,7 @@ from math import ceil, floor
 from matplotlib import pyplot as plt
 from skimage.transform import radon
 
-from src.birectangle.Rectangle import Rectangle
+from src.birectangle.rectangle import Rectangle
 import src.shapes.union_rectangles as ur
 from .shape import Shape
 from PIL import Image
@@ -81,20 +81,14 @@ class PixelShape(Shape):
         return PixelShape(array=array)
 
     def toRectangles(self, lir):
-        # r = lir.findInnerRectanglePixels(self)
-        # res = UnionRectangles()
-        # p = np.copy(self.pixels)
-        # while r.area() > 0:
-        #     res.addRectangle(r)
-        #     setRangeValue(self.pixels, False, r.x_min, r.x_max, r.y_min, r.y_max)
-        #     r = lir.findInnerRectanglePixels(self)
-        # self.pixels = p
-        # return res
-        cy, cx = np.where(self.pixels)
+        r = lir.findInnerRectanglePixels(self)
         res = ur.UnionRectangles()
-        h, w = self.dim()
-        for i in range(cy.shape[0]):
-            res.addRectangle(Rectangle(cx[i] - w/2, cx[i] + 1 - w/2, h/2 - cy[i] - 1, h/2 - cy[i]))
+        p = np.copy(self.pixels)
+        while r.area() > 0:
+            res.addRectangle(r)
+            setRangeValue(self.pixels, False, r.x_min, r.x_max, r.y_min, r.y_max)
+            r = lir.findInnerRectanglePixels(self)
+        self.pixels = p
         return res
 
     def __add__(self, other):

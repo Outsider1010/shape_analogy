@@ -3,9 +3,9 @@ from decimal import Decimal
 import numpy as np
 from largestinteriorrectangle import lir
 
-from src.birectangle.innerrectanglefinder.InnerRectangleFinder import InnerRectangleFinder
-from src.birectangle.Rectangle import Rectangle
-from src.birectangle.Point import Point
+from src.birectangle.innerrectanglefinder.inner_rectangle_finder import InnerRectangleFinder
+from src.birectangle.rectangle import Rectangle
+from src.birectangle.point import Point
 from src.shapes.union_rectangles import UnionRectangles
 
 

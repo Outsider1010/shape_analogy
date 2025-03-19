@@ -1,5 +1,5 @@
 from decimal import Decimal
-from src.birectangle.Rectangle import Rectangle
+from src.birectangle.rectangle import Rectangle
 from src.shapes.union_rectangles import UnionRectangles
 
 import numpy as np

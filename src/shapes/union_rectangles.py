@@ -3,11 +3,11 @@ from decimal import Decimal
 
 import numpy as np
 
-from src.birectangle.BiRectangle import BiRectangle
-from src.birectangle.Rectangle import Rectangle
+from src.birectangle.bi_rectangle import BiRectangle
+from src.birectangle.rectangle import Rectangle
 import src.shapes.pixel_shape as ps
 from .shape import Shape
-from ..birectangle.Point import Point
+from ..birectangle.point import Point
 
 
 # DO NOT IMPORT STRATEGIES (to avoid circular imports)
@@ -30,13 +30,13 @@ class UnionRectangles(Shape):
         self.y_max = y_max
 
     def addRectangle(self, r: Rectangle):
-        possibly_alr_included = self.size() > 0 and self.getOuterRectangle().containsRectangle(r)
-        if not possibly_alr_included or all(not x.containsRectangle(r) for x in self.rectangles):
-            self.rectangles.append(r)
-            self.x_min = min(self.x_min, r.x_min)
-            self.x_max = max(self.x_max, r.x_max)
-            self.y_min = min(self.y_min, r.y_min)
-            self.y_max = max(self.y_max, r.y_max)
+        # possibly_alr_included = self.size() > 0 and self.getOuterRectangle().containsRectangle(r)
+        # if not possibly_alr_included or all(not x.containsRectangle(r) for x in self.rectangles):
+        self.rectangles.append(r)
+        self.x_min = min(self.x_min, r.x_min)
+        self.x_max = max(self.x_max, r.x_max)
+        self.y_min = min(self.y_min, r.y_min)
+        self.y_max = max(self.y_max, r.y_max)
 
     def __add__(self, other):
         res = UnionRectangles()

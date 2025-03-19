@@ -1,13 +1,17 @@
 from src.basicanalogies.realnumbers import bounded, ext_bounded
-from src.birectangle.BiRectangle import BiRectangle
-from src.birectangle.Point import Point
-from src.birectangle.Rectangle import Rectangle
-from src.birectangle.birectangleanalogy.BiRectangleAnalogy import BiRectangleAnalogy
-from src.birectangle.rectangleanalogy.CenterDimAnalogy import CenterDimAnalogy
+from src.birectangle.bi_rectangle import BiRectangle
+from src.birectangle.point import Point
+from src.birectangle.rectangle import Rectangle
+from src.birectangle.birectangleanalogy.bi_rectangle_analogy import BiRectangleAnalogy
+from src.birectangle.rectangleanalogy.center_dim_analogy import CenterDimAnalogy
 
 
 # TODO: documentation
 class ExtSigmoidAnalogy(BiRectangleAnalogy):
+
+    def __init__(self, rectangleAnalogy = CenterDimAnalogy()):
+        self.rectAnalogy = rectangleAnalogy
+
     """
     A method to solve analogical equations on some birectangles.
     Birectangles where the inner rectangle does not touch the outer rectangle.

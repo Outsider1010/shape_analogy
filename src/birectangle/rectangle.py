@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from matplotlib import pyplot as plt
 
-from src.birectangle.Point import Point
+from src.birectangle.point import Point
 
 
 class Rectangle:

@@ -2,9 +2,10 @@ from decimal import Decimal
 from typing import Iterator
 
 import numpy as np
+from networkx.algorithms.distance_measures import center
 
-from src.birectangle.Point import Point
-from src.birectangle.Rectangle import Rectangle
+from src.birectangle.point import Point
+from src.birectangle.rectangle import Rectangle
 
 class BiRectangle:
     def __init__(self, outerRectangle: Rectangle, innerRectangle: Rectangle):
@@ -41,6 +42,9 @@ class BiRectangle:
 
     def center_y_max_ratio(self) -> Decimal:
         return self.innerRectangle.height() / (2 * (self.outerRectangle.y_max - self.innerRectangle.center().y))
+
+    def center_xy_ratios(self):
+        return self.center_x_min_ratio(), self.center_x_max_ratio(), self.center_y_min_ratio(), self.center_y_max_ratio()
 
     def reduceInnerTo(self, r_x_min: Decimal, r_x_max: Decimal, r_y_min: Decimal, r_y_max: Decimal) -> None:
         _, outerR = self

@@ -1,8 +1,8 @@
 from matplotlib import pyplot as plt
 
-from src.birectangle.BiRectangle import BiRectangle
-from src.birectangle.Rectangle import Rectangle
-from src.birectangle.cuttingmethod.CuttingMethod import CuttingMethod
+from src.birectangle.bi_rectangle import BiRectangle
+from src.birectangle.rectangle import Rectangle
+from src.birectangle.cuttingmethod.cutting_method import CuttingMethod
 
 class SidesNonDisjointCut(CuttingMethod):
     """

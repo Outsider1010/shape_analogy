@@ -1,9 +1,9 @@
-from src.birectangle.BiRectangleMethod import BiRectangleMethod
+from src.birectangle.bi_rectangle_method import BiRectangleMethod
 from src.shapes.pixel_shape import PixelShape
 
-SA = PixelShape(img="resources/square.bmp")
-SB = PixelShape(img="resources/square.bmp")
-SC = PixelShape(img="resources/square.bmp")
+SA = PixelShape(img="resources/circle_4.bmp")
+SB = PixelShape(img="resources/circle_1.bmp")
+SC = PixelShape(img="resources/circle_3.bmp")
 
 m = BiRectangleMethod()
-m.analogy2(SA, SB, SC)
+m.analogy(SA, SB, SC)

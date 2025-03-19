@@ -1,20 +1,20 @@
-from numpy.ma.core import inner
 
-from src.birectangle.birectangleanalogy.BiRectangleAnalogy import BiRectangleAnalogy
-from src.birectangle.BiRectangle import BiRectangle
-from src.basicanalogies.realnumbers import bounded
-from src.birectangle.rectangleanalogy.CenterDimAnalogy import CenterDimAnalogy
-from src.birectangle.Rectangle import Rectangle
-from src.birectangle.Point import Point
+from src.birectangle.birectangleanalogy.bi_rectangle_analogy import BiRectangleAnalogy
+from src.birectangle.bi_rectangle import BiRectangle
+from src.birectangle.rectangleanalogy.center_dim_analogy import CenterDimAnalogy
+from src.birectangle.rectangle import Rectangle
 
 
 # TODO: documentation
 class SimpleAnalogy(BiRectangleAnalogy):
 
+    def __init__(self, rectangleAnalogy = CenterDimAnalogy()):
+        self.rectAnalogy = rectangleAnalogy
+
     def analogy(self, BRA: BiRectangle, BRB: BiRectangle, BRC: BiRectangle, outerRectD: Rectangle | None = None) -> BiRectangle:
         if not outerRectD:
-            outerRectD = CenterDimAnalogy().analogy(BRA.outerRectangle, BRB.outerRectangle, BRC.outerRectangle)
-        _innerD = CenterDimAnalogy().analogy(BRA.innerRectangle, BRB.innerRectangle, BRC.innerRectangle)
+            outerRectD = self.rectAnalogy.analogy(BRA.outerRectangle, BRB.outerRectangle, BRC.outerRectangle)
+        _innerD = self.rectAnalogy.analogy(BRA.innerRectangle, BRB.innerRectangle, BRC.innerRectangle)
 
         x_min = max(_innerD.x_min, outerRectD.x_min)
         x_max = min(_innerD.x_max, outerRectD.x_max)
