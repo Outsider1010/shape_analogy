@@ -1,4 +1,4 @@
-from tkinter import ttk,Toplevel,Label,Button,Spinbox,StringVar,Radiobutton,Entry
+from tkinter import ttk,Toplevel,Label,Button,Spinbox,StringVar,Radiobutton,Entry,Scale
 from src.ShapeAnalogyModel import ShapeAnalogyModel
 from PIL import Image, ImageTk,ImageTk,ImageOps
 from src.birectangle.cuttingmethod.CuttingIn8Method import CuttingIn8Method
@@ -48,27 +48,17 @@ class BiRectangleOption():
             "Top left dimension analogy": TopLeftDimAnalogy,
         }
         
-        """self.birect_cutting_combo = ttk.Combobox(self,values=self.model.get_birectangle_cutting_strategy(),state="readonly")
-        self.birect_cutting_combo.set(self.model.get_birectangle_cutting_strategy_values())
-        self.birect_inner_rectangle_finder = ttk.Combobox(self,values=self.model.get_birectangle_inner_rectangle_finder_strategy(),state="readonly")
-        self.birect_inner_rectangle_finder.set(self.model.get_birectangle_inner_rectangle_finder_strategy_values())
-        self.birect_analogy_combo.bind("<<ComboboxSelected>>",self.select_analogy_strategy)
-        self.birect_cutting_combo.bind("<<ComboboxSelected>>",self.select_cutting_strategy)
-        self.birect_inner_rectangle_finder.bind("<<ComboboxSelected>>",self.select_inner_rectangle_finder_strategy)"""
+
 
     def show(self):
         self.windows = Toplevel(self.root)
         self.setupWindows()
 
-    """self.birect_inner_rectangle_finder.grid(column=2,row=0)
-        self.birect_cutting_combo.grid(column=1,row=0,padx=20)
-        self.birect_analogy_combo.grid(column=0,row=0,padx=20)"""
     def is_open(self):
         return self.windows is not None and self.windows.winfo_exists()
     def hide(self):
         if(self.windows):
-            self.windows.destroy()
-        
+            self.windows.destroy()   
     def select_analogy_strategy(self,event):
         self.model.set_birectangle_birectangleAnalogy_strategy(self.birect_analogy_combo.get())
 
@@ -78,9 +68,10 @@ class BiRectangleOption():
     def select_inner_rectangle_finder_strategy(self,event):
         self.model.set_birectangle_inner_rectangle_finder_strategy(self.birect_inner_rectangle_finder.get())
     def setupWindows(self):
-        plot = StringVar()
+        self.plot = StringVar(None,self.model.getMethod().get_plot())
         self.windows.grid_rowconfigure(0, weight=1)
         self.windows.grid_rowconfigure(1,weight=2)
+        self.windows.grid_rowconfigure(2, weight=1)  # Ajout d'une ligne pour les boutons
         self.windows.grid_columnconfigure(0, weight=1)
         
         frameStrategy = ttk.Frame(self.windows)
@@ -143,20 +134,57 @@ class BiRectangleOption():
         #Set the default value for SpinBox
         my_var= StringVar(parametersFrame)
         my_var.set(self.model.getMethod().getEpsilon())
-        epsilonBox = Spinbox(parametersFrame, from_=0.01, to=0.45,increment=0.05,textvariable=my_var)
+        epsilonBox = Scale(parametersFrame, variable=my_var,from_=0.01, to=0.49,orient="horizontal",resolution=0.01)
       
-        parameterLabel.grid(column=1,row=0,sticky="ew")
+        parameterLabel.grid(column=1,row=0,sticky="ew",pady=10)
         epsilonLabel.grid(column=0,row=0)
         epsilonBox.grid(column=0,row=1)
 
         #plot checkbox
+        
         framePlotCheck  = ttk.Frame(parametersFrame)
-        allStepCheckBox = Radiobutton(framePlotCheck,text="All step",variable=plot,value="step")
-        lastStepCheckBox = Radiobutton(framePlotCheck,text="last step",variable=plot,value="last")
-        noneStepCheckBox = Radiobutton(framePlotCheck,text="No step",variable=plot,value="none")
-        rangeStepCheckBox = Radiobutton(framePlotCheck,text="Step only with detph < ")
+        allStepCheckBox = Radiobutton(framePlotCheck,text="All step",variable=self.plot,value="step")
+        lastStepCheckBox = Radiobutton(framePlotCheck,text="last step",variable=self.plot,value="last")
+        noneStepCheckBox = Radiobutton(framePlotCheck,text="No step",variable=self.plot,value="none")
+        rangeStepCheckBox = Radiobutton(framePlotCheck,text="Step only with detph < ",variable=self.plot,value="range")
+
+        
+        allStepCheckBox.select()
         vcmd = framePlotCheck.register(self.isDigit)
         entryRange = Entry(framePlotCheck,validate="all",validatecommand=(vcmd,'%P'))
+        
+        plotLabel = Label(framePlotCheck,text="plot")
+        plotLabel.grid(column=1,row=0)
+        
+        allStepCheckBox.grid(column=0,row=1)
+        lastStepCheckBox.grid(column=1,row=1)
+        noneStepCheckBox.grid(column=2,row=1)
+        rangeStepCheckBox.grid(column=3,row=1)
+        entryRange.grid(column=4,row=1)
+        
+        framePlotCheck.grid(column=1,row=1)
+        
+        
+         # Frame for OK and Cancel buttons
+        frameButtons = ttk.Frame(self.windows)
+        frameButtons.grid(column=0, row=2, sticky="ew", pady=10)
+        frameButtons.grid_columnconfigure(0, weight=1)
+        frameButtons.grid_columnconfigure(1, weight=0)  # Pas de poids pour la colonne centrale
+        frameButtons.grid_columnconfigure(2, weight=1)
+        
+        cancelButton = Button(frameButtons, text="Annuler", command=self.on_cancel)
+        okButton = Button(frameButtons, text="OK", command=self.on_ok)
+        
+        cancelButton.grid(column=1, row=0, sticky="e")
+        okButton.grid(column=2, row=0, sticky="w")
+        
+    def on_cancel(self):
+        # Logique pour le bouton Annuler
+        self.hide()
+
+    def on_ok(self):
+        # Logique pour le bouton OK
+        print("OK button pressed")
     def isDigit(self, digit):
         return str.isdigit(digit) or digit == "" and digit != "0"
 class TomographyOption(ttk.Frame):
