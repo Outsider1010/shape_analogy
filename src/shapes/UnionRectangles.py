@@ -81,6 +81,34 @@ class UnionRectangles(Shape):
         for r in self.rectangles:
             r.plotFilled("k", 1)
 
+    def union_area(self, rects):
+        """
+            Calcule l'aire de l'union d'une liste de rectangles (définis par (x_min, x_max, y_min, y_max))
+            en découpant le domaine en intervalles sur les axes x et y.
+        """
+        if not rects:
+            return 0
+
+        # On récupère tous les abscisses et ordonnées de bords.
+        xs = sorted(set([r[0] for r in rects] + [r[1] for r in rects]))
+        ys = sorted(set([r[2] for r in rects] + [r[3] for r in rects]))
+
+        area = 0
+        # Pour chaque sous-rectangle formé par ces coupures.
+        for i in range(len(xs) - 1):
+            for j in range(len(ys) - 1):
+                cell_x_min, cell_x_max = xs[i], xs[i + 1]
+                cell_y_min, cell_y_max = ys[j], ys[j + 1]
+                # Vérifie si ce petit rectangle est couvert par au moins un rectangle de la liste.
+                # On prend le centre du petit rectangle pour le test.
+                cx = (cell_x_min + cell_x_max) / 2
+                cy = (cell_y_min + cell_y_max) / 2
+                for (rx_min, rx_max, ry_min, ry_max) in rects:
+                    if rx_min <= cx <= rx_max and ry_min <= cy <= ry_max:
+                        area += (cell_x_max - cell_x_min) * (cell_y_max - cell_y_min)
+                        break
+        return area
+
     def toPixels(self) -> np.ndarray:
         # 1. Calcule le rectangle englobant.
         outer = self.getOuterRectangle()
@@ -101,31 +129,27 @@ class UnionRectangles(Shape):
         grid_x_min = -w / 2
         grid_y_min = -h / 2
 
-        # 3. Initialise la matrice de pixels.
+        # 3. Initialise la matrice de pixels en blanc.
         pixels = np.full((h, w), 255, dtype=np.uint8)
 
-        # 4. Pour chaque rectangle, on détermine la zone respective de la matrice.
-        for rect in self.rectangles:
-            rx_min = float(rect.x_min)
-            rx_max = float(rect.x_max)
-            ry_min = float(rect.y_min)
-            ry_max = float(rect.y_max)
+        # 4. Parcours de chaque pixel et calcul de l'union des zones couvertes par les rectangles.
+        for j in range(h):
+            for i in range(w):
+                # Définition des bords du pixel en coordonnées réelles.
+                pixel_x_min = grid_x_min + i
+                pixel_x_max = pixel_x_min + 1
+                pixel_y_min = grid_y_min + j
+                pixel_y_max = pixel_y_min + 1
 
-            # Conversion des bornes réelles en indices de matrice.
-            i_min = max(0, math.floor(rx_min - grid_x_min))
-            i_max = min(w, math.ceil(rx_max - grid_x_min))
-            j_min = max(0, math.floor(ry_min - grid_y_min))
-            j_max = min(h, math.ceil(ry_max - grid_y_min))
+                # On calcule la liste des intersections entre le pixel et chaque rectangle.
+                intersections = []
+                for rect in self.rectangles:
+                    rx_min = float(rect.x_min)
+                    rx_max = float(rect.x_max)
+                    ry_min = float(rect.y_min)
+                    ry_max = float(rect.y_max)
 
-            for j in range(j_min, j_max):
-                for i in range(i_min, i_max):
-                    # Bornes en coordonnées réelles du pixel.
-                    pixel_x_min = grid_x_min + i
-                    pixel_x_max = pixel_x_min + 1
-                    pixel_y_min = grid_y_min + j
-                    pixel_y_max = pixel_y_min + 1
-
-                    # Puis on calcule l'intersection entre le pixel et le rectangle.
+                    # Calcul de l'intersection entre le pixel et le rectangle.
                     inter_x_min = max(rx_min, pixel_x_min)
                     inter_x_max = min(rx_max, pixel_x_max)
                     inter_y_min = max(ry_min, pixel_y_min)
@@ -133,15 +157,19 @@ class UnionRectangles(Shape):
 
                     inter_width = max(0, inter_x_max - inter_x_min)
                     inter_height = max(0, inter_y_max - inter_y_min)
-                    # Aire de l'intersection.
-                    inter_area = inter_width * inter_height
 
-                    # Calcule de la fraction de recouvrement.
-                    coverage = inter_area
-                    new_value = 255 - int(round(coverage * 255))
+                    if inter_width > 0 and inter_height > 0:
+                        intersections.append((inter_x_min, inter_x_max, inter_y_min, inter_y_max))
 
-                    # Heuristique : si plusieurs rectangles recouvrent le même pixel, on garde la teinte la plus sombre.
-                    pixels[j, i] = min(pixels[j, i], new_value)
+                # Calcul de l'aire totale couverte dans le pixel (union des zones).
+                covered_area = self.union_area(intersections)
+
+                # L'air est comprise entre 0 et 1 mais parfois la valeur numérique peut déborder, donc je fais un min.
+                covered_area = min(covered_area, 1)
+
+                # Calcule la nouvelle valeur de teinte en fonction de la fraction de recouvrement.
+                new_value = 255 - int(round(covered_area * 255))
+                pixels[j, i] = new_value
 
         return pixels
 
