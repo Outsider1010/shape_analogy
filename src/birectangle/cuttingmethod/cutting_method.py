@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 
-from src.birectangle.BiRectangle import BiRectangle
-from src.birectangle.Rectangle import Rectangle
-from src.shapes.pixelShape import PixelShape
+from src.birectangle.bi_rectangle import BiRectangle
+from src.birectangle.rectangle import Rectangle
+from src.shapes.pixel_shape import PixelShape
 from src.shapes.shape import Shape
 
 

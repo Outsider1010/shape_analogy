@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from src.birectangle.Rectangle import Rectangle
+from src.birectangle.rectangle import Rectangle
 # DO NOT IMPORT STRATEGIES
 
 class Shape(ABC):

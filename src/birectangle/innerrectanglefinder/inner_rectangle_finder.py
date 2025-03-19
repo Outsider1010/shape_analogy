@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from src.birectangle.Rectangle import Rectangle
-from src.shapes.UnionRectangles import UnionRectangles
+from src.birectangle.rectangle import Rectangle
+from src.shapes.union_rectangles import UnionRectangles
 
 
 class InnerRectangleFinder(ABC):

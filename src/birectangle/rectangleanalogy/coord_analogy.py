@@ -1,7 +1,7 @@
 from decimal import Decimal
 
-from src.birectangle.Rectangle import Rectangle
-from src.birectangle.rectangleanalogy.RectangleAnalogy import RectangleAnalogy
+from src.birectangle.rectangle import Rectangle
+from src.birectangle.rectangleanalogy.rectangle_analogy import RectangleAnalogy
 
 # DOESN'T VERIFY "ECHANGE DE MOYENS"
 class CoordAnalogy(RectangleAnalogy):

@@ -6,8 +6,8 @@ from math import ceil, floor
 from matplotlib import pyplot as plt
 from skimage.transform import radon
 
-from src.birectangle.Rectangle import Rectangle
-from .UnionRectangles import UnionRectangles
+from src.birectangle.rectangle import Rectangle
+import src.shapes.union_rectangles as ur
 from .shape import Shape
 from PIL import Image
 # DO NOT IMPORT STRATEGIES (to avoid circular imports)
@@ -27,11 +27,6 @@ def coordRangeToMatrixIndexes(arr: np.ndarray, x_min: Decimal, x_max: Decimal,
     h, w = arr.shape
     mi_w = Decimal(w / 2)
     mi_h = Decimal(h / 2)
-    prec = Decimal('0.0000001')
-    x_min = x_min.quantize(prec)
-    x_max = x_max.quantize(prec)
-    y_min = y_min.quantize(prec)
-    y_max = y_max.quantize(prec)
     if STRICTNESS == 0:
         return int(x_min + mi_w), ceil(x_max + mi_w), int(mi_h - y_max), ceil(mi_h - y_min)
     elif STRICTNESS == 1:
@@ -82,7 +77,7 @@ class PixelShape(Shape):
 
     def toRectangles(self, lir):
         r = lir.findInnerRectanglePixels(self)
-        res = UnionRectangles()
+        res = ur.UnionRectangles()
         p = np.copy(self.pixels)
         while r.area() > 0:
             res.addRectangle(r)

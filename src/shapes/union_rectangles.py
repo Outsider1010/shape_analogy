@@ -4,9 +4,13 @@ from typing import Iterable
 
 import numpy as np
 
-from src.birectangle.BiRectangle import BiRectangle
-from src.birectangle.Rectangle import Rectangle
+from src.birectangle.bi_rectangle import BiRectangle
+from src.birectangle.rectangle import Rectangle
+import src.shapes.pixel_shape as ps
 from .shape import Shape
+from ..birectangle.point import Point
+
+
 # DO NOT IMPORT STRATEGIES (to avoid circular imports)
 
 class UnionRectangles(Shape):
@@ -14,17 +18,32 @@ class UnionRectangles(Shape):
     Representation of shapes using a boolean matrix with even dimensions.
     Each pixel is a square of length 1 and equals True if it is included in the shape
     """
-    def __init__(self, rects: Iterable[Rectangle] = None):
-        if rects is None:
-            self.rectangles = []
-        else:
-            self.rectangles = list(rects)
+    def __init__(self):
+        self.rectangles = []
+        self.x_min = self.y_min = np.inf
+        self.x_max = self.y_max = -np.inf
+
+    def __setup(self, rectangles, x_min, x_max, y_min, y_max):
+        self.rectangles = rectangles
+        self.x_min = x_min
+        self.x_max = x_max
+        self.y_min = y_min
+        self.y_max = y_max
 
     def addRectangle(self, r: Rectangle):
+        # possibly_alr_included = self.size() > 0 and self.getOuterRectangle().containsRectangle(r)
+        # if not possibly_alr_included or all(not x.containsRectangle(r) for x in self.rectangles):
         self.rectangles.append(r)
+        self.x_min = min(self.x_min, r.x_min)
+        self.x_max = max(self.x_max, r.x_max)
+        self.y_min = min(self.y_min, r.y_min)
+        self.y_max = max(self.y_max, r.y_max)
 
     def __add__(self, other):
-        return UnionRectangles(self.rectangles + other.rectangles)
+        res = UnionRectangles()
+        res.__setup(self.rectangles + other.rectangles, min(self.x_min, other.x_min), max(self.x_max, other.x_max),
+                    min(self.y_min, other.y_min), max(self.y_max, other.y_max))
+        return res
 
     def __repr__(self):
         return str(self.rectangles)
@@ -32,37 +51,37 @@ class UnionRectangles(Shape):
     def getOuterRectangle(self) -> Rectangle:
         if len(self.rectangles) == 0:
             return Rectangle(0, 0, 0, 0)
-        i = iter(self.rectangles)
-        r = next(i)
-        x_min, x_max,y_min, y_max = r
-        r = next(i, None)
-        while r:
-            x_min = min(x_min, r.x_min)
-            x_max = max(x_max, r.x_max)
-            y_min = min(y_min, r.y_min)
-            y_max = max(y_max, r.y_max)
-            r = next(i, None)
-        return Rectangle(x_min, x_max, y_min, y_max)
+        return Rectangle(self.x_min, self.x_max, self.y_min, self.y_max)
 
     def getInnerRectangle(self, strategy) -> Rectangle:
         return strategy.findInnerRectangleUnionR(self)
 
     def fromShape(self, frame: Rectangle):
         res = UnionRectangles()
+        new_rectangles = []
+        x_min = y_min = np.inf
+        x_max = y_max = -np.inf
         for r in self.rectangles:
-            x = frame.intersection(r)
-            if x is not None and x.area() > 0:
-                res.addRectangle(x)
+            inter = frame.intersection(r)
+            if inter is not None and inter.area() > 0:
+                new_rectangles.append(inter)
+                x_min = min(x_min, inter.x_min)
+                x_max = max(x_max, inter.x_max)
+                y_min = min(y_min, inter.y_min)
+                y_max = max(y_max, inter.y_max)
+        res.__setup(new_rectangles, x_min, x_max, y_min, y_max)
         return res
 
     def equiv(self, fromCoordSysR: Rectangle | None, toCoordSysR: Rectangle | None):
+        res = UnionRectangles()
         if fromCoordSysR is None or toCoordSysR is None:
-            return self
+            res.__setup(self.rectangles.copy(), self.x_min, self.x_max, self.y_min, self.y_max)
         else:
             res = UnionRectangles()
-            for r in self.rectangles:
-                b = BiRectangle(fromCoordSysR, r)
-                res.addRectangle(b.innerEquiv(toCoordSysR))
+            x_min, y_min = Point(self.x_min, self.y_min).toCoordSys(fromCoordSysR, toCoordSysR)
+            x_max, y_max = Point(self.x_max, self.y_max).toCoordSys(fromCoordSysR, toCoordSysR)
+            res.__setup([BiRectangle(fromCoordSysR, r).innerEquiv(toCoordSysR) for r in self.rectangles],
+                        x_min, x_max, y_min, y_max)
             return res
 
     def isPointInShape(self, x: Decimal | float, y: Decimal | float) -> bool:
@@ -77,11 +96,11 @@ class UnionRectangles(Shape):
     def isEmpty(self) -> bool:
         return len(self.rectangles) == 0
 
-    def plot(self) -> None:
+    def plot(self, color='k') -> None:
         for r in self.rectangles:
-            r.plotFilled("k", 1)
+            r.plotFilled(color, 2)
 
-    def union_area(self, rects):
+    def toPixels(self):
         """
             Calcule l'aire de l'union d'une liste de rectangles (définis par (x_min, x_max, y_min, y_max))
             en découpant le domaine en intervalles sur les axes x et y.
@@ -171,7 +190,7 @@ class UnionRectangles(Shape):
                 new_value = 255 - int(round(covered_area * 255))
                 pixels[j, i] = new_value
 
-        return pixels
+        return ps.PixelShape(array=pixels)
 
     def toImage(self, name: str = "default.bmp"):
         self.toPixels().toImage(name)
@@ -179,3 +198,6 @@ class UnionRectangles(Shape):
     def toSinogram(self, maxAngle: float = 180.):
         # TODO
         pass
+
+    def size(self):
+        return len(self.rectangles)

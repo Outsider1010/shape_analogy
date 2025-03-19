@@ -1,4 +1,4 @@
-from src.ShapeAnalogy import ShapeAnalogy
+from src.shape_analogy import ShapeAnalogy
 from src.shapes.shape import Shape
 
 
