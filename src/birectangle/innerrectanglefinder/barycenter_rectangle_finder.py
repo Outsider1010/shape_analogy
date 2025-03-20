@@ -172,61 +172,83 @@ class BarycenterRectangleFinder(InnerRectangleFinder):
         else:
             print("Center inside shape:", center)
 
-        # =================================================
-        #         Expansion du rectangle intérieur
-        # =================================================
-        # Initialisation : un rectangle réduit au barycentre.
-        Hx, Hy = Cx, Cy  # Coin supérieur gauche (top-left)
-        Bx, By = Cx, Cy  # Coin inférieur droit (bottom-right)
+        left, right, top, bottom = Cx, Cx, Cy, Cy
 
-        # Paramètres d'extension
-        step = Decimal('0.1')
-        tolerance = Decimal('0.001')
-
-        # Fonction auxiliaire pour vérifier qu'un segment est entièrement dans la forme
-        def segment_in_shape(x1: Decimal, y1: Decimal, x2: Decimal, y2: Decimal, num_samples: int = 5) -> bool:
+        def vertical_segment_in_shape(x: Decimal, y_bottom: Decimal, y_top: Decimal, num_samples: int = 10) -> bool:
             for i in range(num_samples + 1):
                 t = Decimal(i) / Decimal(num_samples)
-                x = x1 + (x2 - x1) * t
-                y = y1 + (y2 - y1) * t
+                y = y_bottom + (y_top - y_bottom) * t
                 if not shape.isPointInShape(x, y):
                     return False
             return True
 
-        def can_expand(Hx: Decimal, Hy: Decimal, Bx: Decimal, By: Decimal, step: Decimal) -> bool:
-            new_Hx = Hx - step
-            new_Hy = Hy + step
-            new_Bx = Bx + step
-            new_By = By - step
-
-            # Vérification des coins
-            if not shape.isPointInShape(new_Hx, new_Hy) or not shape.isPointInShape(new_Bx, new_By):
-                return False
-            # Vérification des segments horizontaux (haut et bas)
-            if not segment_in_shape(new_Hx, new_Hy, new_Bx, new_Hy):
-                return False
-            if not segment_in_shape(new_Hx, new_By, new_Bx, new_By):
-                return False
-            # Vérification des segments verticaux (gauche et droite)
-            if not segment_in_shape(new_Hx, new_By, new_Hx, new_Hy):
-                return False
-            if not segment_in_shape(new_Bx, new_By, new_Bx, new_Hy):
-                return False
-
+        def horizontal_segment_in_shape(y: Decimal, x_left: Decimal, x_right: Decimal, num_samples: int = 10) -> bool:
+            for i in range(num_samples + 1):
+                t = Decimal(i) / Decimal(num_samples)
+                x = x_left + (x_right - x_left) * t
+                if not shape.isPointInShape(x, y):
+                    return False
             return True
 
-        # Boucle d'extension du rectangle tant que possible
+        initial_step = Decimal('0.1')
+        tolerance = Decimal('0.001')
+
+        # Expansion du bord gauche
+        step = initial_step
         while step > tolerance:
-            if can_expand(Hx, Hy, Bx, By, step):
-                Hx -= step
-                Hy += step
-                Bx += step
-                By -= step
+            new_left = left - step
+            if vertical_segment_in_shape(new_left, bottom, top):
+                left = new_left
             else:
                 step = step / Decimal(2)
 
-        width = Bx - Hx
-        height = Hy - By
-        rect = Rectangle.fromTopLeft(Point(Hx, Hy), width, height)
-        print("Inner rectangle:", rect)
-        return rect
+        # Expansion du bord droit
+        step = initial_step
+        while step > tolerance:
+            new_right = right + step
+            if vertical_segment_in_shape(new_right, bottom, top):
+                right = new_right
+            else:
+                step = step / Decimal(2)
+
+        # Expansion du bord supérieur (top)
+        step = initial_step
+        while step > tolerance:
+            new_top = top + step
+            if horizontal_segment_in_shape(new_top, left, right):
+                top = new_top
+            else:
+                step = step / Decimal(2)
+
+        # Expansion du bord inférieur (bottom)
+        step = initial_step
+        while step > tolerance:
+            new_bottom = bottom - step
+            if horizontal_segment_in_shape(new_bottom, left, right):
+                bottom = new_bottom
+            else:
+                step = step / Decimal(2)
+
+        # --- Tentative de restriction aux carrés 1×1 ---
+        # On va essayer d'arrondir left, right, top, bottom aux entiers (selon un sens cohérent)
+        from math import floor, ceil
+
+        snapped_left = Decimal(floor(left))
+        snapped_right = Decimal(ceil(right))
+        snapped_bottom = Decimal(floor(bottom))
+        snapped_top = Decimal(ceil(top))
+
+        # On vérifie si le snapping donne un rectangle entièrement dans la forme
+        if (vertical_segment_in_shape(snapped_left, snapped_bottom, snapped_top) and
+                vertical_segment_in_shape(snapped_right, snapped_bottom, snapped_top) and
+                horizontal_segment_in_shape(snapped_top, snapped_left, snapped_right) and
+                horizontal_segment_in_shape(snapped_bottom, snapped_left, snapped_right)):
+            # On adopte la version "snap"
+            left, right, bottom, top = snapped_left, snapped_right, snapped_bottom, snapped_top
+
+        # --- Construction finale du rectangle ---
+        width = right - left
+        height = top - bottom
+        # On construit le rectangle à partir du coin supérieur gauche
+        result = Rectangle.fromTopLeft(Point(left, top), width, height)
+        return result
