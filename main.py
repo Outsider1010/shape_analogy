@@ -18,8 +18,11 @@ l = LargestRectangleFinder()
 
 SA.toSinogram()
 
-m = BiRectangleMethod(algo='rec', plot='step', keep=2)
+m = BiRectangleMethod(algo='rec', keep=2)
 d = m.analogy(SA, SB, SC)
-# d2 = time.time()
-# d.toImage('M1')
-# print(time.time() - d2)
+d2 = time.time()
+d.toImage('M1')
+print(time.time() - d2)
+
+#251.70357656478882
+#0.0948324203491211
