@@ -11,9 +11,9 @@ from src.birectangle.innerrectanglefinder.largest_rectangle_finder import Larges
 from src.birectangle.rectangle import Rectangle
 from src.shapes.pixel_shape import PixelShape
 
-SA = PixelShape(img="resources/circle_4.bmp")
-SB = PixelShape(img="resources/circle_1.bmp")
-SC = PixelShape(img="resources/circle_3.bmp")
+SA = PixelShape(img="resources/circle_1.bmp")
+SB = PixelShape(img="resources/circle_2.bmp")
+SC = PixelShape(img="resources/circle_1.bmp")
 l = LargestRectangleFinder()
 
 SA.toSinogram()

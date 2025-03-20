@@ -315,10 +315,11 @@ class UnionRectangles(Shape):
 
         # 4. Pour chaque pixel partiellement couvert, on calcule la fraction de recouvrement.
         for (i, j), union_rect in partial_pixels.items():
-            covered_area = union_rect.union_area()
-            covered_area = min(covered_area, 1)
-            new_value = 255 - int(round(covered_area * 255))
-            pixels[j, i] = new_value
+            if partial_pixels[(i, j)] is not None:
+                covered_area = union_rect.union_area()
+                covered_area = min(covered_area, 1)
+                new_value = 255 - int(round(covered_area * 255))
+                pixels[j, i] = new_value
 
         return ps.PixelShape(array=pixels)
 
