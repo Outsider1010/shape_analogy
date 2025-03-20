@@ -65,9 +65,12 @@ class BiRectangle:
                                 np.array([2 * float(r_y_min * outerR.y_min), 2 * float(r_y_max * outerR.y_max)]))
 
         r = Rectangle.fromCenter(Point(cx, cy), w, h)
+        if r.area() == 0:
+            raise AssertionError('too small rectangle after ratio')
+
         b = outerR.containsRectangle(r)
         if not b:
-            limit = Decimal('1E-25')
+            limit = Decimal('1E-10')
             if not outerR.y_min <= r.y_min and outerR.y_min - r.y_min < limit:
                 r.y_min = outerR.y_min
             if not outerR.x_min <= r.x_min and outerR.x_min - r.x_min < limit:

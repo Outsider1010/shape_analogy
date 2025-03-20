@@ -1,9 +1,25 @@
+import math
+import time
+
+import matplotlib.pyplot as plt
+import numpy as np
+
 from src.birectangle.bi_rectangle_method import BiRectangleMethod
+from src.birectangle.birectangleanalogy.ext_sigmoid_analogy import ExtSigmoidAnalogy
+from src.birectangle.birectangleanalogy.simple_analogy import SimpleAnalogy
+from src.birectangle.innerrectanglefinder.largest_rectangle_finder import LargestRectangleFinder
+from src.birectangle.rectangle import Rectangle
 from src.shapes.pixel_shape import PixelShape
 
-SA = PixelShape(img="resources/circle_1.bmp")
-SB = PixelShape(img="resources/circle_2.bmp")
-SC = PixelShape(img="resources/circle_1.bmp")
+SA = PixelShape(img="resources/circle_4.bmp")
+SB = PixelShape(img="resources/circle_1.bmp")
+SC = PixelShape(img="resources/circle_3.bmp")
+l = LargestRectangleFinder()
 
-m = BiRectangleMethod(algo='rec', keep=2, epsilon=0.001, maxDepth=10)
-m.analogy(SA, SB, SC)
+SA.toSinogram()
+
+m = BiRectangleMethod(algo='rec', plot='step', keep=2)
+d = m.analogy(SA, SB, SC)
+# d2 = time.time()
+# d.toImage('M1')
+# print(time.time() - d2)

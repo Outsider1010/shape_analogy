@@ -1,6 +1,5 @@
 import math
 from decimal import Decimal
-from typing import Iterable
 
 import numpy as np
 
@@ -9,9 +8,27 @@ from src.birectangle.rectangle import Rectangle
 import src.shapes.pixel_shape as ps
 from .shape import Shape
 from ..birectangle.point import Point
-
+from math import ceil, floor
 
 # DO NOT IMPORT STRATEGIES (to avoid circular imports)
+
+def calculate_active_length(active_intervals):
+    if not active_intervals:
+        return 0
+    active_intervals.sort()
+    total_length = 0
+    current_start = active_intervals[0][0]
+    current_end = active_intervals[0][1]
+    for start, end in active_intervals[1:]:
+        if start > current_end:
+            total_length += current_end - current_start
+            current_start = start
+            current_end = end
+        else:
+            current_end = max(current_end, end)
+    total_length += current_end - current_start
+    return total_length
+
 
 class UnionRectangles(Shape):
     """
@@ -100,74 +117,41 @@ class UnionRectangles(Shape):
         for r in self.rectangles:
             r.plotFilled(color, 2)
 
-    @staticmethod
-    def union_area(rects: list[tuple]) -> float:
-        """
-        Calcule l'aire de l'union d'une liste de rectangles (définis par (x_min, x_max, y_min, y_max))
-        en découpant le domaine en intervalles sur les axes x et y.
-        """
-        if not rects:
-            return 0
+    def union_area(self):
+        # Define events for the sweep line algorithm
+        events = []
+        for rect in self.rectangles:
+            x1, x2, y1, y2 = rect
+            events.append((x1, y1, y2, 'start'))
+            events.append((x2, y1, y2, 'end'))
 
-        # On récupère tous les abscisses et ordonnées de bords.
-        xs = sorted(set([r[0] for r in rects] + [r[1] for r in rects]))
-        ys = sorted(set([r[2] for r in rects] + [r[3] for r in rects]))
+        # Sort events by x-coordinate, breaking ties by 'end' before 'start'
+        events.sort(key=lambda ev_x: (ev_x[0], ev_x[3] == 'start'))
 
-        area = 0
-        # Pour chaque sous-rectangle formé par ces coupures.
-        for i in range(len(xs) - 1):
-            for j in range(len(ys) - 1):
-                cell_x_min, cell_x_max = xs[i], xs[i + 1]
-                cell_y_min, cell_y_max = ys[j], ys[j + 1]
-                # On prend le centre de la cellule pour le test.
-                cx = (cell_x_min + cell_x_max) / 2
-                cy = (cell_y_min + cell_y_max) / 2
-                for (rx_min, rx_max, ry_min, ry_max) in rects:
-                    if rx_min <= cx <= rx_max and ry_min <= cy <= ry_max:
-                        area += (cell_x_max - cell_x_min) * (cell_y_max - cell_y_min)
-                        break
-        return area
+        # Process events with the sweep line algorithm
+        active_intervals = []
+        total_area = 0
+        prev_x = None
+
+        for x, y1, y2, event_type in events:
+            if prev_x is not None:
+                active_length = calculate_active_length(active_intervals)
+                total_area += active_length * (x - prev_x)
+
+            if event_type == 'start':
+                active_intervals.append((y1, y2))
+            else:
+                active_intervals.remove((y1, y2))
+            prev_x = x
+
+        return total_area
 
     def toPixels(self):
-        """
-            Calcule l'aire de l'union d'une liste de rectangles (définis par (x_min, x_max, y_min, y_max))
-            en découpant le domaine en intervalles sur les axes x et y.
-        """
-        if not rects:
-            return 0
-
-        # On récupère tous les abscisses et ordonnées de bords.
-        xs = sorted(set([r[0] for r in rects] + [r[1] for r in rects]))
-        ys = sorted(set([r[2] for r in rects] + [r[3] for r in rects]))
-
-        area = 0
-        # Pour chaque sous-rectangle formé par ces coupures.
-        for i in range(len(xs) - 1):
-            for j in range(len(ys) - 1):
-                cell_x_min, cell_x_max = xs[i], xs[i + 1]
-                cell_y_min, cell_y_max = ys[j], ys[j + 1]
-                # Vérifie si ce petit rectangle est couvert par au moins un rectangle de la liste.
-                # On prend le centre du petit rectangle pour le test.
-                cx = (cell_x_min + cell_x_max) / 2
-                cy = (cell_y_min + cell_y_max) / 2
-                for (rx_min, rx_max, ry_min, ry_max) in rects:
-                    if rx_min <= cx <= rx_max and ry_min <= cy <= ry_max:
-                        area += (cell_x_max - cell_x_min) * (cell_y_max - cell_y_min)
-                        break
-        return area
-
-    def toPixels(self) -> np.ndarray:
         # 1. Calcule le rectangle englobant.
-        outer = self.getOuterRectangle()
-
-        x_min_outer = float(outer.x_min)
-        x_max_outer = float(outer.x_max)
-        y_min_outer = float(outer.y_min)
-        y_max_outer = float(outer.y_max)
 
         # 2. Détermine la taille de la grille de pixels.
-        w = 2 * math.ceil(max(abs(x_min_outer), abs(x_max_outer)))
-        h = 2 * math.ceil(max(abs(y_min_outer), abs(y_max_outer)))
+        w = 2 * math.ceil(max(abs(self.x_min), abs(self.x_max)))
+        h = 2 * math.ceil(max(abs(self.y_min), abs(self.y_max)))
         w = max(w, 2)
         h = max(h, 2)
 
@@ -189,7 +173,7 @@ class UnionRectangles(Shape):
                 pixel_y_max = pixel_y_min + 1
 
                 # On calcule la liste des intersections entre le pixel et chaque rectangle.
-                intersections = []
+                intersections = UnionRectangles()
                 for rect in self.rectangles:
                     rx_min = float(rect.x_min)
                     rx_max = float(rect.x_max)
@@ -206,10 +190,10 @@ class UnionRectangles(Shape):
                     inter_height = max(0, inter_y_max - inter_y_min)
 
                     if inter_width > 0 and inter_height > 0:
-                        intersections.append((inter_x_min, inter_x_max, inter_y_min, inter_y_max))
+                        intersections.addRectangle(Rectangle(inter_x_min, inter_x_max, inter_y_min, inter_y_max))
 
                 # Calcul de l'aire totale couverte dans le pixel (union des zones).
-                covered_area = UnionRectangles.union_area(intersections)
+                covered_area = intersections.union_area()
 
                 # L'aire est comprise entre 0 et 1 mais parfois la valeur numérique peut déborder, donc je fais un min.
                 covered_area = min(covered_area, 1)
@@ -218,6 +202,52 @@ class UnionRectangles(Shape):
                 new_value = 255 - int(round(covered_area * 255))
                 pixels[j, i] = new_value
 
+        '''one = Decimal(1)
+
+        # 3. Initialise la matrice de pixels en blanc.
+        pixels = np.full((h, w), 255, dtype=np.uint8)
+        areas = np.zeros((h, w), dtype=np.float64)
+        partially_covered: dict[str, UnionRectangles] = {}
+
+        for r in self.rectangles:
+            ps.setRangeValue(pixels, 0, r.x_min, r.x_max, r.y_min, r.y_max, 2)
+            ps.setRangeValue(pixels, np.float64(1), r.x_min, r.x_max, r.y_min, r.y_max, 2)
+
+            x_min_is_integer = r.x_min.is_integer()
+            x_max_is_integer = r.x_max.is_integer()
+            y_min_is_integer = r.y_min.is_integer()
+            y_max_is_integer = r.y_max.is_integer()
+
+            x_cur = r.x_min
+            if not x_min_is_integer:
+                cur = r.y_min
+                y_next = Decimal.min(floor(r.y_min) + one, r.y_max)
+                while cur < r.y_max:
+                    c = floor(r.x_min)
+                    key = f'{ceil(y_next)}_{c}'
+                    r_case = partially_covered.get(key, None)
+                    if r_case is None:
+                        r_case = UnionRectangles()
+                        partially_covered[key] = r_case
+                    x_cur = Decimal.min(c + 1, r.x_max)
+                    r_case.addRectangle(Rectangle(r.x_min, x_cur, cur, y_next))
+                    cur = y_next
+                    y_next = Decimal.min(y_next + one, r.y_max)
+
+            if not y_max_is_integer:
+                x_next = Decimal.min(floor(x_cur) + one, r.x_max)
+                while x_cur < r.x_max:
+                    c = floor(r.x_min)
+                    key = f'{ceil(y_next)}_{c}'
+                    r_case = partially_covered.get(key, None)
+                    if r_case is None:
+                        r_case = UnionRectangles()
+                        partially_covered[key] = r_case
+                    x_cur = Decimal.min(c + 1, r.x_max)
+                    r_case.addRectangle(Rectangle(r.x_min, x_cur, cur, y_next))
+                    cur = y_next
+                    y_next = Decimal.min(y_next + one, r.y_max)
+                    '''
         return ps.PixelShape(array=pixels)
 
     def toImage(self, name: str = "default.bmp"):
