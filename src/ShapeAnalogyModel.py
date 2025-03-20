@@ -64,3 +64,6 @@ class ShapeAnalogyModel:
         maxWidth = max(self.shape[2],max(self.shape[0],self.shape[1],key=lambda x: x.width()),key = lambda x:x.width())
         maxHeight = max(self.shape[2],max(self.shape[0],self.shape[1],key=lambda x: x.height()),key = lambda x:x.height())
         self.result.resize(maxWidth + (maxWidth%2),maxHeight+maxWidth%2)
+        
+    def getMethod(self):
+        return self.analogyMethod
