@@ -49,6 +49,10 @@ class Shape(ABC):
         pass
 
     @abstractmethod
+    def toImage(self, name='default.bmp'):
+        pass
+
+    @abstractmethod
     def toSinogram(self, maxAngle: float):
         """
         Create a sinogram of the shape
