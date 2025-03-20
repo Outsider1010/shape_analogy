@@ -62,7 +62,7 @@ if __name__ == '__main__':
     union_visual.addRectangle(r2)
     union_visual.addRectangle(r3)
 
-    pixel_shape = union_visual.toPixels()
+    pixel_shape = union_visual.toPixelsOptimized()
     pixels_visual = pixel_shape.pixels
 
     h, w = pixels_visual.shape
