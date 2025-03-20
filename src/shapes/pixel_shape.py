@@ -10,6 +10,9 @@ from src.birectangle.rectangle import Rectangle
 import src.shapes.union_rectangles as ur
 from .shape import Shape
 from PIL import Image
+
+from ..birectangle.Segment import Segment
+
 # DO NOT IMPORT STRATEGIES (to avoid circular imports)
 
 # defines how we represent too small (< 1) rectangles
