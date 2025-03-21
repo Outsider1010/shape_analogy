@@ -1,28 +1,16 @@
-import math
-import time
-
-import matplotlib.pyplot as plt
-import numpy as np
-
 from src.birectangle.bi_rectangle_method import BiRectangleMethod
-from src.birectangle.birectangleanalogy.ext_sigmoid_analogy import ExtSigmoidAnalogy
-from src.birectangle.birectangleanalogy.simple_analogy import SimpleAnalogy
+from src.birectangle.birectangleanalogy.bi_segment_analogy import BiSegmentAnalogy
 from src.birectangle.innerrectanglefinder.largest_rectangle_finder import LargestRectangleFinder
-from src.birectangle.rectangle import Rectangle
+from src.birectangle.overflowprevention.direct_prevention import DirectPrevention
+from src.birectangle.overflowprevention.indirect_prevention import IndirectPrevention
+from src.birectangle.overflowprevention.no_prevention import NoPrevention
 from src.shapes.pixel_shape import PixelShape
 
-SA = PixelShape(img="resources/circle_1.bmp")
-SB = PixelShape(img="resources/circle_2.bmp")
-SC = PixelShape(img="resources/circle_1.bmp")
+SA = PixelShape(img="resources/circle_4.bmp")
+SB = PixelShape(img="resources/circle_1.bmp")
+SC = PixelShape(img="resources/circle_3.bmp")
 l = LargestRectangleFinder()
 
-SA.toSinogram()
-
-m = BiRectangleMethod(algo='rec', keep=2)
+m = BiRectangleMethod(algo='iter', plot='step', overflowPrevention=DirectPrevention(), subSys='cut',
+                      epsilon=0.0001, biRectAnalogy=BiSegmentAnalogy())
 d = m.analogy(SA, SB, SC)
-d2 = time.time()
-d.toImage('M1')
-print(time.time() - d2)
-
-#251.70357656478882
-#0.0948324203491211

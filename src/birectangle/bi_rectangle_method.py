@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from collections import deque
 
+from src.birectangle.overflowprevention.no_prevention import NoPrevention
+from src.birectangle.overflowprevention.overflow_prevention import OverflowPrevention
 from src.shape_analogy import ShapeAnalogy
 from src.birectangle.bi_rectangle import BiRectangle
 from src.birectangle.rectangle import Rectangle
@@ -28,13 +30,33 @@ C_INNER_R_FILL = "k"
 C_UNSOLVED_R = "#FFA500"
 
 
+def make_bi_rectangles(outer_rects, inner_rects, epsilon, innerReduction, biRectangleAnalogy):
+    birectangles = []
+    r_x_min = r_x_max = r_y_min = r_y_max = Decimal(1)
+    for i in range(3):
+        b = BiRectangle(outer_rects[i], inner_rects[i])
+        b.separate(epsilon)
+        birectangles.append(b)
+        if innerReduction:
+            r_x_min = Decimal.min(r_x_min, b.center_x_min_ratio())
+            r_x_max = Decimal.min(r_x_max, b.center_x_max_ratio())
+            r_y_min = Decimal.min(r_y_min, b.center_y_min_ratio())
+            r_y_max = Decimal.min(r_y_max, b.center_y_max_ratio())
+    if innerReduction:
+        for b in birectangles:
+            b.reduceInnerTo(r_x_min, r_x_max, r_y_min, r_y_max)
+
+    birectangles.append(biRectangleAnalogy.analogy(birectangles[0], birectangles[1], birectangles[2], outer_rects[3]))
+    return birectangles
+
+
 class BiRectangleMethod(ShapeAnalogy):
 
     def __init__(self, biRectAnalogy: BiRectangleAnalogy = BiSegmentAnalogy(),
                  cutMethod: CuttingMethod = CutIn4EqualParts1(), maxDepth: int = 5, nbIterations: int = 1365,
                  innerRectFinder: InnerRectangleFinder = LargestRectangleFinder(), epsilon: float = 0.01,
-                 keep: int = 0, innerReduction: bool = False, algo: str = 'iter', plot: str | int = 'last',
-                 sameAxis = True):
+                 overflowPrevention: OverflowPrevention = NoPrevention(), subSys: str = '', innerReduction: bool = False,
+                 algo: str = 'iter', plot: str | int = 'last', sameAxis = True):
         assert isinstance(biRectAnalogy, BiRectangleAnalogy)
         assert isinstance(cutMethod, CuttingMethod)
         assert isinstance(innerRectFinder, InnerRectangleFinder)
@@ -42,7 +64,7 @@ class BiRectangleMethod(ShapeAnalogy):
                                          f" version or 'rec' for the recursive one")
         assert 0 <= epsilon < 0.5, f"Epsilon value ({epsilon}) is too high (should be < 0.5)"
         assert (isinstance(plot, int) and 0 <= plot) or plot in ['step', 'last', 'none'], PLOT_ASSERT
-        assert 0 <= keep <= 4, f"'Keep' ({keep}) value is 0, 1, 2, 3 or 4"
+        assert subSys in ['cut', 'super', 'first', '']
         self.biRectangleAnalogy = biRectAnalogy
         self.cuttingMethod = cutMethod
         self.innerRectFinder = innerRectFinder
@@ -53,14 +75,8 @@ class BiRectangleMethod(ShapeAnalogy):
         self.algo = algo
         self.__margin = 5
         self.nbIterations = nbIterations
-        # TODO : TO DO PROPERLY
-        # basically "strategies" to prevent the shape from going outside the outer rectangle
-        # 0 : "NullStrategy" we don't do anything different in subshapes
-        # 1 : OuterRectangle at depth >= 1 are now the rectangles obtained by cutting (no analogy on outer rectangles)
-        # 2 : OuterRectangle at depth >= 1 are still the bounding boxes but the analogy is made inside the super outer rectangle (of lower depth)
-        # 3 : OuterRectangle at depth >= 1 are still the bounding boxes but the analogy is made inside the cuts rectangles
-        # 4 : OuterRectangle at depth >= 1 are now the super outer rectangles (no analogy on outer rectangles)
-        self.keep = keep
+        self.overflowPrevention = overflowPrevention
+        self.subSys = subSys
         self.innerReduction = innerReduction
 
     def analogy(self, SA: Shape, SB: Shape, SC: Shape) -> Shape | None:
@@ -81,11 +97,10 @@ class BiRectangleMethod(ShapeAnalogy):
         return res
 
     def analogy_rec(self, SA: Shape, SB: Shape, SC: Shape) -> Shape | None:
-        return self.__analogy_rec_aux(SA, SB, SC, 0, None, None)[0]
+        return self.__analogy_rec_aux(SA, SB, SC, 0, [None] * 4)[0]
 
     def __analogy_rec_aux(self, SA: Shape, SB: Shape, SC: Shape, k: int,
-                  cutRectangles: tuple[Rectangle, Rectangle, Rectangle, Rectangle] | None,
-                  superRectangles: tuple[Rectangle, Rectangle, Rectangle, Rectangle] | None) -> tuple[Shape | None, list[Rectangle]]:
+                  csRectangles: list[Rectangle | None]) -> tuple[Shape | None, list[Rectangle]]:
         """
         Main analogy function
         :param SA: the shape A (first shape)
@@ -102,41 +117,38 @@ class BiRectangleMethod(ShapeAnalogy):
         plt_x_max = plt_y_max = -np.inf
         if self.plot != 'none' and self.sameAxis:
             for s in shapes:
-                R = s.getOuterRectangle()
+                R = s.outer_rectangle()
                 plt_x_min = min(R.x_min, plt_x_min)
                 plt_x_max = max(R.x_max, plt_x_max)
                 plt_y_min = min(R.y_min, plt_y_min)
                 plt_y_max = max(R.y_max, plt_y_max)
-        first = k == 0
-        empty = tuple(s.isEmpty() for s in shapes)
 
+        empty = tuple(s.isEmpty() for s in shapes)
         # solvable equations with empty shapes ø : ø :: c : ? with solution c and ø : b :: ø : ? with solution b
         if (empty[0] and empty[1]) or (empty[0] and empty[2]):
             x = 2 if empty[0] and empty[1] else 1
-            d = shapes[x].equiv(None if first else superRectangles[x], None if first else superRectangles[3])
+            d = shapes[x].equiv(csRectangles[x], csRectangles[3])
         elif any(empty):
             lgg.warning(f"k = {k} / Unsolvable equation with empty shape(s) : {'∅' if empty[0] else 'a'}:"
                         f"{'∅' if empty[1] else 'b'}::{'∅' if empty[2] else 'c'}:?. Analogy unsolved.")
-            if not first and self.plot != 'none':
-                plt_unsolved_rects.append(cutRectangles[3])
         else:
             try:
                 d = UnionRectangles()
-                birectangles, outerRectangles = self.getBirectangles(first, shapes, d, cutRectangles, superRectangles)
+                birectangles = self.get_bi_rectangles(shapes, d, csRectangles)
 
                 if k < self.maxDepth:
-                    subRectanglesA, subRectanglesB, subRectanglesC, subRectanglesD = tuple(
+                    cutRectanglesA, cutRectanglesB, cutRectanglesC, cutRectanglesD = tuple(
                         self.cuttingMethod.cutBiRectangle(biRect) for biRect in birectangles)
                     subshapesA, subshapesB, subshapesC = tuple(
                         self.cuttingMethod.cut(shapes[i], birectangles[i]) for i in range(3))
-                    nbSubShapes = self.cuttingMethod.nbSubShapes()
-                    for i in range(nbSubShapes):
+                    for i in range(self.cuttingMethod.nbSubShapes()):
                         subshapeA = subshapesA[i]
                         subshapeB = subshapesB[i]
                         subshapeC = subshapesC[i]
+                        cutRs = (cutRectanglesA[i], cutRectanglesB[i], cutRectanglesC[i], cutRectanglesD[i])
+                        outerRs = tuple(b.outerRectangle for b in birectangles)
                         subshapeD, plt_unsolved_rects2 = self.__analogy_rec_aux(subshapeA, subshapeB, subshapeC, k + 1,
-                                                               (subRectanglesA[i], subRectanglesB[i],
-                                                                subRectanglesC[i], subRectanglesD[i]), outerRectangles)
+                                                               self.sub_coord_system(cutRs, outerRs, outerRs if csRectangles[0] is None and self.subSys == 'first' else csRectangles))
 
                         # if self.plot equals none, then no reason to store rectangles (no plot will be made)
                         if self.plot != 'none':
@@ -145,7 +157,7 @@ class BiRectangleMethod(ShapeAnalogy):
                         if subshapeD is not None:
                             d += subshapeD
                         elif self.plot != 'none':
-                            plt_unsolved_rects.append(subRectanglesD[i])
+                            plt_unsolved_rects.append(cutRectanglesD[i])
 
                 if self.__plotting(k):
                     for i in range(4):
@@ -166,13 +178,13 @@ class BiRectangleMethod(ShapeAnalogy):
                         plt_y_max = max(plt_y_max, r.y_max)
                         r.plotFilled(C_UNSOLVED_R, zorder=1)
             except AssertionError as e:
-                lgg.warning(f" {e}. Analogy unsolved.")
+                lgg.warning(f"k = {k} / {e}. Analogy unsolved.")
 
         if self.__plotting(k):
             self.__set_keys_and_text(plt.figure('D'), k, d is not None)
             if d is not None:
                 d.plot()
-                plt_outer_d = d.getOuterRectangle()
+                plt_outer_d = d.outer_rectangle()
                 plt_x_min = min(plt_x_min, plt_outer_d.x_min)
                 plt_x_max = max(plt_x_max, plt_outer_d.x_max)
                 plt_y_min = min(plt_y_min, plt_outer_d.y_min)
@@ -188,7 +200,7 @@ class BiRectangleMethod(ShapeAnalogy):
                     plt.axis((plt_x_min - self.__margin, plt_x_max + self.__margin,
                               plt_y_min - self.__margin, plt_y_max + self.__margin))
                 else:
-                    R = shapes[i].getOuterRectangle()
+                    R = shapes[i].outer_rectangle()
                     plt.axis((R.x_min - self.__margin, R.x_max + self.__margin,
                               R.y_min - self.__margin, R.y_max + self.__margin))
             plt.show()
@@ -205,33 +217,44 @@ class BiRectangleMethod(ShapeAnalogy):
         plt_x_max = plt_y_max = -np.inf
         if self.plot != 'none' and self.sameAxis:
             for s in shapes:
-                R = s.getOuterRectangle()
+                R = s.outer_rectangle()
                 plt_x_min = min(R.x_min, plt_x_min)
                 plt_x_max = max(R.x_max, plt_x_max)
                 plt_y_min = min(R.y_min, plt_y_min)
                 plt_y_max = max(R.y_max, plt_y_max)
         k = 0
         equations = deque()
-        equations.append((shapes, [], []))
+        equations.append((shapes, [None] * 4, None))
         first = True
         while k < self.nbIterations and len(equations) != 0:
             # super rectangles are the outer rectangles of the super-shapes
             # cut rectangles are the rectangles obtained by cutting
-            shapes, superRectangles, cutRectangles = equations.popleft()
-            
+            shapes, csRectangles, cutD = equations.popleft()
+
             empty = tuple(s.isEmpty() for s in shapes)
             if (empty[0] and empty[1]) or (empty[0] and empty[2]):
                 x = 2 if empty[0] and empty[1] else 1
-                d += shapes[x].equiv(None if first else superRectangles[x] , None if first else superRectangles[3])
+                d += shapes[x].equiv(csRectangles[x] , csRectangles[3])
             elif any(empty):
                 lgg.warning(f"k = {k} / Unsolvable equation with empty shape(s) : {'∅' if empty[0] else 'a'}:{'∅' if empty[1] else 'b'}::{'∅' if empty[2] else 'c'}:?. Analogy unsolved.")
                 if not first and self.plot != 'none':
-                    plt_unsolved_rects.append(cutRectangles[3])
+                    plt_unsolved_rects.append(cutD)
                 elif first:
                     d = None
             else:
                 try:
-                    birectangles, outerRectangles = self.getBirectangles(first, shapes, d, cutRectangles, superRectangles)
+                    birectangles = self.get_bi_rectangles(shapes, d, csRectangles)
+
+                    cutRectanglesA, cutRectanglesB, cutRectanglesC, cutRectanglesD = tuple(
+                        self.cuttingMethod.cutBiRectangle(biRect) for biRect in birectangles)
+                    subshapesA, subshapesB, subshapesC = tuple(self.cuttingMethod.cut(shapes[i], birectangles[i])
+                                                               for i in range(3))
+                    nbSubShapes = self.cuttingMethod.nbSubShapes()
+                    for i in range(nbSubShapes):
+                        cutRs = (cutRectanglesA[i], cutRectanglesB[i], cutRectanglesC[i], cutRectanglesD[i])
+                        outerRs = tuple(b.outerRectangle for b in birectangles)
+                        equations.append(((subshapesA[i], subshapesB[i], subshapesC[i]),
+                                          self.sub_coord_system(cutRs, outerRs, outerRs if csRectangles[0] is None and self.subSys == 'first' else csRectangles), cutRectanglesD[i]))
 
                     if first and self.plot != 'none':
                         for i in range(4):
@@ -245,18 +268,10 @@ class BiRectangleMethod(ShapeAnalogy):
                             birectangles[i].innerRectangle.plotBorder(C_INNER_R_BORDER)
                             self.cuttingMethod.plotCuttingLines(birectangles[i])
 
-                    cutRectanglesA, cutRectanglesB, cutRectanglesC, cutRectanglesD = tuple(
-                        self.cuttingMethod.cutBiRectangle(biRect) for biRect in birectangles)
-                    subshapesA, subshapesB, subshapesC = tuple(self.cuttingMethod.cut(shapes[i], birectangles[i])
-                                                               for i in range(3))
-                    nbSubShapes = self.cuttingMethod.nbSubShapes()
-                    for i in range(nbSubShapes):
-                        equations.append(((subshapesA[i], subshapesB[i], subshapesC[i]), outerRectangles,
-                                          (cutRectanglesA[i], cutRectanglesB[i], cutRectanglesC[i], cutRectanglesD[i])))
                 except AssertionError as e:
                     lgg.warning(f"k = {k} / {e}. Analogy unsolved.")
                     if not first and self.plot != 'none':
-                        plt_unsolved_rects.append(cutRectangles[3])
+                        plt_unsolved_rects.append(cutD)
                     elif first:
                         d = None
             k += 1
@@ -266,7 +281,7 @@ class BiRectangleMethod(ShapeAnalogy):
             plt.figure('D')
             if d is not None:
                 d.plot()
-                x_min, x_max, y_min, y_max = d.getOuterRectangle()
+                x_min, x_max, y_min, y_max = d.outer_rectangle()
                 for r in plt_unsolved_rects:
                     x_min, x_max, y_min, y_max = (min(x_min, r.x_min), max(x_max, r.x_max),
                                                   min(y_min, r.y_min), max(y_max, r.y_max))
@@ -286,59 +301,34 @@ class BiRectangleMethod(ShapeAnalogy):
                     plt.axis((plt_x_min - self.__margin, plt_x_max + self.__margin,
                               plt_y_min - self.__margin, plt_y_max + self.__margin))
                 else:
-                    R = shapes[i].getOuterRectangle()
+                    R = shapes[i].outer_rectangle()
                     plt.axis((R.x_min - self.__margin, R.x_max + self.__margin,
                               R.y_min - self.__margin, R.y_max + self.__margin))
             plt.show()
         return d
 
-    def getBirectangles(self, first, shapes, d, cutRectangles, superRectangles):
-        if first or (self.keep != 1 and self.keep != 4):
-            outerRectangles = [s.getOuterRectangle() for s in shapes]
-        elif self.keep == 1:
-            outerRectangles = cutRectangles
-        else:  # keep == 4
-            outerRectangles = superRectangles
-        birectangles = []
-        r_x_min = r_x_max = r_y_min = r_y_max = Decimal(1)
-        for i in range(3):
-            b = BiRectangle(outerRectangles[i], shapes[i].getInnerRectangle(self.innerRectFinder))
-            birectangles.append(b)
-            if self.innerReduction:
-                r_x_min = Decimal.min(r_x_min, b.center_x_min_ratio())
-                r_x_max = Decimal.min(r_x_max, b.center_x_max_ratio())
-                r_y_min = Decimal.min(r_y_min, b.center_y_min_ratio())
-                r_y_max = Decimal.min(r_y_max, b.center_y_max_ratio())
-        for b in birectangles:
-            if self.innerReduction:
-                b.reduceInnerTo(r_x_min, r_x_max, r_y_min, r_y_max)
-            b.separate(self.epsilon)
+    def get_bi_rectangles(self, shapes, d, cs_rectangles):
+        bounding_boxes = (shapes[0].outer_rectangle(), shapes[1].outer_rectangle(), shapes[2].outer_rectangle(), None)
+        pseudo_inner_rectangles = tuple(s.getInnerRectangle(self.innerRectFinder) for s in shapes)
 
-        if first or self.keep == 0:
-            outerRD = None
-        elif self.keep == 1 or self.keep == 4:
-            outerRD = outerRectangles[3]
+        if cs_rectangles[0] is None:
+            outer_rectangles = bounding_boxes
         else:
-            birectangles2 = []
-            for i in range(3):
-                b = BiRectangle(superRectangles[i] if self.keep == 2 else cutRectangles[i], outerRectangles[i])
-                # prevents the inner rectangle from touching the outerRectangle (if epsilon > 0)
-                b.separate(self.epsilon)
-                birectangles2.append(b)
-            # outerRD is the innerRectangle of the resulting birectangle
-            outerRD, _ = self.biRectangleAnalogy.analogy(birectangles2[0], birectangles2[1], birectangles2[2],
-                                                         superRectangles[3] if self.keep == 2 else
-                                                         cutRectangles[3])
+            outer_rectangles = self.overflowPrevention.getOuterRectangles(bounding_boxes, cs_rectangles, make_bi_rectangles)
 
-        birectangle_d = self.biRectangleAnalogy.analogy(birectangles[0], birectangles[1],
-                                                        birectangles[2], outerRD)
-        birectangles.append(birectangle_d)
-        innerRD, outerRD = birectangle_d
-        d.addRectangle(innerRD)
-        if len(outerRectangles) == 3:
-            outerRectangles.append(outerRD)
+        birectangles = make_bi_rectangles(outer_rectangles, [outer_rectangles[i].intersection(pseudo_inner_rectangles[i]) for i in range(3)], self.epsilon, self.innerReduction, self.biRectangleAnalogy)
 
-        return birectangles, outerRectangles
+        d.addRectangle(birectangles[3].innerRectangle)
+
+        return birectangles
+
+    def sub_coord_system(self, cutRectangles, outerRectangles, firstRectangles):
+        if self.subSys == 'cut':
+            return cutRectangles
+        elif self.subSys == 'super':
+            return outerRectangles
+        else:
+            return firstRectangles
 
     def __plotting(self, k: int) -> bool:
         """

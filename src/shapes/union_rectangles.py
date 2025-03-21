@@ -65,7 +65,7 @@ class UnionRectangles(Shape):
     def __repr__(self):
         return str(self.rectangles)
 
-    def getOuterRectangle(self) -> Rectangle:
+    def outer_rectangle(self) -> Rectangle:
         if len(self.rectangles) == 0:
             return Rectangle(0, 0, 0, 0)
         return Rectangle(self.x_min, self.x_max, self.y_min, self.y_max)
@@ -318,7 +318,8 @@ class UnionRectangles(Shape):
             if partial_pixels[(i, j)] is not None:
                 covered_area = union_rect.union_area()
                 covered_area = min(covered_area, 1)
-                new_value = 255 - int(round(covered_area * 255))
+
+                new_value = round(255 * (1 - covered_area))
                 pixels[j, i] = new_value
 
         return ps.PixelShape(array=pixels)

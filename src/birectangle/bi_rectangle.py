@@ -2,7 +2,6 @@ from decimal import Decimal
 from typing import Iterator
 
 import numpy as np
-from networkx.algorithms.distance_measures import center
 
 from src.birectangle.point import Point
 from src.birectangle.rectangle import Rectangle

@@ -65,6 +65,9 @@ class Rectangle:
     def __iter__(self):
         return iter((self.x_min, self.x_max, self.y_min, self.y_max))
 
+    def copy(self):
+        return Rectangle(self.x_min, self.x_max, self.y_min, self.y_max)
+
     @staticmethod
     def fromCenter(center: Point, w: Decimal, h: Decimal):
         return Rectangle(center.x - w/2, center.x + w/2, center.y - h/2, center.y + h/2)
