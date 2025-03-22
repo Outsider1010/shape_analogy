@@ -57,11 +57,11 @@ class BiRectangle:
 
     def reduceInnerTo(self, r_x_min: Decimal, r_x_max: Decimal, r_y_min: Decimal, r_y_max: Decimal) -> None:
         _, outerR = self
-        cx, w = np.linalg.solve(np.array([[2 * float(r_x_min), -1], [2 * float(r_x_max), 1]]),
-                                np.array([2 * float(r_x_min * outerR.x_min), 2 * float(r_x_max * outerR.x_max)]))
+        cx, w = np.linalg.solve(np.array([[2 * np.float64(r_x_min), -1], [2 * np.float64(r_x_max), 1]], dtype=np.float64),
+                                np.array([2 * np.float64(r_x_min * outerR.x_min), 2 * np.float64(r_x_max * outerR.x_max)], dtype=np.float64))
 
-        cy, h = np.linalg.solve(np.array([[2 * float(r_y_min), -1], [2 * float(r_y_max), 1]]),
-                                np.array([2 * float(r_y_min * outerR.y_min), 2 * float(r_y_max * outerR.y_max)]))
+        cy, h = np.linalg.solve(np.array([[2 * np.float64(r_y_min), -1], [2 * np.float64(r_y_max), 1]], dtype=np.float64),
+                                np.array([2 * np.float64(r_y_min * outerR.y_min), 2 * np.float64(r_y_max * outerR.y_max)], dtype=np.float64))
 
         r = Rectangle.fromCenter(Point(cx, cy), w, h)
         if r.area() == 0:

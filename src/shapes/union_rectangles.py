@@ -91,6 +91,8 @@ class UnionRectangles(Shape):
 
     def equiv(self, fromCoordSysR: Rectangle | None, toCoordSysR: Rectangle | None):
         res = UnionRectangles()
+        if self.size() == 0:
+            return res
         if fromCoordSysR is None or toCoordSysR is None:
             res.__setup(self.rectangles.copy(), self.x_min, self.x_max, self.y_min, self.y_max)
         else:
@@ -99,7 +101,7 @@ class UnionRectangles(Shape):
             x_max, y_max = Point(self.x_max, self.y_max).toCoordSys(fromCoordSysR, toCoordSysR)
             res.__setup([BiRectangle(fromCoordSysR, r).innerEquiv(toCoordSysR) for r in self.rectangles],
                         x_min, x_max, y_min, y_max)
-            return res
+        return res
 
     def isPointInShape(self, x: Decimal | float, y: Decimal | float) -> bool:
         return any(r.isPointInRectangle(x, y) for r in self.rectangles)
@@ -147,110 +149,6 @@ class UnionRectangles(Shape):
         return total_area
 
     def toPixels(self):
-        # 1. Calcule le rectangle englobant.
-
-        # 2. Détermine la taille de la grille de pixels.
-        w = 2 * math.ceil(max(abs(self.x_min), abs(self.x_max)))
-        h = 2 * math.ceil(max(abs(self.y_min), abs(self.y_max)))
-        w = max(w, 2)
-        h = max(h, 2)
-
-        # La grille est centrée, donc:
-        # Le coin inférieur gauche en coordonnées réelles est (-w/2, -h/2)
-        grid_x_min = -w / 2
-        grid_y_min = -h / 2
-
-        # 3. Initialise la matrice de pixels en blanc.
-        pixels = np.full((h, w), 255, dtype=np.uint8)
-
-        # 4. Parcours de chaque pixel et calcul de l'union des zones couvertes par les rectangles.
-        for j in range(h):
-            for i in range(w):
-                # Définition des bords du pixel en coordonnées réelles.
-                pixel_x_min = grid_x_min + i
-                pixel_x_max = pixel_x_min + 1
-                pixel_y_min = grid_y_min + j
-                pixel_y_max = pixel_y_min + 1
-
-                # On calcule la liste des intersections entre le pixel et chaque rectangle.
-                intersections = UnionRectangles()
-                for rect in self.rectangles:
-                    rx_min = float(rect.x_min)
-                    rx_max = float(rect.x_max)
-                    ry_min = float(rect.y_min)
-                    ry_max = float(rect.y_max)
-
-                    # Calcul de l'intersection entre le pixel et le rectangle.
-                    inter_x_min = max(rx_min, pixel_x_min)
-                    inter_x_max = min(rx_max, pixel_x_max)
-                    inter_y_min = max(ry_min, pixel_y_min)
-                    inter_y_max = min(ry_max, pixel_y_max)
-
-                    inter_width = max(0, inter_x_max - inter_x_min)
-                    inter_height = max(0, inter_y_max - inter_y_min)
-
-                    if inter_width > 0 and inter_height > 0:
-                        intersections.addRectangle(Rectangle(inter_x_min, inter_x_max, inter_y_min, inter_y_max))
-
-                # Calcul de l'aire totale couverte dans le pixel (union des zones).
-                covered_area = intersections.union_area()
-
-                # L'aire est comprise entre 0 et 1 mais parfois la valeur numérique peut déborder, donc je fais un min.
-                covered_area = min(covered_area, 1)
-
-                # Calcule la nouvelle valeur de teinte en fonction de la fraction de recouvrement.
-                new_value = 255 - int(round(covered_area * 255))
-                pixels[j, i] = new_value
-
-        '''one = Decimal(1)
-
-        # 3. Initialise la matrice de pixels en blanc.
-        pixels = np.full((h, w), 255, dtype=np.uint8)
-        areas = np.zeros((h, w), dtype=np.float64)
-        partially_covered: dict[str, UnionRectangles] = {}
-
-        for r in self.rectangles:
-            ps.setRangeValue(pixels, 0, r.x_min, r.x_max, r.y_min, r.y_max, 2)
-            ps.setRangeValue(pixels, np.float64(1), r.x_min, r.x_max, r.y_min, r.y_max, 2)
-
-            x_min_is_integer = r.x_min.is_integer()
-            x_max_is_integer = r.x_max.is_integer()
-            y_min_is_integer = r.y_min.is_integer()
-            y_max_is_integer = r.y_max.is_integer()
-
-            x_cur = r.x_min
-            if not x_min_is_integer:
-                cur = r.y_min
-                y_next = Decimal.min(floor(r.y_min) + one, r.y_max)
-                while cur < r.y_max:
-                    c = floor(r.x_min)
-                    key = f'{ceil(y_next)}_{c}'
-                    r_case = partially_covered.get(key, None)
-                    if r_case is None:
-                        r_case = UnionRectangles()
-                        partially_covered[key] = r_case
-                    x_cur = Decimal.min(c + 1, r.x_max)
-                    r_case.addRectangle(Rectangle(r.x_min, x_cur, cur, y_next))
-                    cur = y_next
-                    y_next = Decimal.min(y_next + one, r.y_max)
-
-            if not y_max_is_integer:
-                x_next = Decimal.min(floor(x_cur) + one, r.x_max)
-                while x_cur < r.x_max:
-                    c = floor(r.x_min)
-                    key = f'{ceil(y_next)}_{c}'
-                    r_case = partially_covered.get(key, None)
-                    if r_case is None:
-                        r_case = UnionRectangles()
-                        partially_covered[key] = r_case
-                    x_cur = Decimal.min(c + 1, r.x_max)
-                    r_case.addRectangle(Rectangle(r.x_min, x_cur, cur, y_next))
-                    cur = y_next
-                    y_next = Decimal.min(y_next + one, r.y_max)
-                    '''
-        return ps.PixelShape(array=pixels)
-
-    def toPixelsOptimized(self):
         # 1. Calcul du rectangle englobant et de la grille.
         w = 2 * math.ceil(max(abs(self.x_min), abs(self.x_max)))
         h = 2 * math.ceil(max(abs(self.y_min), abs(self.y_max)))
@@ -318,14 +216,14 @@ class UnionRectangles(Shape):
             if partial_pixels[(i, j)] is not None:
                 covered_area = union_rect.union_area()
                 covered_area = min(covered_area, 1)
-
                 new_value = round(255 * (1 - covered_area))
+
                 pixels[j, i] = new_value
 
         return ps.PixelShape(array=pixels)
 
     def toImage(self, name: str = "default.bmp"):
-        self.toPixelsOptimized().toImage(name)
+        self.toPixels().toImage(name)
 
     def toSinogram(self, maxAngle: float = 180.):
         # TODO

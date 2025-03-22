@@ -25,7 +25,7 @@ PLOT_ASSERT = ("`plot` keyword should be set to `step` to see every step, `last`
                "lower than `plot`.")
 
 C_OUTER_R = "r"
-C_INNER_R_BORDER = "#ba55d2"
+C_INNER_R_BORDER = "#0000ff"
 C_INNER_R_FILL = "k"
 C_UNSOLVED_R = "#FFA500"
 
@@ -52,11 +52,11 @@ def make_bi_rectangles(outer_rects, inner_rects, epsilon, innerReduction, biRect
 
 class BiRectangleMethod(ShapeAnalogy):
 
-    def __init__(self, biRectAnalogy: BiRectangleAnalogy = BiSegmentAnalogy(),
+    def __init__(self, biRectAnalogy: BiRectangleAnalogy = BiSegmentAnalogy(), epsilon: float = 0.01,
                  cutMethod: CuttingMethod = CutIn4EqualParts1(), maxDepth: int = 5, nbIterations: int = 1365,
-                 innerRectFinder: InnerRectangleFinder = LargestRectangleFinder(), epsilon: float = 0.01,
-                 overflowPrevention: OverflowPrevention = NoPrevention(), subSys: str = '', innerReduction: bool = False,
-                 algo: str = 'iter', plot: str | int = 'last', sameAxis = True):
+                 innerRectFinder: InnerRectangleFinder = LargestRectangleFinder(), innerReduction: bool = False,
+                 overflowPrevention: OverflowPrevention = NoPrevention(), subSys: str = '', algo: str = 'iter',
+                 plot: str | int = 'last', sameAxis: bool = True):
         assert isinstance(biRectAnalogy, BiRectangleAnalogy)
         assert isinstance(cutMethod, CuttingMethod)
         assert isinstance(innerRectFinder, InnerRectangleFinder)
@@ -181,7 +181,7 @@ class BiRectangleMethod(ShapeAnalogy):
                 lgg.warning(f"k = {k} / {e}. Analogy unsolved.")
 
         if self.__plotting(k):
-            self.__set_keys_and_text(plt.figure('D'), k, d is not None)
+            self.__set_keys_and_text(plt.figure('D'), f'depth = {k}' if d is not None else '')
             if d is not None:
                 d.plot()
                 plt_outer_d = d.outer_rectangle()
@@ -193,7 +193,7 @@ class BiRectangleMethod(ShapeAnalogy):
                 plt.axis((plt_x_min - self.__margin, plt_x_max + self.__margin,
                           plt_y_min - self.__margin, plt_y_max + self.__margin))
             for i in range(3):
-                self.__set_keys_and_text(plt.figure(chr(ord("A") + i)), k)
+                self.__set_keys_and_text(plt.figure(chr(ord("A") + i)), f'depth = {k}')
                 shapes[i].plot()
                 plt.axis('square')
                 if self.sameAxis:
@@ -226,7 +226,8 @@ class BiRectangleMethod(ShapeAnalogy):
         equations = deque()
         equations.append((shapes, [None] * 4, None))
         first = True
-        while k < self.nbIterations and len(equations) != 0:
+        go = k < self.nbIterations and len(equations) != 0
+        while go:
             # super rectangles are the outer rectangles of the super-shapes
             # cut rectangles are the rectangles obtained by cutting
             shapes, csRectangles, cutD = equations.popleft()
@@ -256,7 +257,7 @@ class BiRectangleMethod(ShapeAnalogy):
                         equations.append(((subshapesA[i], subshapesB[i], subshapesC[i]),
                                           self.sub_coord_system(cutRs, outerRs, outerRs if csRectangles[0] is None and self.subSys == 'first' else csRectangles), cutRectanglesD[i]))
 
-                    if first and self.plot != 'none':
+                    if self.__plotting_iter(True, k):
                         for i in range(4):
                             plt.figure(chr(ord("A") + i))
                             if self.sameAxis:
@@ -274,37 +275,41 @@ class BiRectangleMethod(ShapeAnalogy):
                         plt_unsolved_rects.append(cutD)
                     elif first:
                         d = None
+
             k += 1
             first = False
-
-        if self.plot != 'none':
-            plt.figure('D')
-            if d is not None:
-                d.plot()
-                x_min, x_max, y_min, y_max = d.outer_rectangle()
-                for r in plt_unsolved_rects:
-                    x_min, x_max, y_min, y_max = (min(x_min, r.x_min), max(x_max, r.x_max),
-                                                  min(y_min, r.y_min), max(y_max, r.y_max))
-                    r.plotFilled(C_UNSOLVED_R, zorder=1)
-                plt_x_min = min(plt_x_min, x_min)
-                plt_x_max = max(plt_x_max, x_max)
-                plt_y_min = min(plt_y_min, y_min)
-                plt_y_max = max(plt_y_max, y_max)
-                plt.axis('square')
-                plt.axis((plt_x_min - self.__margin, plt_x_max + self.__margin,
-                          plt_y_min - self.__margin, plt_y_max + self.__margin))
-            for i in range(3):
-                plt.figure(chr(ord("A") + i))
-                init_shapes[i].plot()
-                plt.axis('square')
-                if self.sameAxis:
+            go = k < self.nbIterations and len(equations) != 0
+            if self.__plotting_iter(go, k):
+                plt.figure('D')
+                if d is not None:
+                    self.__set_keys_and_text(plt.figure('D'), f'iteration {k - 1}')
+                    d.plot()
+                    x_min, x_max, y_min, y_max = d.outer_rectangle()
+                    for r in plt_unsolved_rects:
+                        x_min, x_max, y_min, y_max = (min(x_min, r.x_min), max(x_max, r.x_max),
+                                                      min(y_min, r.y_min), max(y_max, r.y_max))
+                        r.plotFilled(C_UNSOLVED_R, zorder=1)
+                    plt_x_min = min(plt_x_min, x_min)
+                    plt_x_max = max(plt_x_max, x_max)
+                    plt_y_min = min(plt_y_min, y_min)
+                    plt_y_max = max(plt_y_max, y_max)
+                    plt.axis('square')
                     plt.axis((plt_x_min - self.__margin, plt_x_max + self.__margin,
                               plt_y_min - self.__margin, plt_y_max + self.__margin))
-                else:
-                    R = shapes[i].outer_rectangle()
-                    plt.axis((R.x_min - self.__margin, R.x_max + self.__margin,
-                              R.y_min - self.__margin, R.y_max + self.__margin))
-            plt.show()
+
+                for i in range(3):
+                    self.__set_keys_and_text(plt.figure(chr(ord("A") + i)), f'iteration {k - 1}')
+                    init_shapes[i].plot()
+                    plt.axis('square')
+                    if self.sameAxis:
+                        plt.axis((plt_x_min - self.__margin, plt_x_max + self.__margin,
+                                  plt_y_min - self.__margin, plt_y_max + self.__margin))
+                    else:
+                        R = shapes[i].outer_rectangle()
+                        plt.axis((R.x_min - self.__margin, R.x_max + self.__margin,
+                                  R.y_min - self.__margin, R.y_max + self.__margin))
+                plt.show()
+
         return d
 
     def get_bi_rectangles(self, shapes, d, cs_rectangles):
@@ -316,7 +321,9 @@ class BiRectangleMethod(ShapeAnalogy):
         else:
             outer_rectangles = self.overflowPrevention.getOuterRectangles(bounding_boxes, cs_rectangles, make_bi_rectangles)
 
-        birectangles = make_bi_rectangles(outer_rectangles, [outer_rectangles[i].intersection(pseudo_inner_rectangles[i]) for i in range(3)], self.epsilon, self.innerReduction, self.biRectangleAnalogy)
+        birectangles = make_bi_rectangles(outer_rectangles,
+                                          [outer_rectangles[i].intersection(pseudo_inner_rectangles[i])
+                                           for i in range(3)], self.epsilon, self.innerReduction, self.biRectangleAnalogy)
 
         d.addRectangle(birectangles[3].innerRectangle)
 
@@ -338,17 +345,25 @@ class BiRectangleMethod(ShapeAnalogy):
         return (self.plot == 'step' or (self.plot == 'last' and k == 0)
                 or (type(self.plot) == int and k <= int(self.plot)))
 
-    def __set_keys_and_text(self, fig, k: int, addText:bool = True) -> None:
+    def __plotting_iter(self, go, current_iteration) -> bool:
+        """
+        :param go
+        :return: True if a plot should be shown at the end of the current execution
+        """
+        return (self.plot == 'step' or (self.plot == 'last' and not go)
+                or (type(self.plot) == int and current_iteration > int(self.plot)))
+
+    def __set_keys_and_text(self, fig, text: str) -> None:
         """
         Set key reaction and messages
         :param fig: figure reacting
-        :param k: the current depth (for text purposes)
+        :param text: text to print
         :return: Nothing.
         """
         fig.canvas.mpl_connect('key_press_event', self.__on_key_press)
-        if addText:
+        if text != '':
             plt.title('Press Enter to stop plotting, Space to skip to the last \nand any other key to continue step by step')
-            plt.xlabel(f"depth = {k}")
+            plt.xlabel(text)
 
     def __on_key_press(self, event) -> None:
         """
