@@ -76,6 +76,10 @@ class Rectangle:
     def fromTopLeft(topLeft: Point, w: Decimal, h: Decimal):
         return Rectangle(topLeft.x, topLeft.x + w, topLeft.y - h, topLeft.y)
 
+    @staticmethod
+    def fromBottomLeft(bottomLeft: Point, w: Decimal, h: Decimal):
+        return Rectangle(bottomLeft.x, bottomLeft.x + w, bottomLeft.y, bottomLeft.y + h)
+
     def isPointInRectangle(self, x: Decimal | float, y: Decimal | float) -> bool:
         return self.x_min <= x <= self.x_max and self.y_min <= y <= self.y_max
 

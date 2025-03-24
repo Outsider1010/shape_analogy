@@ -5,8 +5,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from collections import deque
 
+from src.basicanalogies.realnumbers import bounded
 from src.birectangle.overflowprevention.no_prevention import NoPrevention
 from src.birectangle.overflowprevention.overflow_prevention import OverflowPrevention
+from src.birectangle.point import Point
+from src.birectangle.rectangleanalogy.center_dim_analogy import CenterDimAnalogy
 from src.shape_analogy import ShapeAnalogy
 from src.birectangle.bi_rectangle import BiRectangle
 from src.birectangle.rectangle import Rectangle
@@ -30,7 +33,7 @@ C_INNER_R_FILL = "k"
 C_UNSOLVED_R = "#FFA500"
 
 
-def make_bi_rectangles(outer_rects, inner_rects, epsilon, innerReduction, biRectangleAnalogy):
+def make_bi_rectangles(outer_rects, inner_rects, epsilon, innerReduction, biRectangleAnalogy, ratio = False):
     birectangles = []
     r_x_min = r_x_max = r_y_min = r_y_max = Decimal(1)
     for i in range(3):
@@ -42,11 +45,27 @@ def make_bi_rectangles(outer_rects, inner_rects, epsilon, innerReduction, biRect
             r_x_max = Decimal.min(r_x_max, b.center_x_max_ratio())
             r_y_min = Decimal.min(r_y_min, b.center_y_min_ratio())
             r_y_max = Decimal.min(r_y_max, b.center_y_max_ratio())
+
+    old_centers = []
+    tmp = Rectangle(0, 1, 0, 1)
     if innerReduction:
         for b in birectangles:
+            old_centers.append(b.innerRectangle.center().toCoordSys(b.outerRectangle, tmp))
             b.reduceInnerTo(r_x_min, r_x_max, r_y_min, r_y_max)
 
-    birectangles.append(biRectangleAnalogy.analogy(birectangles[0], birectangles[1], birectangles[2], outer_rects[3]))
+    if not ratio:
+        birectangles.append(biRectangleAnalogy.analogy(birectangles[0], birectangles[1], birectangles[2], outer_rects[3]))
+    else:
+        if outer_rects[3] is not None:
+            RD = outer_rects[3]
+        else:
+            RD = CenterDimAnalogy().analogy(birectangles[0].outerRectangle, birectangles[1].outerRectangle, birectangles[2].outerRectangle)
+        c_x, c_y = bounded(*[center.x for center in old_centers]), bounded(*[center.y for center in old_centers])
+        c_x, c_y = Point(c_x, c_y).toCoordSys(tmp, RD)
+        rD = Rectangle((1 - r_x_min) * c_x + r_x_min * RD.x_min, r_x_max * RD.x_max + (1 - r_x_max) * c_x,
+                  (1 - r_y_min) * c_y + r_y_min * RD.y_min, r_y_max * RD.y_max + (1 - r_y_max) * c_y)
+        birectangles.append(BiRectangle(RD, rD))
+
     return birectangles
 
 
@@ -56,12 +75,13 @@ class BiRectangleMethod(ShapeAnalogy):
                  cutMethod: CuttingMethod = CutIn4EqualParts1(), maxDepth: int = 5, nbIterations: int = 1365,
                  innerRectFinder: InnerRectangleFinder = LargestRectangleFinder(), innerReduction: bool = False,
                  overflowPrevention: OverflowPrevention = NoPrevention(), subSys: str = '', algo: str = 'iter',
-                 plot: str | int = 'last', sameAxis: bool = True):
+                 plot: str | int = 'last', sameAxis: bool = True, ratio = False):
         assert isinstance(biRectAnalogy, BiRectangleAnalogy)
         assert isinstance(cutMethod, CuttingMethod)
         assert isinstance(innerRectFinder, InnerRectangleFinder)
         assert algo in ['iter', 'rec'], (f"The algorithm keyword should be 'iter' if we want to use the iterative"
                                          f" version or 'rec' for the recursive one")
+        assert not ratio or innerReduction, f"if the ratio option is true, innerReduction should be true"
         assert 0 <= epsilon < 0.5, f"Epsilon value ({epsilon}) is too high (should be < 0.5)"
         assert (isinstance(plot, int) and 0 <= plot) or plot in ['step', 'last', 'none'], PLOT_ASSERT
         assert subSys in ['cut', 'super', 'first', '']
@@ -78,6 +98,7 @@ class BiRectangleMethod(ShapeAnalogy):
         self.overflowPrevention = overflowPrevention
         self.subSys = subSys
         self.innerReduction = innerReduction
+        self.ratio = ratio
 
     def analogy(self, SA: Shape, SB: Shape, SC: Shape) -> Shape | None:
         l = LargestRectangleFinder()
@@ -305,7 +326,7 @@ class BiRectangleMethod(ShapeAnalogy):
                         plt.axis((plt_x_min - self.__margin, plt_x_max + self.__margin,
                                   plt_y_min - self.__margin, plt_y_max + self.__margin))
                     else:
-                        R = shapes[i].outer_rectangle()
+                        R = init_shapes[i].outer_rectangle()
                         plt.axis((R.x_min - self.__margin, R.x_max + self.__margin,
                                   R.y_min - self.__margin, R.y_max + self.__margin))
                 plt.show()
@@ -321,9 +342,11 @@ class BiRectangleMethod(ShapeAnalogy):
         else:
             outer_rectangles = self.overflowPrevention.getOuterRectangles(bounding_boxes, cs_rectangles, make_bi_rectangles)
 
-        birectangles = make_bi_rectangles(outer_rectangles,
-                                          [outer_rectangles[i].intersection(pseudo_inner_rectangles[i])
-                                           for i in range(3)], self.epsilon, self.innerReduction, self.biRectangleAnalogy)
+        pseudo_inner_rectangles = [outer_rectangles[i].intersection(pseudo_inner_rectangles[i]) for i in range(3)]
+        if any(r is None for r in pseudo_inner_rectangles):
+            raise AssertionError('too small rectangles')
+        birectangles = make_bi_rectangles(outer_rectangles, pseudo_inner_rectangles, self.epsilon,
+                                          self.innerReduction, self.biRectangleAnalogy, self.ratio)
 
         d.addRectangle(birectangles[3].innerRectangle)
 
