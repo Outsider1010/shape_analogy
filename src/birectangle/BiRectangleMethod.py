@@ -2,7 +2,7 @@ import logging as lgg
 
 import matplotlib.pyplot as plt
 import numpy as np
-
+from decimal import Decimal
 from src.ShapeAnalogy import ShapeAnalogy
 from src.birectangle.BiRectangle import BiRectangle
 from src.birectangle.Rectangle import Rectangle
@@ -12,7 +12,6 @@ from src.birectangle.cuttingmethod.CuttingMethod import CuttingMethod
 from src.birectangle.cuttingmethod.FirstCuttingIn4Method import FirstCuttingIn4Method
 from src.birectangle.innerrectanglefinder.InnerRectangleFinder import InnerRectangleFinder
 from src.birectangle.innerrectanglefinder.LargestRectangleFinder import LargestRectangleFinder
-
 from src.birectangle.cuttingmethod.FirstCuttingIn4Method import FirstCuttingIn4Method
 
 from src.shapes.pixelShape import PixelShape
@@ -240,19 +239,23 @@ class BiRectangleMethod(ShapeAnalogy):
     def setBiRectangleAnalogy(self, biRectAnalogy: BiRectangleAnalogy) -> None:
         assert isinstance(biRectAnalogy, BiRectangleAnalogy)
         self.biRectangleAnalogy = biRectAnalogy
-
+    def getBirectangleAnalogy(self):
+        return self.biRectangleAnalogy
     def setCuttingMethod(self, cut_method: CuttingMethod) -> None:
         assert isinstance(cut_method, CuttingMethod)
         self.cuttingMethod = cut_method
-
+    def getCuttingMethod(self):
+        return self.cuttingMethod
     def setInnerRectangleFinder(self, innerRectFinder: InnerRectangleFinder) -> None:
         assert isinstance(innerRectFinder, InnerRectangleFinder)
         self.innerRectFinder = innerRectFinder
-
+    def getInnerRectangleFinder(self):
+        return self.innerRectFinder
     def setEpsilon(self, epsilon: float) -> None:
         assert epsilon < 0.5, f"Epsilon value ({epsilon}) is too high (should be < 0.5)"
         self.epsilon = epsilon
-
+    def getEpsilon(self):
+        return self.epsilon
     def setPlottingBehavior(self, plot: int | str):
         assert (isinstance(plot, int) and 0 <= plot) or plot in ['step', 'last', 'none'], PLOT_ASSERT
         self.plot = plot
@@ -278,3 +281,5 @@ class BiRectangleMethod(ShapeAnalogy):
         self.epsilon = epsilon
     def set_plot(self,plot):
         self.plot = plot
+    def get_plot(self):
+        return self.plot
