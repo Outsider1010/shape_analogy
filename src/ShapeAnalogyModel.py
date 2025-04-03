@@ -1,8 +1,8 @@
-from src.ShapeAnalogy import ShapeAnalogy
+from src.shape_analogy import ShapeAnalogy
 from src.view.ViewInterface import ViewInterface
 from src.birectangle.BiRectangleMethod import BiRectangleMethod
-from src.tomography.TomographyMethod import TomographyMethod
-from src.shapes.pixelShape import PixelShape
+from src.tomography.tomography_method import TomographyMethod
+from src.shapes.pixel_shape import PixelShape
 from src.utils import resize2D
 
 

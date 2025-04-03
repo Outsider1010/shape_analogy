@@ -57,6 +57,9 @@ class ResultView(ttk.Frame,ViewInterface):
         self.resize((self.winfo_width(), self.winfo_height()))
 
     def react(self,event:str):
+        if(event == "NS"):
+            self.path = "resources/noSolution.png"
+            return
         if self.model.hasResult():
             self.path = "resources/default.bmp"   
         else:

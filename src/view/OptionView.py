@@ -1,21 +1,21 @@
 from tkinter import ttk,Toplevel,Label,Button,Spinbox,StringVar,Radiobutton,Entry,Scale
 from src.ShapeAnalogyModel import ShapeAnalogyModel
 from PIL import Image, ImageTk,ImageTk,ImageOps
-from src.birectangle.cuttingmethod.CuttingIn8Method import CuttingIn8Method
-from src.birectangle.pointanalogy.ArithmeticPointAnalogy import ArithmeticPointAnalogy
-from src.birectangle.rectangleanalogy.CenterDimAnalogy import CenterDimAnalogy
-from src.birectangle.rectangleanalogy.TopLeftDimAnalogy import TopLeftDimAnalogy
-from src.birectangle.birectangleanalogy.SigmoidCenterAnalogy import SigmoidCenterAnalogy
-from src.birectangle.birectangleanalogy.ExtSigmoidAnalogy import ExtSigmoidAnalogy
-from src.birectangle.birectangleanalogy.SigmoidCenterAnalogy import SigmoidCenterAnalogy
-from src.birectangle.birectangleanalogy.ExtSigmoidAnalogy import ExtSigmoidAnalogy
-from src.birectangle.cuttingmethod.FirstCuttingIn4Method import FirstCuttingIn4Method
-from src.birectangle.birectangleanalogy.CornerSigmoidAnalogy import CornerAnalogy
-from src.birectangle.cuttingmethod.FullHorizontalCut import FullHorizontalCut
-from src.birectangle.cuttingmethod.FullVerticalCut import FullVerticalCut
-from src.birectangle.cuttingmethod.FullSideNonDisjointCut import FullSideNonDisjointCut
-from src.birectangle.innerrectanglefinder.LargestRectangleFinder import LargestRectangleFinder
-from src.birectangle.birectangleanalogy.BiSegmentAnalogy import BiSegmentAnalogy
+from src.birectangle.cuttingmethod.cut_in_8 import CuttingIn8
+
+from src.birectangle.rectangleanalogy.center_dim_analogy import CenterDimAnalogy
+from src.birectangle.rectangleanalogy.top_left_dim_analogy import TopLeftDimAnalogy
+from src.birectangle.birectangleanalogy.ext_sigmoid_analogy import ExtSigmoidAnalogy
+from src.birectangle.rectangleanalogy.area_analogy import AreaAnalogy
+from src.birectangle.rectangleanalogy.coord_analogy import CoordAnalogy
+
+from src.birectangle.cuttingmethod.cut_in_4_equal_parts_1 import CutIn4EqualParts1
+from src.birectangle.birectangleanalogy.simple_analogy import SimpleAnalogy
+from src.birectangle.cuttingmethod.horizontal_cut import HorizontalCut
+from src.birectangle.cuttingmethod.vertical_cut import VerticalCut
+from src.birectangle.cuttingmethod.sides_non_disjoint_cut import SidesNonDisjointCut
+from src.birectangle.innerrectanglefinder.largest_rectangle_finder import LargestRectangleFinder
+from src.birectangle.birectangleanalogy.bi_segment_analogy import BiSegmentAnalogy
 # Define the classes representing the options
 class BiRectangleOption():
 
@@ -24,28 +24,27 @@ class BiRectangleOption():
         self.root = root
         self.windows = None
         self.birectangleAnalogyStrategy = {
-            "Sigmoid center":SigmoidCenterAnalogy,
             "Extended sigmoid":ExtSigmoidAnalogy,
             "BiSegment Analogy":BiSegmentAnalogy,
-            "CornerSigmoidAnalogy":CornerAnalogy
+            "Simple Analogy":SimpleAnalogy,
         }
         self.cuttingStrategy = {
-            "Cut4":FirstCuttingIn4Method,
-            "Cut8":CuttingIn8Method,
-            "Horizontal cut":FullHorizontalCut,
-            "Vertical cut": FullVerticalCut,
-            "Non disjoint cut":FullSideNonDisjointCut,
+            "Cut4":CutIn4EqualParts1,
+            "Cut8":CuttingIn8,
+            "Horizontal cut":HorizontalCut,
+            "Vertical cut":VerticalCut,
+            "Non disjoint cut":SidesNonDisjointCut,
             
         }
         self.innerRectangleFinderStrategy = {
             "Largest rectangle": LargestRectangleFinder,
         }
-        self.pointAnalogyStrategy = {
-            "Arithmetic analogy": ArithmeticPointAnalogy,
-        }
+    
         self.rectangleAnalogyStrategy = {
             "Center dimension analogy": CenterDimAnalogy,
             "Top left dimension analogy": TopLeftDimAnalogy,
+            "Coords Analogy":CoordAnalogy,
+            "Area Analogy":AreaAnalogy
         }
         
 
@@ -131,7 +130,6 @@ class BiRectangleOption():
         parameterLabel = Label(parametersFrame,text="parameters")
       
         epsilonLabel = Label(parametersFrame,text="epsilon")
-        #Set the default value for SpinBox
         my_var= StringVar(parametersFrame)
         my_var.set(self.model.getMethod().getEpsilon())
         epsilonBox = Scale(parametersFrame, variable=my_var,from_=0.01, to=0.49,orient="horizontal",resolution=0.01)
