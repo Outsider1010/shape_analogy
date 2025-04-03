@@ -3,18 +3,18 @@ import logging as lgg
 import matplotlib.pyplot as plt
 import numpy as np
 from decimal import Decimal
-from src.ShapeAnalogy import ShapeAnalogy
-from src.birectangle.BiRectangle import BiRectangle
-from src.birectangle.Rectangle import Rectangle
-from src.birectangle.birectangleanalogy.BiRectangleAnalogy import BiRectangleAnalogy
-from src.birectangle.birectangleanalogy.BiSegmentAnalogy import BiSegmentAnalogy
-from src.birectangle.cuttingmethod.CuttingMethod import CuttingMethod
-from src.birectangle.cuttingmethod.FirstCuttingIn4Method import FirstCuttingIn4Method
-from src.birectangle.innerrectanglefinder.InnerRectangleFinder import InnerRectangleFinder
-from src.birectangle.innerrectanglefinder.LargestRectangleFinder import LargestRectangleFinder
-from src.birectangle.cuttingmethod.FirstCuttingIn4Method import FirstCuttingIn4Method
+from src.shape_analogy import ShapeAnalogy
+from src.birectangle.bi_rectangle import BiRectangle
+from src.birectangle.rectangle import Rectangle
+from src.birectangle.birectangleanalogy.bi_rectangle_analogy import BiRectangleAnalogy
+from src.birectangle.birectangleanalogy.bi_segment_analogy import BiSegmentAnalogy
+from src.birectangle.cuttingmethod.cutting_method import CuttingMethod
+from src.birectangle.cuttingmethod.cut_in_4_equal_parts_1 import CutIn4EqualParts1
+from src.birectangle.innerrectanglefinder.inner_rectangle_finder import InnerRectangleFinder
+from src.birectangle.innerrectanglefinder.largest_rectangle_finder import LargestRectangleFinder
 
-from src.shapes.pixelShape import PixelShape
+
+from src.shapes.pixel_shape import PixelShape
 from src.shapes.shape import Shape
 
 PLOT_ASSERT = ("`plot` keyword should be set to `step` to see every step, `last` to see only the final step or `none` "
@@ -30,7 +30,7 @@ C_UNSOLVED_R = "#FFA500"
 class BiRectangleMethod(ShapeAnalogy):
 
     def __init__(self, biRectAnalogy: BiRectangleAnalogy = BiSegmentAnalogy(),
-                 cutMethod: CuttingMethod = FirstCuttingIn4Method(),
+                 cutMethod: CuttingMethod = CutIn4EqualParts1(),
                  innerRectFinder: InnerRectangleFinder = LargestRectangleFinder(),
                  epsilon: float = 0.1, maxDepth: int = 7, keep = 1, plot: str | int = 'last'):
         assert isinstance(biRectAnalogy, BiRectangleAnalogy)
