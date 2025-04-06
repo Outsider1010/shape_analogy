@@ -12,3 +12,4 @@ class App(tk.Tk):
         screen_height = self.winfo_screenheight()
         self.geometry(f"{screen_width}x{screen_height}+0+0")
         view.pack(fill="both", expand=True)
+        self.mainloop()

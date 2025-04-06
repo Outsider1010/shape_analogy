@@ -74,7 +74,7 @@ class BiRectangleMethod(ShapeAnalogy):
     def __init__(self, biRectAnalogy: BiRectangleAnalogy = BiSegmentAnalogy(), epsilon: float = 0.03,
                  cutMethod: CuttingMethod = CutIn4EqualParts1(), maxDepth: int = 5, nbIterations: int = 1365,
                  innerRectFinder: InnerRectangleFinder = LargestRectangleFinder(), innerReduction: bool = False,
-                 overflowPrevention: OverflowPrevention = NoPrevention(), subSys: str = 'cut', algo: str = 'rec',
+                 overflowPrevention: OverflowPrevention = NoPrevention(), subSys: str = 'cut', algo: str = 'iter',
                  plot: str | int = 10, sameAxis: bool = True, ratio = False):
         assert isinstance(biRectAnalogy, BiRectangleAnalogy)
         assert isinstance(cutMethod, CuttingMethod)
