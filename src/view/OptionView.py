@@ -137,7 +137,7 @@ class BiRectangleOption():
         Label(parameters_frame, text="Epsilon").grid(column=0, row=1, sticky="ew",pady=10)
         self.epsilon = DoubleVar(parameters_frame, self.model.getMethod().getEpsilon())
         epsilon_frame = ttk.Frame(parameters_frame)
-        Scale(epsilon_frame, from_=0.01, to=0.49, orient="horizontal", resolution=0.01,variable=self.epsilon,showvalue=0,command=lambda value: self.epsilonLabel.config(text=f"{value}")).grid(column=0, row=0, padx=5, sticky="ew")
+        Scale(epsilon_frame, from_=0.000001, to=0.49, orient="horizontal", resolution=0.000001,variable=self.epsilon,showvalue=0,command=lambda value: self.epsilonLabel.config(text=f"{value}")).grid(column=0, row=0, padx=5, sticky="ew")
         self.epsilonLabel = Label(epsilon_frame,text=f"{self.epsilon.get()}")
         self.epsilonLabel.grid(column=0,row=1)
         epsilon_frame.grid(column=0,row=2,padx=5, sticky="ew")
@@ -285,10 +285,13 @@ class BiRectangleOption():
             method.setPlottingBehavior(self.plot.get())
         method.setEpsilon(self.epsilon.get())
         method.setSubSys(self.subSys.get())
-        method.set_birectangle_analogy_method(self.birectangleAnalogyStrategy[self.birect_analogy_combo.get()]())
+        birectangleAnalogyMethod = self.birectangleAnalogyStrategy[self.birect_analogy_combo.get()]
+        method.set_birectangle_analogy_method(birectangleAnalogyMethod())
         method.setCuttingMethod(self.cuttingStrategy[self.birect_cutting_combo.get()]())
         method.setInnerRectangleFinder(self.innerRectangleFinderStrategy[self.inner_rectangle_finder_combo.get()]())
-        method.setOverflowPrevention(self.overflowPreventionStrategy[self.overflowPreventionComboBox.get()]())
+        preventionMethod = self.overflowPreventionStrategy[self.overflowPreventionComboBox.get()]
+        
+        method.setOverflowPrevention(preventionMethod(self.epsilon.get(),birectangleAnalogyMethod) if preventionMethod == self.overflowPreventionStrategy["Indirect prevention"] else preventionMethod())
         method.setSameAxis(self.sameAxisVariable.get())
         method.setInnerReduction(innerReduction)
         method.setRatio(self.ratioVariable.get())

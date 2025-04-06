@@ -440,7 +440,6 @@ class BiRectangleMethod(ShapeAnalogy):
     
     def setPlottingBehavior(self, plot: int | str):
         assert (isinstance(plot, int) and 0 <= plot) or plot in ['step', 'last', 'none'], PLOT_ASSERT
-        print(plot)
         self.plot = plot
         self.initPlot = plot
     
