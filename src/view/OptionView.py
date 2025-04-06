@@ -263,13 +263,18 @@ class BiRectangleOption():
     def on_ok(self):
         method = self.model.getMethod()
         nbIteration = self.nbIterationVariable.get()
+        innerReduction = self.innerReductionVariable.get()
+        ratio = self.ratioVariable.get()
+        maxDepth = self.maxDepthVariable.get()
+        if(ratio and not innerReduction):
+            self.showError("To enable ratio you have enable innerReduction")
+            return
         if(nbIteration == ""):
             self.showError("Number of iterations must be indicate")
-        maxDepth = self.maxDepthVariable.get()
+            return
         if(maxDepth == ""):
             self.showError("Maximum depth must be indicate")
             return
-       
         if(self.plot.get() == "range"):
             if(self.stepRange.get() == ""):
                 self.showError("You have selected step only with depth < at some numbers, pls indicate the step index you want")
@@ -285,14 +290,14 @@ class BiRectangleOption():
         method.setInnerRectangleFinder(self.innerRectangleFinderStrategy[self.inner_rectangle_finder_combo.get()]())
         method.setOverflowPrevention(self.overflowPreventionStrategy[self.overflowPreventionComboBox.get()]())
         method.setSameAxis(self.sameAxisVariable.get())
+        method.setInnerReduction(innerReduction)
         method.setRatio(self.ratioVariable.get())
-        method.setInnerReduction(self.innerReductionVariable.get())
         method.setAlgo(self.algoModVariable.get())
         method.setNbIteration(self.nbIterationVariable.get()) 
+        method.set_maxDepth(self.maxDepthVariable.get())
         self.hide()
         
     def isDigit(self, digit):
-        print(digit)
         return ((str.isdigit(digit) and "." not in digit) or digit == "") and digit != "0"
     def showError(self,message):
         messagebox.showerror("Error",message=message)
