@@ -71,13 +71,13 @@ class BiRectangleOption():
    
     def setup_windows(self):
         self.windows.title("Parameters")
+        self.windows.grid_rowconfigure(1, weight=1)
+        self.windows.grid_columnconfigure(0, weight=1)
+        self.windows.grid_rowconfigure(0, weight=1)
         
         # Strategy Frame
         strategy_frame = ttk.Frame(self.windows)
         strategy_frame.grid(column=0, row=0, sticky="nsew", padx=10, pady=10)
-        
-        self.windows.grid_columnconfigure(0, weight=1)
-        self.windows.grid_rowconfigure(0, weight=1)
         
         for i in range(4):
             strategy_frame.grid_columnconfigure(i, weight=1)
@@ -123,11 +123,11 @@ class BiRectangleOption():
             ]
         )
         self.overflowPreventionComboBox.grid(column=3, row=2, padx=5, sticky="ew")
-        # Parameters Frame
+        
+        
         parameters_frame = ttk.Frame(self.windows)
         parameters_frame.grid(column=0, row=1, sticky="nsew", padx=10, pady=10)
-        
-        self.windows.grid_rowconfigure(1, weight=1)
+
         
         for i in range(3):
             parameters_frame.grid_columnconfigure(i, weight=1)
@@ -269,8 +269,7 @@ class BiRectangleOption():
         if(maxDepth == ""):
             self.showError("Maximum depth must be indicate")
             return
-        #ajouter maxDepth
-        # Logique pour le bouton OK
+       
         if(self.plot.get() == "range"):
             if(self.stepRange.get() == ""):
                 self.showError("You have selected step only with depth < at some numbers, pls indicate the step index you want")
@@ -279,7 +278,7 @@ class BiRectangleOption():
                 method.setPlottingBehavior(int(self.stepRangeVariable.get()))
         else:
             method.setPlottingBehavior(self.plot.get())
-        method.set_epsilon(self.epsilon.get())
+        method.setEpsilon(self.epsilon.get())
         method.setSubSys(self.subSys.get())
         method.set_birectangle_analogy_method(self.birectangleAnalogyStrategy[self.birect_analogy_combo.get()]())
         method.setCuttingMethod(self.cuttingStrategy[self.birect_cutting_combo.get()]())
@@ -326,8 +325,7 @@ class OptionView:
     def __init__(self,root,model:ShapeAnalogyModel):
         self.model = model
         self.option_classes = {
-            "bi-rectangle method": BiRectangleOption(root,model),
-            "tomography method": TomographyOption(root,model)
+            "bi-rectangle method": BiRectangleOption(root,model)
         }
         frame = ttk.Frame(root)
         # Create the first select button (dropdown menu)

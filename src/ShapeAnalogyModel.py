@@ -25,17 +25,15 @@ class ShapeAnalogyModel:
 
     def startAnalogy(self):
         if self.can_start():
-            self.result, full_array = self.analogyMethod.analogy(*self.shapes)
-            if self.result is not None:
+            self.result = self.analogyMethod.analogy(*self.shapes).toImage("ressources/default.bmp")
+            print("fini")
+        """ if self.result is not None:
                 self.resizeToCorrectSize()
                 self.result.toImage()
                 event="S"
-            if full_array is not None:
-                arr = resize2D(full_array, 300, 300)
-                #toImage(arr)
             else:
                 event = "NS"
-            self.notify(event)
+            self.notify(event)"""
 
     def setShape(self, indice:int, filePath:str):
         self.result = None

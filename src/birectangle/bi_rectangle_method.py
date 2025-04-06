@@ -71,7 +71,7 @@ def make_bi_rectangles(outer_rects, inner_rects, epsilon, innerReduction, biRect
 
 class BiRectangleMethod(ShapeAnalogy):
 
-    def __init__(self, biRectAnalogy: BiRectangleAnalogy = BiSegmentAnalogy(), epsilon: float = 0.01,
+    def __init__(self, biRectAnalogy: BiRectangleAnalogy = BiSegmentAnalogy(), epsilon: float = 0.03,
                  cutMethod: CuttingMethod = CutIn4EqualParts1(), maxDepth: int = 5, nbIterations: int = 1365,
                  innerRectFinder: InnerRectangleFinder = LargestRectangleFinder(), innerReduction: bool = False,
                  overflowPrevention: OverflowPrevention = NoPrevention(), subSys: str = 'cut', algo: str = 'rec',
@@ -413,74 +413,93 @@ class BiRectangleMethod(ShapeAnalogy):
     def setBiRectangleAnalogy(self, biRectAnalogy: BiRectangleAnalogy) -> None:
         assert isinstance(biRectAnalogy, BiRectangleAnalogy)
         self.biRectangleAnalogy = biRectAnalogy
+    
     def getBirectangleAnalogy(self):
         return self.biRectangleAnalogy
+    
     def setCuttingMethod(self, cut_method: CuttingMethod) -> None:
         assert isinstance(cut_method, CuttingMethod)
         self.cuttingMethod = cut_method
+    
     def getCuttingMethod(self):
         return self.cuttingMethod
+    
     def setInnerRectangleFinder(self, innerRectFinder: InnerRectangleFinder) -> None:
         assert isinstance(innerRectFinder, InnerRectangleFinder)
         self.innerRectFinder = innerRectFinder
+    
     def getInnerRectangleFinder(self):
         return self.innerRectFinder
+    
     def setEpsilon(self, epsilon: float) -> None:
         assert epsilon < 0.5, f"Epsilon value ({epsilon}) is too high (should be < 0.5)"
-        self.epsilon = epsilon
+        self.epsilon = Decimal(epsilon)
+    
     def getEpsilon(self):
         return self.epsilon
+    
     def setPlottingBehavior(self, plot: int | str):
         assert (isinstance(plot, int) and 0 <= plot) or plot in ['step', 'last', 'none'], PLOT_ASSERT
         print(plot)
         self.plot = plot
         self.initPlot = plot
+    
     def getPlottingBehavior(self):
         return self.plot
     
     def set_maxDepth(self,depth):
         self.maxDepth = depth
+    
     def get_maxDepth(self):
         return self.maxDepth
+   
     def set_cutting_method(self,strategy):
         self.cuttingMethod = strategy
 
-    
     def set_birectangle_analogy_method(self,strategy):
         self.biRectangleAnalogy = strategy
 
     def set_inner_rectangle_finder_method(self,strategy):
         self.innerRectangleFinder = strategy
     
-    
-    def set_epsilon(self,epsilon):
-        self.epsilon = epsilon
-    
     def setOverflowPrevention(self,overFlowPrevention:OverflowPrevention):
         self.overflowPrevention = overFlowPrevention
+    
     def getOverflowPrevention(self):
         return self.overflowPrevention
+    
     def setSubSys(self,subSys:str):
         self.subSys = subSys
+    
     def getSubSys(self):
         return self.subSys
+    
     def getSameAxis(self):
         return self.sameAxis
+    
     def setSameAxis(self,sameAxis):
         self.sameAxis = sameAxis
+    
     def getRatio(self):
         return self.ratio
+    
     def setRatio(self,ratio):
         self.ratio = ratio
+    
     def getInnerReduction(self):
         return self.innerReduction
+    
     def setInnerReduction(self,innerReduction):
         self.innerReduction = innerReduction
+    
     def getAlgo(self):
         return self.algo
+    
     def setAlgo(self,algo):
          self.algo = algo
+    
     def getNbIteration(self):
         return self.nbIterations
+    
     def setNbIteration(self,nbIterations):
         self.nbIterations = nbIterations
