@@ -1,4 +1,4 @@
-from tkinter import ttk,Toplevel,Label,Button,Spinbox,StringVar,Radiobutton,Entry,Scale
+from tkinter import ttk,Toplevel,Label,Button,Spinbox,StringVar,Radiobutton,Entry,Scale,IntVar,messagebox,Checkbutton,BooleanVar,DoubleVar
 from src.ShapeAnalogyModel import ShapeAnalogyModel
 from PIL import Image, ImageTk,ImageTk,ImageOps
 from src.birectangle.cuttingmethod.cut_in_8 import CuttingIn8
@@ -16,6 +16,10 @@ from src.birectangle.cuttingmethod.vertical_cut import VerticalCut
 from src.birectangle.cuttingmethod.sides_non_disjoint_cut import SidesNonDisjointCut
 from src.birectangle.innerrectanglefinder.largest_rectangle_finder import LargestRectangleFinder
 from src.birectangle.birectangleanalogy.bi_segment_analogy import BiSegmentAnalogy
+from src.birectangle.overflowprevention.direct_prevention import DirectPrevention
+from src.birectangle.overflowprevention.indirect_prevention import IndirectPrevention
+from src.birectangle.overflowprevention.no_prevention import NoPrevention
+from idlelib.tooltip import Hovertip
 # Define the classes representing the options
 class BiRectangleOption():
 
@@ -47,144 +51,253 @@ class BiRectangleOption():
             "Area Analogy":AreaAnalogy
         }
         
-
+        self.overflowPreventionStrategy = {
+            "Direct prevention":DirectPrevention,
+            "Indirect prevention":IndirectPrevention,
+            "No prevention":NoPrevention,
+        }
 
     def show(self):
-        self.windows = Toplevel(self.root)
-        self.setupWindows()
+        if not self.is_window_open():
+            self.windows = Toplevel(self.root)
+            self.setup_windows()
 
-    def is_open(self):
+    def is_window_open(self):
         return self.windows is not None and self.windows.winfo_exists()
+
     def hide(self):
         if(self.windows):
             self.windows.destroy()   
-    def select_analogy_strategy(self,event):
-        self.model.set_birectangle_birectangleAnalogy_strategy(self.birect_analogy_combo.get())
-
-    def select_cutting_strategy(self,event):
-        self.model.set_birectangle_cutting_strategy(self.birect_cutting_combo.get())
-
-    def select_inner_rectangle_finder_strategy(self,event):
-        self.model.set_birectangle_inner_rectangle_finder_strategy(self.birect_inner_rectangle_finder.get())
-    def setupWindows(self):
-        self.plot = StringVar(None,self.model.getMethod().get_plot())
-        self.windows.grid_rowconfigure(0, weight=1)
-        self.windows.grid_rowconfigure(1,weight=2)
-        self.windows.grid_rowconfigure(2, weight=1)  # Ajout d'une ligne pour les boutons
+   
+    def setup_windows(self):
+        self.windows.title("Parameters")
+        
+        # Strategy Frame
+        strategy_frame = ttk.Frame(self.windows)
+        strategy_frame.grid(column=0, row=0, sticky="nsew", padx=10, pady=10)
+        
         self.windows.grid_columnconfigure(0, weight=1)
+        self.windows.grid_rowconfigure(0, weight=1)
         
-        frameStrategy = ttk.Frame(self.windows)
-        frameStrategy.grid(column=0, row=0, sticky="ew")
-        frameStrategy.grid_columnconfigure(0, weight=1)
-        frameStrategy.grid_columnconfigure(1, weight=1)
-        frameStrategy.grid_columnconfigure(2, weight=1)
+        for i in range(4):
+            strategy_frame.grid_columnconfigure(i, weight=1)
         
-        strategiesLabel = Label(frameStrategy, text="Strategy")
-        strategiesLabel.grid(column=1, row=0, sticky="ew", pady=20)
+        Label(strategy_frame, text="Strategy").grid(column=0, row=0, columnspan=4, pady=10, sticky="ew")
         
-        #birectangleAnalogy
-        birect_analogy_combo = ttk.Combobox(
-            frameStrategy, 
-            values=list(self.birectangleAnalogyStrategy.keys()), 
-            state="readonly"
-        )
-        birect_analogy_combo.set(
+        Label(strategy_frame, text="Birectangle analogy").grid(column=0, row=1, sticky="ew")
+        self.birect_analogy_combo = ttk.Combobox(strategy_frame, values=list(self.birectangleAnalogyStrategy.keys()), state="readonly")
+        self.birect_analogy_combo.set(
             list(self.birectangleAnalogyStrategy.keys())[
                 list(self.birectangleAnalogyStrategy.values()).index(
                     self.model.getMethod().getBirectangleAnalogy().__class__
                 )
             ]
         )
-        birect_analogy_combo.grid(column=0, row=2, sticky="ew")
-        labelBirectangle = Label(frameStrategy, text="Birectangle analogy")
-        labelBirectangle.grid(column=0, row=1, sticky="ew")
+        self.birect_analogy_combo.grid(column=0, row=2, padx=5, sticky="ew")
         
-        #cuttingMethod
-        cuttingLabel = Label(frameStrategy,text="Cutting method")
-        birect_cutting_combo = ttk.Combobox(frameStrategy,values=list(self.cuttingStrategy.keys()),state="readonly")
-        birect_cutting_combo.set(list(self.cuttingStrategy.keys())[
+        Label(strategy_frame, text="Cutting Method").grid(column=1, row=1, sticky="ew")
+        self.birect_cutting_combo = ttk.Combobox(strategy_frame, values=list(self.cuttingStrategy.keys()), state="readonly")
+        self.birect_cutting_combo.set(list(self.cuttingStrategy.keys())[
                 list(self.cuttingStrategy.values()).index(
                     self.model.getMethod().getCuttingMethod().__class__
                 )
             ])
-        birect_cutting_combo.grid(column=1,row=2)
-        cuttingLabel.grid(column=1,row=1)
+        self.birect_cutting_combo.grid(column=1, row=2, padx=5, sticky="ew")
         
-        
-        #innerRectangleFinderMethod
-        innerRectangleLabel = Label(frameStrategy,text="Inner rectangle finder method")
-        inner_rectangle_finder_combo = ttk.Combobox(frameStrategy,values=list(self.innerRectangleFinderStrategy.keys()),state="readonly")
-        inner_rectangle_finder_combo.set(list(self.innerRectangleFinderStrategy.keys())[
+        Label(strategy_frame, text="Inner rectangle finder method").grid(column=2, row=1, sticky="ew")
+        self.inner_rectangle_finder_combo = ttk.Combobox(strategy_frame, values=list(self.innerRectangleFinderStrategy.keys()), state="readonly")
+        self.inner_rectangle_finder_combo.set(list(self.innerRectangleFinderStrategy.keys())[
                 list(self.innerRectangleFinderStrategy.values()).index(
                     self.model.getMethod().getInnerRectangleFinder().__class__
                 )
             ])
-        inner_rectangle_finder_combo.grid(column=2,row=2)
-        innerRectangleLabel.grid(column=2,row=1)
-        parametersFrame  = ttk.Frame(self.windows)
-        parametersFrame.grid(column=0, row=1, sticky="ew")
-        parametersFrame.grid_columnconfigure(0, weight=1)
-        parametersFrame.grid_columnconfigure(1, weight=1)
-        parametersFrame.grid_columnconfigure(2, weight=1)
-      
-        parameterLabel = Label(parametersFrame,text="parameters")
-      
-        epsilonLabel = Label(parametersFrame,text="epsilon")
-        my_var= StringVar(parametersFrame)
-        my_var.set(self.model.getMethod().getEpsilon())
-        epsilonBox = Scale(parametersFrame, variable=my_var,from_=0.01, to=0.49,orient="horizontal",resolution=0.01)
-      
-        parameterLabel.grid(column=1,row=0,sticky="ew",pady=10)
-        epsilonLabel.grid(column=0,row=0)
-        epsilonBox.grid(column=0,row=1)
-
-        #plot checkbox
+        self.inner_rectangle_finder_combo.grid(column=2, row=2, padx=5, sticky="ew")
         
-        framePlotCheck  = ttk.Frame(parametersFrame)
-        allStepCheckBox = Radiobutton(framePlotCheck,text="All step",variable=self.plot,value="step")
-        lastStepCheckBox = Radiobutton(framePlotCheck,text="last step",variable=self.plot,value="last")
-        noneStepCheckBox = Radiobutton(framePlotCheck,text="No step",variable=self.plot,value="none")
-        rangeStepCheckBox = Radiobutton(framePlotCheck,text="Step only with detph < ",variable=self.plot,value="range")
-
+        Label(strategy_frame, text="Overflow prevention").grid(column=3, row=1, sticky="ew")
+        self.overflowPreventionComboBox = ttk.Combobox(strategy_frame, values=list(self.overflowPreventionStrategy.keys()), state="readonly")
+        self.overflowPreventionComboBox.set(
+            list(self.overflowPreventionStrategy.keys())[
+                list(self.overflowPreventionStrategy.values()).index(
+                    self.model.getMethod().getOverflowPrevention().__class__
+                )
+            ]
+        )
+        self.overflowPreventionComboBox.grid(column=3, row=2, padx=5, sticky="ew")
+        # Parameters Frame
+        parameters_frame = ttk.Frame(self.windows)
+        parameters_frame.grid(column=0, row=1, sticky="nsew", padx=10, pady=10)
         
-        allStepCheckBox.select()
-        vcmd = framePlotCheck.register(self.isDigit)
-        entryRange = Entry(framePlotCheck,validate="all",validatecommand=(vcmd,'%P'))
+        self.windows.grid_rowconfigure(1, weight=1)
         
-        plotLabel = Label(framePlotCheck,text="plot")
-        plotLabel.grid(column=1,row=0)
+        for i in range(3):
+            parameters_frame.grid_columnconfigure(i, weight=1)
         
-        allStepCheckBox.grid(column=0,row=1)
-        lastStepCheckBox.grid(column=1,row=1)
-        noneStepCheckBox.grid(column=2,row=1)
-        rangeStepCheckBox.grid(column=3,row=1)
-        entryRange.grid(column=4,row=1)
+        Label(parameters_frame, text="Parameters").grid(column=0, row=0, columnspan=4, pady=10, sticky="ew")
         
-        framePlotCheck.grid(column=1,row=1)
+        Label(parameters_frame, text="Epsilon").grid(column=0, row=1, sticky="ew",pady=10)
+        self.epsilon = DoubleVar(parameters_frame, self.model.getMethod().getEpsilon())
+        epsilon_frame = ttk.Frame(parameters_frame)
+        Scale(epsilon_frame, from_=0.01, to=0.49, orient="horizontal", resolution=0.01,variable=self.epsilon,showvalue=0,command=lambda value: self.epsilonLabel.config(text=f"{value}")).grid(column=0, row=0, padx=5, sticky="ew")
+        self.epsilonLabel = Label(epsilon_frame,text=f"{self.epsilon.get()}")
+        self.epsilonLabel.grid(column=0,row=1)
+        epsilon_frame.grid(column=0,row=2,padx=5, sticky="ew")
+        
+       
+        plot_frame = ttk.Frame(parameters_frame)
+        self.stepRangeVariable = StringVar()
+        default_plot = self.model.getMethod().getPlottingBehavior()
+        if(isinstance(default_plot, int)):
+            self.stepRangeVariable.set(default_plot)
+            default_plot = "range"
+        
+        self.plot = StringVar(master=plot_frame,value=default_plot)
+        plot_frame.grid(column=1, row=2, rowspan=5, sticky="ew")
+        allStepCheckBox = Radiobutton(plot_frame, text="All Step", variable=self.plot, value="step")
+        lastStepCheckBox = Radiobutton(plot_frame, text="last step", variable=self.plot, value="last")
+        noneStepCheckBox = Radiobutton(plot_frame, text="No Step", variable=self.plot, value="none")
+        rangeStepCheckBox = Radiobutton(plot_frame, text="Step only with depth <", variable=self.plot, value="range")
         
         
-         # Frame for OK and Cancel buttons
-        frameButtons = ttk.Frame(self.windows)
-        frameButtons.grid(column=0, row=2, sticky="ew", pady=10)
-        frameButtons.grid_columnconfigure(0, weight=1)
-        frameButtons.grid_columnconfigure(1, weight=0)  # Pas de poids pour la colonne centrale
-        frameButtons.grid_columnconfigure(2, weight=1)
+        vcmd = plot_frame.register(self.isDigit)
+        self.stepRange = Entry(plot_frame, validate="all", validatecommand=(vcmd, '%P'),textvariable=self.stepRangeVariable)
         
-        cancelButton = Button(frameButtons, text="Annuler", command=self.on_cancel)
-        okButton = Button(frameButtons, text="OK", command=self.on_ok)
+        plotLabel = Label(plot_frame, text="plot")
+        plotLabel.grid(column=1, row=0)
         
-        cancelButton.grid(column=1, row=0, sticky="e")
-        okButton.grid(column=2, row=0, sticky="w")
+        allStepCheckBox.grid(column=0, row=1)
+        lastStepCheckBox.grid(column=1, row=1)
+        noneStepCheckBox.grid(column=2, row=1)
+        rangeStepCheckBox.grid(column=3, row=1)
+        self.stepRange.grid(column=4, row=1)
+        
+        plot_frame.grid(column=1, row=1)
+        
+        Label(parameters_frame, text="choice of next Rx").grid(column=2, row=1, sticky="ew",pady=10)
+        self.subSys = StringVar(None, self.model.getMethod().getSubSys() if self.model.getMethod().getSubSys() != '' else 'first')
+        choice_frame = ttk.Frame(parameters_frame)
+        cutSubSysCheck = Radiobutton(choice_frame, text="Cutting rectangle", variable=self.subSys, value="cut")
+        firstSubSysCheck = Radiobutton(choice_frame, text="first Rx", variable=self.subSys, value="first")
+        superSubSysCheck = Radiobutton(choice_frame, text="Rx of super shape",variable=self.subSys, value="super")
+        cutSubSysCheck.grid(column=0, row=0, sticky="w")
+        firstSubSysCheck.grid(column=1, row=0, sticky="w")
+        superSubSysCheck.grid(column=2, row=0, sticky="w")
+        choice_frame.grid(column=2, row=1, rowspan=3, sticky="ew")
+        
+        secondParametersFrame = ttk.Frame(self.windows)
+        sameAxisFrame = ttk.Frame(secondParametersFrame)
+        self.sameAxisVariable = BooleanVar(sameAxisFrame,self.model.getMethod().getSameAxis())
+        sameAxisLabel = Label(sameAxisFrame,text="SameAxis")
+        sameAxisCheckBoutton = Checkbutton(sameAxisFrame,variable=self.sameAxisVariable)
+        sameAxisCheckBoutton.grid(column=0,row=1,pady=10)
+        sameAxisLabel.grid(column=0,row=0)
+        sameAxisFrame.grid(column=0,row=0)
+        secondParametersFrame.grid(column=0,row=2,sticky="nsew",pady=10,padx=10)
+        
+        
+        ratioFrame = ttk.Frame(secondParametersFrame)
+        self.ratioVariable = BooleanVar(ratioFrame,self.model.getMethod().getRatio())
+        ratioLabel = Label(ratioFrame,text="Ratio")
+        ratioCheckBoutton = Checkbutton(ratioFrame,variable=self.ratioVariable)
+        ratioCheckBoutton.grid(column=0,row=1,pady=10)
+        ratioLabel.grid(column=0,row=0)
+        ratioFrame.grid(column=1,row=0)
+        
+        innerReductionFrame = ttk.Frame(secondParametersFrame)
+        self.innerReductionVariable = BooleanVar(innerReductionFrame,self.model.getMethod().getInnerReduction())
+        innerReductionLabel = Label(innerReductionFrame,text="InnerReduction")
+        innerReductionCheckBoutton = Checkbutton(innerReductionFrame,variable=self.innerReductionVariable)
+        innerReductionCheckBoutton.grid(column=0,row=1,pady=10)
+        innerReductionLabel.grid(column=0,row=0)
+        innerReductionFrame.grid(column=2,row=0)
+        
+        algoModFrame = ttk.Frame(secondParametersFrame)
+        algoModLabel = Label(algoModFrame,text="algorithme iteration",anchor="center")
+        self.algoModVariable = StringVar(algoModFrame,self.model.getMethod().getAlgo())
+        
+        iterRadio = Radiobutton(algoModFrame,text="Iterative",value="iter",variable=self.algoModVariable)
+        recRadio = Radiobutton(algoModFrame,text="Recursive",value="rec",variable=self.algoModVariable)
+        iterRadio.grid(column=0,row=1,padx=10)
+        recRadio.grid(column=1,row=1)
+        algoModLabel.grid(row=0, column=0, columnspan=2, pady=(0, 5))
+        
+        algoModFrame.grid_columnconfigure(1, weight=1)
+        algoModFrame.grid_columnconfigure(0, weight=1)
+        algoModFrame.grid(row=0,column=3,sticky="n")
+        
+        nbIterationsFrame = ttk.Frame(secondParametersFrame)
+        nbIterationsLabel = Label(nbIterationsFrame,text="maximum of iterations")
+        vcmd = nbIterationsFrame.register(self.isDigit)
+        self.nbIterationVariable = IntVar(nbIterationsFrame,self.model.getMethod().getNbIteration())
+        nbIterationsSpin = Spinbox(nbIterationsFrame,from_=1,to=10000000000000000,validate="key", validatecommand=(vcmd, '%P'),textvariable=self.nbIterationVariable)
+        nbIterationsLabel.grid(column=0,row=0)
+        nbIterationsSpin.grid(column=0,row=1,pady=(10,0))
+        nbIterationsFrame.grid(row=0,column=4)
+        
+        maxDepthFrame = ttk.Frame(secondParametersFrame)
+        maxDepthLabel = Label(maxDepthFrame,text="maximum of depths")
+        vcmd = maxDepthFrame.register(self.isDigit)
+        self.maxDepthVariable = IntVar(nbIterationsFrame,self.model.getMethod().get_maxDepth())
+        maxDepthSpin = Spinbox(maxDepthFrame,from_=1,to=10000000000000000,validate="key", validatecommand=(vcmd, '%P'),textvariable=self.maxDepthVariable)
+        maxDepthLabel.grid(column=0,row=0)
+        maxDepthSpin.grid(column=0,row=1,pady=(10,0))
+        maxDepthFrame.grid(row=0,column=5)
+        # Buttons Frame
+        buttons_frame = ttk.Frame(self.windows)
+        buttons_frame.grid(column=0, row=3, pady=10, sticky="ew")
+        self.windows.grid_rowconfigure(2, weight=1)
+        buttons_frame.grid_columnconfigure(0, weight=1)
+        buttons_frame.grid_columnconfigure(1, weight=0)
+        buttons_frame.grid_columnconfigure(2, weight=0)
+        buttons_frame.grid_columnconfigure(3, weight=1)
+        
+        cancelButton = Button(buttons_frame, text="Annuler", command=self.on_cancel)
+        okButton = Button(buttons_frame, text="OK", command=self.on_ok)
+        
+        cancelButton.grid(column=1, row=0)
+        okButton.grid(column=2, row=0)
         
     def on_cancel(self):
         # Logique pour le bouton Annuler
         self.hide()
 
     def on_ok(self):
+        method = self.model.getMethod()
+        nbIteration = self.nbIterationVariable.get()
+        if(nbIteration == ""):
+            self.showError("Number of iterations must be indicate")
+        maxDepth = self.maxDepthVariable.get()
+        if(maxDepth == ""):
+            self.showError("Maximum depth must be indicate")
+            return
+        #ajouter maxDepth
         # Logique pour le bouton OK
-        print("OK button pressed")
+        if(self.plot.get() == "range"):
+            if(self.stepRange.get() == ""):
+                self.showError("You have selected step only with depth < at some numbers, pls indicate the step index you want")
+                return
+            else:
+                method.setPlottingBehavior(int(self.stepRangeVariable.get()))
+        else:
+            method.setPlottingBehavior(self.plot.get())
+        method.set_epsilon(self.epsilon.get())
+        method.setSubSys(self.subSys.get())
+        method.set_birectangle_analogy_method(self.birectangleAnalogyStrategy[self.birect_analogy_combo.get()]())
+        method.setCuttingMethod(self.cuttingStrategy[self.birect_cutting_combo.get()]())
+        method.setInnerRectangleFinder(self.innerRectangleFinderStrategy[self.inner_rectangle_finder_combo.get()]())
+        method.setOverflowPrevention(self.overflowPreventionStrategy[self.overflowPreventionComboBox.get()]())
+        method.setSameAxis(self.sameAxisVariable.get())
+        method.setRatio(self.ratioVariable.get())
+        method.setInnerReduction(self.innerReductionVariable.get())
+        method.setAlgo(self.algoModVariable.get())
+        method.setNbIteration(self.nbIterationVariable.get()) 
+        self.hide()
+        
     def isDigit(self, digit):
-        return str.isdigit(digit) or digit == "" and digit != "0"
+        print(digit)
+        return ((str.isdigit(digit) and "." not in digit) or digit == "") and digit != "0"
+    def showError(self,message):
+        messagebox.showerror("Error",message=message)
+        pass
 class TomographyOption(ttk.Frame):
     def __init__(self, root,model:ShapeAnalogyModel):
         super().__init__(root)
@@ -248,6 +361,6 @@ class OptionView:
     def on_click(self):
         selected_option = self.combo.get()
         current_class = self.option_classes.get(selected_option)
-        if not current_class.is_open():
+        if not current_class.is_window_open():
             current_class.show()
         
