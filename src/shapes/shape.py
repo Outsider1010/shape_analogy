@@ -17,7 +17,7 @@ class Shape(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def getOuterRectangle(self) -> Rectangle:
+    def outer_rectangle(self) -> Rectangle:
         """
         Find the axis-aligned minimum bounding box of the shape
         :return: the AABB minimizing area

@@ -1,10 +1,6 @@
 from decimal import Decimal
 from typing import Iterator
 
-import numpy as np
-from networkx.algorithms.distance_measures import center
-
-from src.birectangle.point import Point
 from src.birectangle.rectangle import Rectangle
 
 class BiRectangle:
@@ -42,29 +38,29 @@ class BiRectangle:
                                             innerR.y_max - epsilon * (innerR.y_max == outerR.y_max) * h)
 
     def center_x_min_ratio(self) -> Decimal:
+        assert self.innerRectangle.center().x != self.outerRectangle.x_min, "too small rectangles"
         return self.innerRectangle.width() / (2 * (self.innerRectangle.center().x - self.outerRectangle.x_min))
 
     def center_x_max_ratio(self) -> Decimal:
+        assert self.innerRectangle.center().x != self.outerRectangle.x_max, "too small rectangles"
         return self.innerRectangle.width() / (2 * (self.outerRectangle.x_max - self.innerRectangle.center().x))
 
     def center_y_min_ratio(self) -> Decimal:
+        assert self.innerRectangle.center().y != self.outerRectangle.y_min, "too small rectangles"
         return self.innerRectangle.height() / (2 * (self.innerRectangle.center().y - self.outerRectangle.y_min))
 
     def center_y_max_ratio(self) -> Decimal:
+        assert self.innerRectangle.center().y != self.outerRectangle.y_max, "too small rectangles"
         return self.innerRectangle.height() / (2 * (self.outerRectangle.y_max - self.innerRectangle.center().y))
 
     def center_xy_ratios(self):
         return self.center_x_min_ratio(), self.center_x_max_ratio(), self.center_y_min_ratio(), self.center_y_max_ratio()
 
     def reduceInnerTo(self, r_x_min: Decimal, r_x_max: Decimal, r_y_min: Decimal, r_y_max: Decimal) -> None:
-        _, outerR = self
-        cx, w = np.linalg.solve(np.array([[2 * float(r_x_min), -1], [2 * float(r_x_max), 1]]),
-                                np.array([2 * float(r_x_min * outerR.x_min), 2 * float(r_x_max * outerR.x_max)]))
-
-        cy, h = np.linalg.solve(np.array([[2 * float(r_y_min), -1], [2 * float(r_y_max), 1]]),
-                                np.array([2 * float(r_y_min * outerR.y_min), 2 * float(r_y_max * outerR.y_max)]))
-
-        r = Rectangle.fromCenter(Point(cx, cy), w, h)
+        innerR, outerR = self
+        c_x, c_y = innerR.center()
+        r = Rectangle((1 - r_x_min) * c_x + r_x_min * outerR.x_min, r_x_max * outerR.x_max + (1 - r_x_max) * c_x,
+                      (1 - r_y_min) * c_y + r_y_min * outerR.y_min, r_y_max * outerR.y_max + (1 - r_y_max) * c_y)
         if r.area() == 0:
             raise AssertionError('too small rectangle after ratio')
 

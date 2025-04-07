@@ -91,7 +91,7 @@ class PixelShape(Shape):
         setRangeValue(array, other.pixels, Decimal(- w2 / 2), Decimal(w2 / 2), Decimal(- h2 / 2), Decimal(h2 / 2))
         return PixelShape(array)
 
-    def getOuterRectangle(self) -> Rectangle:
+    def outer_rectangle(self) -> Rectangle:
         # empty shape
         if self.isEmpty():
             return Rectangle(0, 0, 0, 0)

@@ -29,10 +29,10 @@ class CutIn4EqualParts1(CuttingMethod):
 
     def plotCuttingLines(self, biRectangle: BiRectangle) -> None:
         innerR, outerR = biRectangle
-        plt.plot([outerR.x_min, innerR.x_min], [innerR.y_min] * 2, "g", linestyle="--")
-        plt.plot([innerR.x_max, outerR.x_max], [innerR.y_max] * 2, "g", linestyle="--")
-        plt.plot([innerR.x_min] * 2, [innerR.y_max, outerR.y_max], "g", linestyle="--")
-        plt.plot([innerR.x_max] * 2, [outerR.y_min, innerR.y_min], "g", linestyle="--")
+        plt.plot([outerR.x_min, innerR.x_min], [innerR.y_min] * 2, "g", linestyle="dotted")
+        plt.plot([innerR.x_max, outerR.x_max], [innerR.y_max] * 2, "g", linestyle="dotted")
+        plt.plot([innerR.x_min] * 2, [innerR.y_max, outerR.y_max], "g", linestyle="dotted")
+        plt.plot([innerR.x_max] * 2, [outerR.y_min, innerR.y_min], "g", linestyle="dotted")
 
     def plt_colors(self) -> list[str]:
         return ["#ff007f", "b", "#800000", "#8000ff"]

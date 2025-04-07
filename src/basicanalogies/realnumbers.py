@@ -32,6 +32,10 @@ def bounded(a: Decimal, b: Decimal, c: Decimal) -> Decimal:
     :param c: a real number between 0 and 1 `c`
     :return: a real numer `d` solution of the equation
     """
+    if a == b:
+        return c
+    elif a == c:
+        return b
     assert 0 < a < 1, f"forbidden value ({a}) for bounded analogy : {round(a, 2)}:{round(b, 2)}::{round(c, 2)}:?"
     assert 0 < b < 1, f"forbidden value ({b}) for bounded analogy : {round(a, 2)}:{round(b, 2)}::{round(c, 2)}:?"
     assert 0 < c < 1, f"forbidden value ({c}) for bounded analogy : {round(a, 2)}:{round(b, 2)}::{round(c, 2)}:?"
@@ -57,8 +61,8 @@ def ext_bounded(a: Decimal, b: Decimal, c: Decimal, Ia: tuple[Decimal, Decimal],
     b_inf_c, b_sup_c = Ic
     b_inf_d, b_sup_d = Id
     assert b_inf_a < a < b_sup_a, f"forbidden value ({a}) for ext bounded analogy : {round(a, 2)}:{round(b, 2)}::{round(c, 2)}:?"
-    assert b_inf_b < b < b_sup_b, f"forbidden value ({b}) for bounded analogy : {round(a, 2)}:{round(b, 2)}::{round(c, 2)}:?"
-    assert b_inf_c < c < b_sup_c, f"forbidden value ({c}) for bounded analogy : {round(a, 2)}:{round(b, 2)}::{round(c, 2)}:?"
+    assert b_inf_b < b < b_sup_b, f"forbidden value ({b}) for ext bounded analogy : {round(a, 2)}:{round(b, 2)}::{round(c, 2)}:?"
+    assert b_inf_c < c < b_sup_c, f"forbidden value ({c}) for ext bounded analogy : {round(a, 2)}:{round(b, 2)}::{round(c, 2)}:?"
 
     return b_inf_d + ((b_sup_d - b_inf_d) / (1 +
                                              ((b_sup_c - c) * (b_sup_b - b) * (a - b_inf_a)) / (
