@@ -28,7 +28,8 @@ class ShapeAnalogyModel:
         if self.can_start():
             self.working = True
             self.notify(None)
-            self.result = self.analogyMethod.analogy(*self.shapes).toPixels()
+            self.result = self.analogyMethod.analogy(self.shapes[0],self.shapes[1],self.shapes[2])
+            self.result = self.result.toPixels()
             if self.result is not None:
                 self.resizeToCorrectSize()
                 self.result.toImage()
@@ -64,7 +65,7 @@ class ShapeAnalogyModel:
     def resizeToCorrectSize(self):
         maxWidth = max(self.shapes[2],max(self.shapes[0],self.shapes[1],key=lambda x: x.width()),key = lambda x:x.width()).width()
         maxHeight = max(self.shapes[2],max(self.shapes[0],self.shapes[1],key=lambda x: x.height()),key = lambda x:x.height()).height()
-        self.result.resize(maxWidth + (maxWidth%2),maxHeight+maxWidth%2)
+        self.result = self.result.resize(maxWidth + (maxWidth%2),maxHeight+maxWidth%2)
         
     def getMethod(self):
         return self.analogyMethod

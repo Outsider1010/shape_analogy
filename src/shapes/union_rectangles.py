@@ -220,7 +220,7 @@ class UnionRectangles(Shape):
 
                 pixels[j, i] = new_value
 
-        return ps.PixelShape(array=pixels)
+        return ps.PixelShape(array=np.flipud(pixels))
 
     def toImage(self, name: str = "default.bmp"):
         self.toPixels().toImage(name)

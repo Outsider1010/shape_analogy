@@ -266,6 +266,11 @@ class BiRectangleOption():
         innerReduction = self.innerReductionVariable.get()
         ratio = self.ratioVariable.get()
         maxDepth = self.maxDepthVariable.get()
+        preventionMethod = self.overflowPreventionStrategy[self.overflowPreventionComboBox.get()]
+        birectangleAnalogyMethod = self.birectangleAnalogyStrategy[self.birect_analogy_combo.get()]
+        if preventionMethod == self.overflowPreventionStrategy["Indirect prevention"] and birectangleAnalogyMethod != self.birectangleAnalogyStrategy["BiSegment Analogy"]: 
+            self.showError("To activate indirect prevention you have to choose BiSegment analogy for Birectangle analogy strategy")
+            return
         if(ratio and not innerReduction):
             self.showError("To enable ratio you have enable innerReduction")
             return
@@ -275,6 +280,7 @@ class BiRectangleOption():
         if(maxDepth == ""):
             self.showError("Maximum depth must be indicate")
             return
+        
         if(self.plot.get() == "range"):
             if(self.stepRange.get() == ""):
                 self.showError("You have selected step only with depth < at some numbers, pls indicate the step index you want")
@@ -285,13 +291,12 @@ class BiRectangleOption():
             method.setPlottingBehavior(self.plot.get())
         method.setEpsilon(self.epsilon.get())
         method.setSubSys(self.subSys.get())
-        birectangleAnalogyMethod = self.birectangleAnalogyStrategy[self.birect_analogy_combo.get()]
         method.set_birectangle_analogy_method(birectangleAnalogyMethod())
         method.setCuttingMethod(self.cuttingStrategy[self.birect_cutting_combo.get()]())
         method.setInnerRectangleFinder(self.innerRectangleFinderStrategy[self.inner_rectangle_finder_combo.get()]())
-        preventionMethod = self.overflowPreventionStrategy[self.overflowPreventionComboBox.get()]
-        
+       
         method.setOverflowPrevention(preventionMethod(self.epsilon.get(),birectangleAnalogyMethod) if preventionMethod == self.overflowPreventionStrategy["Indirect prevention"] else preventionMethod())
+        
         method.setSameAxis(self.sameAxisVariable.get())
         method.setInnerReduction(innerReduction)
         method.setRatio(self.ratioVariable.get())
@@ -303,7 +308,7 @@ class BiRectangleOption():
     def isDigit(self, digit):
         return ((str.isdigit(digit) and "." not in digit) or digit == "") and digit != "0"
     def showError(self,message):
-        messagebox.showerror("Error",message=message)
+        messagebox.showerror("Error",message=message,parent = self.windows)
         pass
 class TomographyOption(ttk.Frame):
     def __init__(self, root,model:ShapeAnalogyModel):
