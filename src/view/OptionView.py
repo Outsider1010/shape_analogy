@@ -20,7 +20,7 @@ from src.birectangle.overflowprevention.direct_prevention import DirectPreventio
 from src.birectangle.overflowprevention.indirect_prevention import IndirectPrevention
 from src.birectangle.overflowprevention.no_prevention import NoPrevention
 from idlelib.tooltip import Hovertip
-# Define the classes representing the options
+
 class BiRectangleOption():
 
     def __init__(self,root,model:ShapeAnalogyModel):
@@ -250,7 +250,7 @@ class BiRectangleOption():
         buttons_frame.grid_columnconfigure(2, weight=0)
         buttons_frame.grid_columnconfigure(3, weight=1)
         
-        cancelButton = Button(buttons_frame, text="Annuler", command=self.on_cancel)
+        cancelButton = Button(buttons_frame, text="Cancel", command=self.on_cancel)
         okButton = Button(buttons_frame, text="OK", command=self.on_ok)
         
         cancelButton.grid(column=1, row=0)
