@@ -56,7 +56,7 @@ class BiRectangleOption():
             "Indirect prevention":IndirectPrevention,
             "No prevention":NoPrevention,
         }
-
+        self.rectangleAnalogy = CenterDimAnalogy
     def show(self):
         if not self.is_window_open():
             self.windows = Toplevel(self.root)
@@ -79,7 +79,7 @@ class BiRectangleOption():
         strategy_frame = ttk.Frame(self.windows)
         strategy_frame.grid(column=0, row=0, sticky="nsew", padx=10, pady=10)
         
-        for i in range(4):
+        for i in range(5):
             strategy_frame.grid_columnconfigure(i, weight=1)
         
         Label(strategy_frame, text="Strategy").grid(column=0, row=0, columnspan=4, pady=10, sticky="ew")
@@ -113,8 +113,19 @@ class BiRectangleOption():
             ])
         self.inner_rectangle_finder_combo.grid(column=2, row=2, padx=5, sticky="ew")
         
-        Label(strategy_frame, text="Overflow prevention").grid(column=3, row=1, sticky="ew")
-        self.overflowPreventionComboBox = ttk.Combobox(strategy_frame, values=list(self.overflowPreventionStrategy.keys()), state="readonly")
+        Label(strategy_frame, text="Rectangle analogy").grid(column=3, row=1, sticky="ew")
+        self.rectangleAnalogy_combo = ttk.Combobox(strategy_frame, values=list(self.rectangleAnalogyStrategy.keys()), state="readonly")
+        self.rectangleAnalogy_combo.set(
+             list(self.rectangleAnalogyStrategy.keys())[
+                list(self.rectangleAnalogyStrategy.values()).index(
+                    self.rectangleAnalogy
+                )
+            ]
+        )
+        self.rectangleAnalogy_combo.grid(column=3, row=2, padx=5, sticky="ew")
+
+        Label(strategy_frame, text="Overflow prevention").grid(column=4, row=1, sticky="ew")
+        self.overflowPreventionComboBox = ttk.Combobox(strategy_frame, values=list(self.rectangleAnalogyStrategy.keys()), state="readonly")
         self.overflowPreventionComboBox.set(
             list(self.overflowPreventionStrategy.keys())[
                 list(self.overflowPreventionStrategy.values()).index(
@@ -122,7 +133,7 @@ class BiRectangleOption():
                 )
             ]
         )
-        self.overflowPreventionComboBox.grid(column=3, row=2, padx=5, sticky="ew")
+        self.overflowPreventionComboBox.grid(column=4, row=2, padx=5, sticky="ew")
         
         
         parameters_frame = ttk.Frame(self.windows)
@@ -253,8 +264,8 @@ class BiRectangleOption():
         cancelButton = Button(buttons_frame, text="Cancel", command=self.on_cancel)
         okButton = Button(buttons_frame, text="OK", command=self.on_ok)
         
-        cancelButton.grid(column=1, row=0)
-        okButton.grid(column=2, row=0)
+        cancelButton.grid(column=2, row=0)
+        okButton.grid(column=1, row=0)
         
     def on_cancel(self):
         # Logique pour le bouton Annuler
@@ -268,9 +279,9 @@ class BiRectangleOption():
         maxDepth = self.maxDepthVariable.get()
         preventionMethod = self.overflowPreventionStrategy[self.overflowPreventionComboBox.get()]
         birectangleAnalogyMethod = self.birectangleAnalogyStrategy[self.birect_analogy_combo.get()]
-        if preventionMethod == self.overflowPreventionStrategy["Indirect prevention"] and birectangleAnalogyMethod != self.birectangleAnalogyStrategy["BiSegment Analogy"]: 
+        """if preventionMethod == self.overflowPreventionStrategy["Indirect prevention"] and birectangleAnalogyMethod != self.birectangleAnalogyStrategy["BiSegment Analogy"]: 
             self.showError("To activate indirect prevention you have to choose BiSegment analogy for Birectangle analogy strategy")
-            return
+            return"""
         if(ratio and not innerReduction):
             self.showError("To enable ratio you have enable innerReduction")
             return
@@ -291,12 +302,11 @@ class BiRectangleOption():
             method.setPlottingBehavior(self.plot.get())
         method.setEpsilon(self.epsilon.get())
         method.setSubSys(self.subSys.get())
-        method.set_birectangle_analogy_method(birectangleAnalogyMethod())
+        self.rectangleAnalogy = self.rectangleAnalogyStrategy[self.rectangleAnalogy_combo.get()]
+        method.set_birectangle_analogy_method(birectangleAnalogyMethod(self.rectangleAnalogy()))
         method.setCuttingMethod(self.cuttingStrategy[self.birect_cutting_combo.get()]())
         method.setInnerRectangleFinder(self.innerRectangleFinderStrategy[self.inner_rectangle_finder_combo.get()]())
-       
         method.setOverflowPrevention(preventionMethod(self.epsilon.get(),birectangleAnalogyMethod) if preventionMethod == self.overflowPreventionStrategy["Indirect prevention"] else preventionMethod())
-        
         method.setSameAxis(self.sameAxisVariable.get())
         method.setInnerReduction(innerReduction)
         method.setRatio(self.ratioVariable.get())
