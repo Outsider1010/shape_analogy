@@ -26,25 +26,25 @@ def col_round(x):
   return ceil(x)
 
 def coordRangeToMatrixIndexes(arr: np.ndarray, x_min: Decimal, x_max: Decimal,
-                              y_min: Decimal, y_max: Decimal) -> tuple[int, int, int, int]:
+                              y_min: Decimal, y_max: Decimal, strictness = STRICTNESS) -> tuple[int, int, int, int]:
     h, w = arr.shape
     mi_w = Decimal(w / 2)
     mi_h = Decimal(h / 2)
-    if STRICTNESS == 0:
+    if strictness == 0:
         return int(x_min + mi_w), ceil(x_max + mi_w), int(mi_h - y_max), ceil(mi_h - y_min)
-    elif STRICTNESS == 1:
+    elif strictness == 1:
         return col_round(x_min + mi_w), col_round(x_max + mi_w), col_round(mi_h - y_max), col_round(mi_h - y_min)
     else:
         return ceil(x_min + mi_w), int(x_max + mi_w), ceil(mi_h - y_max), int(mi_h - y_min)
 
-def setRangeValue(arr: np.ndarray, value : np.ndarray | bool,
-                  x_min: Decimal, x_max: Decimal, y_min: Decimal, y_max: Decimal) -> None:
+def setRangeValue(arr: np.ndarray, value : np.ndarray | int,
+                  x_min: Decimal, x_max: Decimal, y_min: Decimal, y_max: Decimal, strictness = STRICTNESS) -> None:
     x1, x2, y1, y2 = coordRangeToMatrixIndexes(arr, x_min, x_max, y_min, y_max)
-    if isinstance(value, bool):
+    if isinstance(value, int):
         arr[y1:y2, x1:x2] = value
     else:
-        x3, x4, y3, y4 = coordRangeToMatrixIndexes(value, x_min, x_max, y_min, y_max)
-        arr[y1:y2, x1:x2] |= value[y3:y4, x3:x4]
+        x3, x4, y3, y4 = coordRangeToMatrixIndexes(value, x_min, x_max, y_min, y_max, strictness)
+        arr[y1:y2, x1:x2] = np.minimum(arr[y1:y2, x1:x2], value[y3:y4, x3:x4])
 
 
 class PixelShape(Shape):
@@ -56,25 +56,21 @@ class PixelShape(Shape):
     def __init__(self, array=None, img=None, rect=None):
         assert (array is not None) or (img is not None) or (rect is not None), \
             "One of the parameters (array, img or rect) must be set"
-
         if img is not None:
-            array = np.array(Image.open(img)) == 0
+            array = np.array(Image.open(img))
 
         if rect is not None:
             h, w = 2 * ceil(max(abs(rect.y_min), abs(rect.y_max))), 2 * ceil(max(abs(rect.x_min), abs(rect.x_max)))
-            h = max(h, 2)
-            w = max(w, 2)
-            array = np.zeros((h, w), dtype=bool)
-            setRangeValue(array, True, rect.x_min, rect.x_max, rect.y_min, rect.y_max)
+            array = np.full((h, w), 255, dtype=np.uint8)
+            setRangeValue(array, 0, rect.x_min, rect.x_max, rect.y_min, rect.y_max)
 
-        h, w = array.shape
         self.pixels: np.ndarray[bool] = array
 
     def fromShape(self, r: Rectangle):
         h, w = 2 * ceil(max(abs(r.y_min), abs(r.y_max))), 2 * ceil(max(abs(r.x_min), abs(r.x_max)))
         h = max(h, 2)
         w = max(w, 2)
-        array = np.zeros((h, w), dtype=bool)
+        array = np.full((h, w), 255, dtype=np.uint8)
         setRangeValue(array, self.pixels, r.x_min, r.x_max, r.y_min, r.y_max)
         return PixelShape(array=array)
 
@@ -84,7 +80,7 @@ class PixelShape(Shape):
         p = np.copy(self.pixels)
         while r.area() > 0:
             res.addRectangle(r)
-            setRangeValue(self.pixels, False, r.x_min, r.x_max, r.y_min, r.y_max)
+            setRangeValue(self.pixels, 255, r.x_min, r.x_max, r.y_min, r.y_max)
             r = lir.findInnerRectanglePixels(self)
         self.pixels = p
         return res
@@ -97,14 +93,15 @@ class PixelShape(Shape):
         setRangeValue(array, other.pixels, Decimal(- w2 / 2), Decimal(w2 / 2), Decimal(- h2 / 2), Decimal(h2 / 2))
         return PixelShape(array)
 
-    def getOuterRectangle(self) -> Rectangle:
+    def outer_rectangle(self) -> Rectangle:
         # empty shape
         if self.isEmpty():
             return Rectangle(0, 0, 0, 0)
         h, w = self.pixels.shape
-        ind = np.unravel_index(np.argmax(self.pixels), self.pixels.shape)[0]
+        mat = self.pixels == 0
+        ind = np.unravel_index(np.argmax(mat), self.pixels.shape)[0]
         y_max = Decimal(h / 2 - ind)
-        temp = np.rot90(self.pixels[ind:])
+        temp = np.rot90(mat[ind:])
         ind = np.unravel_index(np.argmax(temp), temp.shape)[0]
         x_max = Decimal(w / 2 - ind)
         temp = np.rot90(temp[ind:])
@@ -113,6 +110,9 @@ class PixelShape(Shape):
         temp = np.rot90(temp[ind:])
         x_min = Decimal(np.unravel_index(np.argmax(temp), temp.shape)[0] - w / 2)
         return Rectangle(x_min, x_max, y_min, y_max)
+
+    def isTrue(self, x, y):
+        return self.pixels[y, x] == 0
 
     def getInnerRectangle(self, strategy) -> Rectangle:
         return strategy.findInnerRectanglePixels(self)
@@ -134,7 +134,7 @@ class PixelShape(Shape):
         xs_to_check = (x_in_mat - 1, x_in_mat) if x_is_integer else (x_in_mat,)
         ys_to_check = (y_in_mat - 1, y_in_mat) if y_is_integer else (y_in_mat,)
 
-        return any(0 <= x < w and 0 <= y < h and self.pixels[y, x] for x in xs_to_check for y in ys_to_check)
+        return any(0 <= x < w and 0 <= y < h and self.isTrue(x, y) for x in xs_to_check for y in ys_to_check)
 
     def isHorizontalSegmentInShape(self, seg: Segment) -> bool:
         assert seg.A.y == seg.B.y, "Must be a horizontal segment"
@@ -184,7 +184,7 @@ class PixelShape(Shape):
         h, w = self.dim()
         new_w = max(min_w, w)
         new_h = max(min_h, h)
-        res = np.zeros((new_h, new_w))
+        res = np.full((new_h, new_w), 255, dtype=np.uint8)
         y = (new_h - h) // 2
         x = (new_w - w) // 2
         res[y:y + h, x:x + w] = self.pixels
@@ -213,14 +213,14 @@ class PixelShape(Shape):
         return self.pixels.shape[0]
 
     def isEmpty(self) -> bool:
-        return not self.pixels.any()
+        return not np.any(self.pixels == 0)
 
     def dim(self) -> tuple[int, int]:
         return self.pixels.shape
 
     def plot(self) -> None:
         h, w = self.dim()
-        mat_to_plot = self.grayscale()
+        mat_to_plot = self.pixels
         # transparency when not a black pixel
         alpha = np.ones(mat_to_plot.shape)
         alpha[mat_to_plot != 0] = 0
@@ -229,11 +229,8 @@ class PixelShape(Shape):
     def toImage(self, name: str = "default.bmp"):
         if not name.endswith(".bmp"):
             name += ".bmp"
-        img = Image.fromarray(self.grayscale(), 'L')
+        img = Image.fromarray(self.pixels, 'L')
         img.save('resources/' + name)
-
-    def grayscale(self) -> np.ndarray:
-        return np.uint8((1 - self.pixels) * 255)
 
     def toSinogram(self, maxAngle: float = 180.):
         # useful ?

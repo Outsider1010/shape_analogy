@@ -1,6 +1,5 @@
 import math
 from decimal import Decimal
-from typing import Iterable
 
 import numpy as np
 
@@ -9,14 +8,32 @@ from src.birectangle.rectangle import Rectangle
 import src.shapes.pixel_shape as ps
 from .shape import Shape
 from ..birectangle.point import Point
-
+from math import ceil, floor
 
 # DO NOT IMPORT STRATEGIES (to avoid circular imports)
 
+def calculate_active_length(active_intervals):
+    if not active_intervals:
+        return 0
+    active_intervals.sort()
+    total_length = 0
+    current_start = active_intervals[0][0]
+    current_end = active_intervals[0][1]
+    for start, end in active_intervals[1:]:
+        if start > current_end:
+            total_length += current_end - current_start
+            current_start = start
+            current_end = end
+        else:
+            current_end = max(current_end, end)
+    total_length += current_end - current_start
+    return total_length
+
+
 class UnionRectangles(Shape):
     """
-        Representation of shapes using a boolean matrix with even dimensions.
-        Each pixel is a square of length 1 and equals True if it is included in the shape
+    Representation of shapes using a boolean matrix with even dimensions.
+    Each pixel is a square of length 1 and equals True if it is included in the shape
     """
     def __init__(self):
         self.rectangles = []
@@ -48,7 +65,7 @@ class UnionRectangles(Shape):
     def __repr__(self):
         return str(self.rectangles)
 
-    def getOuterRectangle(self) -> Rectangle:
+    def outer_rectangle(self) -> Rectangle:
         if len(self.rectangles) == 0:
             return Rectangle(0, 0, 0, 0)
         return Rectangle(self.x_min, self.x_max, self.y_min, self.y_max)
@@ -74,6 +91,8 @@ class UnionRectangles(Shape):
 
     def equiv(self, fromCoordSysR: Rectangle | None, toCoordSysR: Rectangle | None):
         res = UnionRectangles()
+        if self.size() == 0:
+            return res
         if fromCoordSysR is None or toCoordSysR is None:
             res.__setup(self.rectangles.copy(), self.x_min, self.x_max, self.y_min, self.y_max)
         else:
@@ -82,7 +101,7 @@ class UnionRectangles(Shape):
             x_max, y_max = Point(self.x_max, self.y_max).toCoordSys(fromCoordSysR, toCoordSysR)
             res.__setup([BiRectangle(fromCoordSysR, r).innerEquiv(toCoordSysR) for r in self.rectangles],
                         x_min, x_max, y_min, y_max)
-            return res
+        return res
 
     def isPointInShape(self, x: Decimal | float, y: Decimal | float) -> bool:
         return any(r.isPointInRectangle(x, y) for r in self.rectangles)
@@ -100,94 +119,105 @@ class UnionRectangles(Shape):
         for r in self.rectangles:
             r.plotFilled(color, 2)
 
-    @staticmethod
-    def union_area(rects: list[tuple]) -> float:
-        """
-        Calcule l'aire de l'union d'une liste de rectangles (définis par (x_min, x_max, y_min, y_max))
-        en découpant le domaine en intervalles sur les axes x et y.
-        """
-        if not rects:
-            return 0
+    def union_area(self):
+        # Define events for the sweep line algorithm
+        events = []
+        for rect in self.rectangles:
+            x1, x2, y1, y2 = rect
+            events.append((x1, y1, y2, 'start'))
+            events.append((x2, y1, y2, 'end'))
 
-        # On récupère tous les abscisses et ordonnées de bords.
-        xs = sorted(set([r[0] for r in rects] + [r[1] for r in rects]))
-        ys = sorted(set([r[2] for r in rects] + [r[3] for r in rects]))
+        # Sort events by x-coordinate, breaking ties by 'end' before 'start'
+        events.sort(key=lambda ev_x: (ev_x[0], ev_x[3] == 'start'))
 
-        area = 0
-        # Pour chaque sous-rectangle formé par ces coupures.
-        for i in range(len(xs) - 1):
-            for j in range(len(ys) - 1):
-                cell_x_min, cell_x_max = xs[i], xs[i + 1]
-                cell_y_min, cell_y_max = ys[j], ys[j + 1]
-                # On prend le centre de la cellule pour le test.
-                cx = (cell_x_min + cell_x_max) / 2
-                cy = (cell_y_min + cell_y_max) / 2
-                for (rx_min, rx_max, ry_min, ry_max) in rects:
-                    if rx_min <= cx <= rx_max and ry_min <= cy <= ry_max:
-                        area += (cell_x_max - cell_x_min) * (cell_y_max - cell_y_min)
-                        break
-        return area
+        # Process events with the sweep line algorithm
+        active_intervals = []
+        total_area = 0
+        prev_x = None
 
-    def toPixels(self) -> np.ndarray:
-        # 1. Calcule le rectangle englobant.
-        outer = self.getOuterRectangle()
+        for x, y1, y2, event_type in events:
+            if prev_x is not None:
+                active_length = calculate_active_length(active_intervals)
+                total_area += active_length * (x - prev_x)
 
-        x_min_outer = float(outer.x_min)
-        x_max_outer = float(outer.x_max)
-        y_min_outer = float(outer.y_min)
-        y_max_outer = float(outer.y_max)
+            if event_type == 'start':
+                active_intervals.append((y1, y2))
+            else:
+                active_intervals.remove((y1, y2))
+            prev_x = x
 
-        # 2. Détermine la taille de la grille de pixels.
-        w = 2 * math.ceil(max(abs(x_min_outer), abs(x_max_outer)))
-        h = 2 * math.ceil(max(abs(y_min_outer), abs(y_max_outer)))
+        return total_area
+
+    def toPixels(self):
+        # 1. Calcul du rectangle englobant et de la grille.
+        w = 2 * math.ceil(max(abs(self.x_min), abs(self.x_max)))
+        h = 2 * math.ceil(max(abs(self.y_min), abs(self.y_max)))
         w = max(w, 2)
         h = max(h, 2)
-
-        # La grille est centrée, donc:
-        # Le coin inférieur gauche en coordonnées réelles est (-w/2, -h/2)
         grid_x_min = -w / 2
         grid_y_min = -h / 2
 
-        # 3. Initialise la matrice de pixels en blanc.
+        # On fait une conversion en decimal.
+        grid_x_min_dec = Decimal(grid_x_min)
+        grid_y_min_dec = Decimal(grid_y_min)
+
+        # 2. Initialise la matrice de pixels en blanc.
         pixels = np.full((h, w), 255, dtype=np.uint8)
 
-        # 4. Parcours de chaque pixel et calcul de l'union des zones couvertes par les rectangles.
-        for j in range(h):
-            for i in range(w):
-                # Définition des bords du pixel en coordonnées réelles.
-                pixel_x_min = grid_x_min + i
-                pixel_x_max = pixel_x_min + 1
-                pixel_y_min = grid_y_min + j
-                pixel_y_max = pixel_y_min + 1
+        # Dictionnaire pour les pixels partiellement couverts :
+        # Clef = (i,j), valeur = liste de morceaux (instances de Rectangle) ou None si pixel totalement couvert.
+        partial_pixels = {}
 
-                # On calcule la liste des intersections entre le pixel et chaque rectangle.
-                intersections = []
-                for rect in self.rectangles:
-                    rx_min = float(rect.x_min)
-                    rx_max = float(rect.x_max)
-                    ry_min = float(rect.y_min)
-                    ry_max = float(rect.y_max)
+        # 3. Parcours des rectangles pour marquer les pixels totalement recouverts et accumuler les morceaux.
+        for rect in self.rectangles:
+            # Conversion des coordonnées du rectangle en indices de pixels.
+            i_min = int(math.floor(float(rect.x_min - grid_x_min_dec)))
+            i_max = int(math.ceil(float(rect.x_max - grid_x_min_dec)))
+            j_min = int(math.floor(float(rect.y_min - grid_y_min_dec)))
+            j_max = int(math.ceil(float(rect.y_max - grid_y_min_dec)))
 
-                    # Calcul de l'intersection entre le pixel et le rectangle.
-                    inter_x_min = max(rx_min, pixel_x_min)
-                    inter_x_max = min(rx_max, pixel_x_max)
-                    inter_y_min = max(ry_min, pixel_y_min)
-                    inter_y_max = min(ry_max, pixel_y_max)
+            for j in range(max(0, j_min), min(h, j_max)):
+                for i in range(max(0, i_min), min(w, i_max)):
+                    # Définition des bords du pixel en coordonnées réelles.
+                    pixel_x_min = grid_x_min + i
+                    pixel_y_min = grid_y_min + j
+                    pixel_x_max = pixel_x_min + 1
+                    pixel_y_max = pixel_y_min + 1
 
-                    inter_width = max(0, inter_x_max - inter_x_min)
-                    inter_height = max(0, inter_y_max - inter_y_min)
+                    # Intersection entre le pixel et le rectangle.
+                    inter_x_min = max(rect.x_min, Decimal(pixel_x_min))
+                    inter_x_max = min(rect.x_max, Decimal(pixel_x_max))
+                    inter_y_min = max(rect.y_min, Decimal(pixel_y_min))
+                    inter_y_max = min(rect.y_max, Decimal(pixel_y_max))
+                    inter_width = max(Decimal(0), inter_x_max - inter_x_min)
+                    inter_height = max(Decimal(0), inter_y_max - inter_y_min)
 
-                    if inter_width > 0 and inter_height > 0:
-                        intersections.append((inter_x_min, inter_x_max, inter_y_min, inter_y_max))
+                    if inter_width <= 0 or inter_height <= 0:
+                        continue
 
-                # Calcul de l'aire totale couverte dans le pixel (union des zones).
-                covered_area = UnionRectangles.union_area(intersections)
+                    # Si le pixel est entièrement recouvert par le rectangle.
+                    if rect.x_min <= Decimal(pixel_x_min) and rect.x_max >= Decimal(pixel_x_max) and \
+                            rect.y_min <= Decimal(pixel_y_min) and rect.y_max >= Decimal(pixel_y_max):
+                        pixels[j, i] = 0
+                        # Marque le pixel comme totalement couvert en mettant None.
+                        partial_pixels[(i, j)] = None
+                    else:
+                        #  Ajoute le morceau si le pixel n'est pas déjà marqué comme totalement couvert.
+                        if (i, j) in partial_pixels and partial_pixels[(i, j)] is None:
+                            continue
 
-                # L'aire est comprise entre 0 et 1 mais parfois la valeur numérique peut déborder, donc je fais un min.
+                        morceau = Rectangle(inter_x_min, inter_x_max, inter_y_min, inter_y_max)
+                        if (i, j) not in partial_pixels:
+                            partial_pixels[(i, j)] = UnionRectangles()
+                        partial_pixels[(i, j)].addRectangle(morceau)
+
+        # 4. Pour chaque pixel partiellement couvert, on calcule la fraction de recouvrement.
+        for (i, j), union_rect in partial_pixels.items():
+            if partial_pixels[(i, j)] is not None:
+                covered_area = union_rect.union_area()
                 covered_area = min(covered_area, 1)
+                new_value = round(255 * (1 - covered_area))
 
-                # Calcule la nouvelle valeur de teinte en fonction de la fraction de recouvrement.
-                new_value = 255 - int(round(covered_area * 255))
                 pixels[j, i] = new_value
 
         return ps.PixelShape(array=pixels)

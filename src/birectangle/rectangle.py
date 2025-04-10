@@ -65,6 +65,9 @@ class Rectangle:
     def __iter__(self):
         return iter((self.x_min, self.x_max, self.y_min, self.y_max))
 
+    def copy(self):
+        return Rectangle(self.x_min, self.x_max, self.y_min, self.y_max)
+
     @staticmethod
     def fromCenter(center: Point, w: Decimal, h: Decimal):
         return Rectangle(center.x - w/2, center.x + w/2, center.y - h/2, center.y + h/2)
@@ -72,6 +75,10 @@ class Rectangle:
     @staticmethod
     def fromTopLeft(topLeft: Point, w: Decimal, h: Decimal):
         return Rectangle(topLeft.x, topLeft.x + w, topLeft.y - h, topLeft.y)
+
+    @staticmethod
+    def fromBottomLeft(bottomLeft: Point, w: Decimal, h: Decimal):
+        return Rectangle(bottomLeft.x, bottomLeft.x + w, bottomLeft.y, bottomLeft.y + h)
 
     def isPointInRectangle(self, x: Decimal | float, y: Decimal | float) -> bool:
         return self.x_min <= x <= self.x_max and self.y_min <= y <= self.y_max
