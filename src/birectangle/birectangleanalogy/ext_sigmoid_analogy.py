@@ -55,5 +55,4 @@ class ExtSigmoidAnalogy(BiRectangleAnalogy):
         yD = outerRectD.y_max - hOuterD * yD_rescale
 
         innerD = Rectangle.fromCenter(Point(xD, yD), wD, hD)
-
         return BiRectangle(outerRectD, innerD)

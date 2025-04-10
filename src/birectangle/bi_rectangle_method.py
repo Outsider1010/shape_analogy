@@ -54,7 +54,8 @@ def make_bi_rectangles(outer_rects, inner_rects, epsilon, innerReduction, biRect
             b.reduceInnerTo(r_x_min, r_x_max, r_y_min, r_y_max)
 
     if not ratio:
-        birectangles.append(biRectangleAnalogy.analogy(birectangles[0], birectangles[1], birectangles[2], outer_rects[3]))
+        x = biRectangleAnalogy.analogy(birectangles[0], birectangles[1], birectangles[2], outer_rects[3])
+        birectangles.append(x)
     else:
         if outer_rects[3] is not None:
             RD = outer_rects[3]
@@ -146,9 +147,10 @@ class BiRectangleMethod(ShapeAnalogy):
 
         empty = tuple(s.isEmpty() for s in shapes)
         # solvable equations with empty shapes ø : ø :: c : ? with solution c and ø : b :: ø : ? with solution b
-        if (empty[0] and empty[1]) or (empty[0] and empty[2]):
-            x = 2 if empty[0] and empty[1] else 1
-            d = shapes[x].equiv(csRectangles[x], csRectangles[3])
+        if shapes[0] == shapes[1]:
+            d = shapes[2].equiv(csRectangles[2], csRectangles[3])
+        elif shapes[0] == shapes[2]:
+            d = shapes[1].equiv(csRectangles[1], csRectangles[3])
         elif any(empty):
             lgg.warning(f"k = {k} / Unsolvable equation with empty shape(s) : {'∅' if empty[0] else 'a'}:"
                         f"{'∅' if empty[1] else 'b'}::{'∅' if empty[2] else 'c'}:?. Analogy unsolved.")
@@ -254,9 +256,10 @@ class BiRectangleMethod(ShapeAnalogy):
             shapes, csRectangles, cutD = equations.popleft()
 
             empty = tuple(s.isEmpty() for s in shapes)
-            if (empty[0] and empty[1]) or (empty[0] and empty[2]):
-                x = 2 if empty[0] and empty[1] else 1
-                d += shapes[x].equiv(csRectangles[x] , csRectangles[3])
+            if shapes[0] == shapes[1]:
+                d += shapes[2].equiv(csRectangles[2] , csRectangles[3])
+            elif shapes[0] == shapes[2]:
+                d += shapes[1].equiv(csRectangles[1], csRectangles[3])
             elif any(empty):
                 lgg.warning(f"k = {k} / Unsolvable equation with empty shape(s) : {'∅' if empty[0] else 'a'}:{'∅' if empty[1] else 'b'}::{'∅' if empty[2] else 'c'}:?. Analogy unsolved.")
                 if not first and self.plot != 'none':
@@ -384,9 +387,9 @@ class BiRectangleMethod(ShapeAnalogy):
         :return: Nothing.
         """
         fig.canvas.mpl_connect('key_press_event', self.__on_key_press)
-        if text != '':
+        '''if text != '':
             plt.title('Press Enter to stop plotting, Space to skip to the last \nand any other key to continue step by step')
-            plt.xlabel(text)
+            plt.xlabel(text)'''
 
     def __on_key_press(self, event) -> None:
         """

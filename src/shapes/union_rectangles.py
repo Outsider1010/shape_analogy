@@ -109,8 +109,12 @@ class UnionRectangles(Shape):
     def __eq__(self, other):
         if not isinstance(other, UnionRectangles):
             return False
-        # TODO
-        pass
+        if self.size() == other.size() == 0:
+            return True
+        if self.size() == other.size() == 1:
+            return self.rectangles[0] == other.rectangles[0]
+        # TODO : compléter les autres cas
+        return False
 
     def isEmpty(self) -> bool:
         return len(self.rectangles) == 0
