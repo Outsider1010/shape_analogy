@@ -279,9 +279,6 @@ class BiRectangleOption():
         maxDepth = self.maxDepthVariable.get()
         preventionMethod = self.overflowPreventionStrategy[self.overflowPreventionComboBox.get()]
         birectangleAnalogyMethod = self.birectangleAnalogyStrategy[self.birect_analogy_combo.get()]
-        """if preventionMethod == self.overflowPreventionStrategy["Indirect prevention"] and birectangleAnalogyMethod != self.birectangleAnalogyStrategy["BiSegment Analogy"]: 
-            self.showError("To activate indirect prevention you have to choose BiSegment analogy for Birectangle analogy strategy")
-            return"""
         if(ratio and not innerReduction):
             self.showError("To enable ratio you have enable innerReduction")
             return
@@ -306,7 +303,7 @@ class BiRectangleOption():
         method.set_birectangle_analogy_method(birectangleAnalogyMethod(self.rectangleAnalogy()))
         method.setCuttingMethod(self.cuttingStrategy[self.birect_cutting_combo.get()]())
         method.setInnerRectangleFinder(self.innerRectangleFinderStrategy[self.inner_rectangle_finder_combo.get()]())
-        method.setOverflowPrevention(preventionMethod(self.epsilon.get(),birectangleAnalogyMethod) if preventionMethod == self.overflowPreventionStrategy["Indirect prevention"] else preventionMethod())
+        method.setOverflowPrevention(preventionMethod(self.epsilon.get(),birectangleAnalogyMethod()) if preventionMethod == self.overflowPreventionStrategy["Indirect prevention"] else preventionMethod())
         method.setSameAxis(self.sameAxisVariable.get())
         method.setInnerReduction(innerReduction)
         method.setRatio(self.ratioVariable.get())
