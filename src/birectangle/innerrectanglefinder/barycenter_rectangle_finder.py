@@ -210,7 +210,6 @@ class BarycenterRectangleFinder(InnerRectangleFinder):
                     min_dist = dist_sq
                     nearest = pt
             P = nearest
-        print("Barycentre retenu :", P)
 
         # Étape 2 : Initialisation.
         left = right = P.x

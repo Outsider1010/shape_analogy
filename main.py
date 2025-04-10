@@ -36,7 +36,7 @@ SC = PixelShape(img='resources/ellipse_3.bmp')
 
 m = BiRectangleMethod(biRectAnalogy = BiSegmentAnalogy(), cutMethod = HorizontalCut(),
   maxDepth = 6, nbIterations = 2000, epsilon = 0.0001, overflowPrevention = IndirectPrevention(epsilon=0.0001),
-  subSys = 'super', algo  = 'rec', sameAxis = False, innerRectFinder=BarycenterRectangleFinder())
+  subSys = 'super', algo  = 'rec', sameAxis = False)
 
 d = m.analogy(SA, SB, SC)
 m.analogy(SC, d, SA)
