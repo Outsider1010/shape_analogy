@@ -53,7 +53,6 @@ class PixelShape(Shape):
     def __init__(self, array=None, img=None, rect=None):
         assert (array is not None) or (img is not None) or (rect is not None), \
             "One of the parameters (array, img or rect) must be set"
-
         if img is not None:
             array = np.array(Image.open(img))
 

@@ -23,16 +23,19 @@ from src.birectangle.rectangleanalogy.coord_analogy import CoordAnalogy
 from src.shapes.pixel_shape import PixelShape
 from src.shapes.union_rectangles import UnionRectangles
 
-
 l = LargestRectangleFinder()
 
-SA = PixelShape(img='resources/ellipse_1.bmp')
-SB = PixelShape(img='resources/ellipse_2.bmp')
-SC = PixelShape(img='resources/ellipse_3.bmp')
+#SA = PixelShape(img='resources/ellipse_1.bmp')
+#SB = PixelShape(img='resources/ellipse_2.bmp')
+#SC = PixelShape(img='resources/ellipse_3.bmp')
+
+SA = PixelShape(img='resources/suisse.bmp')
+SB = PixelShape(img='resources/suisse.bmp')
+SC = PixelShape(img='resources/suisse.bmp')
 
 m = BiRectangleMethod(biRectAnalogy = BiSegmentAnalogy(), cutMethod = HorizontalCut(),
                       maxDepth = 6, nbIterations = 2000, epsilon = 0.0001, overflowPrevention = IndirectPrevention(epsilon=0.0001),
-                      subSys = 'super', algo  = 'rec', sameAxis = False, plot='step')
+                      subSys = 'super', algo  = 'rec', sameAxis = False)
 
 d = m.analogy(SA, SB, SC)
 m.analogy(SC, d, SA)
