@@ -7,6 +7,7 @@ from src.birectangle.bi_rectangle import BiRectangle
 from src.birectangle.rectangle import Rectangle
 import src.shapes.pixel_shape as ps
 from .shape import Shape
+from ..birectangle.Segment import Segment
 from ..birectangle.point import Point
 from math import ceil, floor
 
@@ -105,6 +106,47 @@ class UnionRectangles(Shape):
 
     def isPointInShape(self, x: Decimal | float, y: Decimal | float) -> bool:
         return any(r.isPointInRectangle(x, y) for r in self.rectangles)
+
+    def isHorizontalSegmentInShape(self, seg: Segment, num_samples: int = 10) -> bool:
+        """
+        Vérifie si tous les points le long d'un segment horizontal appartiennent à la forme.
+        Le segment doit être horizontal (les ordonnées des points A et B doivent être identiques).
+
+        Pour chaque point échantillonné le long du segment, on vérifie que le point est dans la forme
+        via isPointInShape. Cette méthode s'inspire de l'approche utilisée dans PixelShape, mais ici
+        aucun passage par des indices de matrice n'est nécessaire puisque les coordonnées sont déjà en
+        système continu (Decimal).
+        """
+        assert seg.A.y == seg.B.y, "Must be a horizontal segment"
+
+        for i in range(num_samples + 1):
+            t = Decimal(i) / Decimal(num_samples)
+            # Calcul de l'abscisse interpolée le long du segment
+            x = seg.A.x + (seg.B.x - seg.A.x) * t
+            # Vérification du point (x, seg.A.y)
+            if not self.isPointInShape(x, seg.A.y):
+                return False
+        return True
+
+    def isVerticalSegmentInShape(self, seg: Segment, num_samples: int = 10) -> bool:
+        """
+        Vérifie si tous les points le long d'un segment vertical appartiennent à la forme.
+        Le segment doit être vertical (les abscisses des points A et B doivent être identiques).
+
+        Pour chaque point échantillonné le long du segment, on vérifie que le point est dans la forme
+        via isPointInShape. Cette méthode reprend l'idée de PixelShape, adaptée au système de coordonnées
+        continu utilisé dans UnionRectangles.
+        """
+        assert seg.A.x == seg.B.x, "Must be a vertical segment"
+
+        for i in range(num_samples + 1):
+            t = Decimal(i) / Decimal(num_samples)
+            # Calcul de l'ordonnée interpolée le long du segment
+            y = seg.A.y + (seg.B.y - seg.A.y) * t
+            # Vérification du point (seg.A.x, y)
+            if not self.isPointInShape(seg.A.x, y):
+                return False
+        return True
 
     def __eq__(self, other):
         if not isinstance(other, UnionRectangles):

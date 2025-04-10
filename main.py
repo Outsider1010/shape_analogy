@@ -12,6 +12,7 @@ from src.birectangle.cuttingmethod.cut_in_8 import CuttingIn8
 from src.birectangle.cuttingmethod.horizontal_cut import HorizontalCut
 from src.birectangle.cuttingmethod.sides_non_disjoint_cut import SidesNonDisjointCut
 from src.birectangle.cuttingmethod.vertical_cut import VerticalCut
+from src.birectangle.innerrectanglefinder.barycenter_rectangle_finder import BarycenterRectangleFinder
 from src.birectangle.innerrectanglefinder.largest_rectangle_finder import LargestRectangleFinder
 from src.birectangle.overflowprevention.direct_prevention import DirectPrevention
 from src.birectangle.overflowprevention.indirect_prevention import IndirectPrevention
@@ -25,17 +26,17 @@ from src.shapes.union_rectangles import UnionRectangles
 
 l = LargestRectangleFinder()
 
-#SA = PixelShape(img='resources/ellipse_1.bmp')
-#SB = PixelShape(img='resources/ellipse_2.bmp')
-#SC = PixelShape(img='resources/ellipse_3.bmp')
+SA = PixelShape(img='resources/ellipse_1.bmp')
+SB = PixelShape(img='resources/ellipse_2.bmp')
+SC = PixelShape(img='resources/ellipse_3.bmp')
 
-SA = PixelShape(img='resources/suisse.bmp')
-SB = PixelShape(img='resources/suisse.bmp')
-SC = PixelShape(img='resources/suisse.bmp')
+#SA = PixelShape(img='resources/suisse.bmp')
+#SB = PixelShape(img='resources/suisse.bmp')
+#SC = PixelShape(img='resources/suisse.bmp')
 
 m = BiRectangleMethod(biRectAnalogy = BiSegmentAnalogy(), cutMethod = HorizontalCut(),
-                      maxDepth = 6, nbIterations = 2000, epsilon = 0.0001, overflowPrevention = IndirectPrevention(epsilon=0.0001),
-                      subSys = 'super', algo  = 'rec', sameAxis = False)
+  maxDepth = 6, nbIterations = 2000, epsilon = 0.0001, overflowPrevention = IndirectPrevention(epsilon=0.0001),
+  subSys = 'super', algo  = 'rec', sameAxis = False, innerRectFinder=BarycenterRectangleFinder())
 
 d = m.analogy(SA, SB, SC)
 m.analogy(SC, d, SA)
