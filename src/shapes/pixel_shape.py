@@ -10,6 +10,9 @@ from src.birectangle.rectangle import Rectangle
 import src.shapes.union_rectangles as ur
 from .shape import Shape
 from PIL import Image
+
+from ..birectangle.Segment import Segment
+
 # DO NOT IMPORT STRATEGIES (to avoid circular imports)
 
 # defines how we represent too small (< 1) rectangles
@@ -53,7 +56,6 @@ class PixelShape(Shape):
     def __init__(self, array=None, img=None, rect=None):
         assert (array is not None) or (img is not None) or (rect is not None), \
             "One of the parameters (array, img or rect) must be set"
-
         if img is not None:
             array = np.array(Image.open(img))
 
@@ -133,6 +135,48 @@ class PixelShape(Shape):
         ys_to_check = (y_in_mat - 1, y_in_mat) if y_is_integer else (y_in_mat,)
 
         return any(0 <= x < w and 0 <= y < h and self.isTrue(x, y) for x in xs_to_check for y in ys_to_check)
+
+    def isHorizontalSegmentInShape(self, seg: Segment) -> bool:
+        assert seg.A.y == seg.B.y, "Must be a horizontal segment"
+
+        h, w = self.dim()
+        mi_h = Decimal(h/2)
+        mi_w = Decimal(w/2)
+        y = int(mi_h - seg.A.y)
+        x_min, x_max = sorted([int(seg.A.x + mi_w), int(seg.B.x + mi_w)])
+
+        if not 0 <= y < h:
+            return False
+
+        for x in range(x_min, x_max):
+            if not (0 <= x < w):
+                continue
+
+            if not self.isPointInShape(Decimal(x), Decimal(y)):
+                return False
+
+        return True
+
+    def isVerticalSegmentInShape(self, seg : Segment) -> bool:
+        assert seg.A.x == seg.B.x, "Must be a vertical segment"
+
+        h, w = self.dim()
+        mi_h = Decimal(h / 2)
+        mi_w = Decimal(w / 2)
+        x = int(int(seg.A.x + mi_w))
+        y_min, y_max = sorted([int(mi_h - seg.A.y), int(mi_h - seg.B.y)])
+
+        if not (0 <= x < w):
+            return False
+
+        for y in range(y_min, y_max):
+            if not (0 <= y < h):
+                continue
+
+            if not self.isPointInShape(Decimal(x), Decimal(y)):
+                return False
+
+        return True
 
     def resize(self, min_w: int = 2, min_h: int = 2):
         assert min_w % 2 == 0, f"Minimum width {min_w} must be even."
