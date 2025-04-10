@@ -125,7 +125,7 @@ class BiRectangleOption():
         self.rectangleAnalogy_combo.grid(column=3, row=2, padx=5, sticky="ew")
 
         Label(strategy_frame, text="Overflow prevention").grid(column=4, row=1, sticky="ew")
-        self.overflowPreventionComboBox = ttk.Combobox(strategy_frame, values=list(self.rectangleAnalogyStrategy.keys()), state="readonly")
+        self.overflowPreventionComboBox = ttk.Combobox(strategy_frame, values=list(self.overflowPreventionStrategy.keys()), state="readonly")
         self.overflowPreventionComboBox.set(
             list(self.overflowPreventionStrategy.keys())[
                 list(self.overflowPreventionStrategy.values()).index(
