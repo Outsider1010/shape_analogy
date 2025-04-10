@@ -8,7 +8,7 @@ from src.birectangle.rectangleanalogy.top_left_dim_analogy import TopLeftDimAnal
 from src.birectangle.birectangleanalogy.ext_sigmoid_analogy import ExtSigmoidAnalogy
 from src.birectangle.rectangleanalogy.area_analogy import AreaAnalogy
 from src.birectangle.rectangleanalogy.coord_analogy import CoordAnalogy
-
+from src.birectangle.innerrectanglefinder.barycenter_rectangle_finder import BarycenterRectangleFinder
 from src.birectangle.cuttingmethod.cut_in_4_equal_parts_1 import CutIn4EqualParts1
 from src.birectangle.birectangleanalogy.simple_analogy import SimpleAnalogy
 from src.birectangle.cuttingmethod.horizontal_cut import HorizontalCut
@@ -42,6 +42,7 @@ class BiRectangleOption():
         }
         self.innerRectangleFinderStrategy = {
             "Largest rectangle": LargestRectangleFinder,
+            "Barycenter method": BarycenterRectangleFinder
         }
     
         self.rectangleAnalogyStrategy = {
