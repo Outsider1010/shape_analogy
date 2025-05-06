@@ -23,13 +23,14 @@ class ViewSelectShape(ttk.Frame, ViewInterface):
             self.model.setShape(self.number,shapeFile)
             self.set_image(shapeFile)
      
-          
+    def create_image(self):
+        self.model.toImage(self.number,self.path)
     def resize(self, event):
         if self.path is not None:
-            image = Image.open(self.path)
+            
             largeur, hauteur = self.winfo_width(), self.winfo_height()
             # Redimensionner l'image tout en conservant le rapport d'aspect
-            image = ImageOps.contain(image, (largeur,hauteur), Image.Resampling.LANCZOS)
+            image = ImageOps.contain(self.model.toImage(self.number,self.path), (largeur,hauteur), Image.Resampling.LANCZOS)
         
             # Créer une nouvelle image avec un fond blanc
             new_image = Image.new("RGB", (largeur,hauteur), (255, 255, 255))
@@ -68,4 +69,7 @@ class ViewSelectShape(ttk.Frame, ViewInterface):
         self.model.removeShape(self.number)
         self.deleteButton.destroy()
         self.button.place(relx=0.5, rely=0.5, anchor="center")
-        
+    def react(self,event:str):
+        print(self.path,self.number)
+        if(self.path!=None):
+            self.resize((0,0))

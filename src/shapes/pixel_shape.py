@@ -226,12 +226,13 @@ class PixelShape(Shape):
         alpha[mat_to_plot != 0] = 0
         plt.imshow(mat_to_plot, cmap='gray', vmin=0, vmax=255, alpha=alpha, extent=(- w / 2, w / 2, - h / 2, h / 2))
 
-    def toImage(self, name: str = "default.bmp"):
+    def toImage(self, saveMode:bool = True,name: str = "resources/default.bmp"):
         if not name.endswith(".bmp"):
             name += ".bmp"
         img = Image.fromarray(self.pixels, 'L')
-        img.save('resources/' + name)
-
+        if(saveMode):
+            img.save(name)
+        return img
     def toSinogram(self, maxAngle: float = 180.):
         # useful ?
         # array = rescale(array, scale=0.4, mode='reflect', channel_axis=None)

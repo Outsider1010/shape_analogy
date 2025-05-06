@@ -19,7 +19,7 @@ from src.birectangle.birectangleanalogy.bi_segment_analogy import BiSegmentAnalo
 from src.birectangle.overflowprevention.direct_prevention import DirectPrevention
 from src.birectangle.overflowprevention.indirect_prevention import IndirectPrevention
 from src.birectangle.overflowprevention.no_prevention import NoPrevention
-from idlelib.tooltip import Hovertip
+
 
 class BiRectangleOption():
 
