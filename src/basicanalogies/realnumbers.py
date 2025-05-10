@@ -27,10 +27,10 @@ def geometric(a: Decimal, b: Decimal, c: Decimal) -> Decimal:
 def bounded(a: Decimal, b: Decimal, c: Decimal) -> Decimal:
     """
     Realize a particular analogical proportion on (0, 1) to solve the equation `a`:`b`::`c`:?
-    :param a: a real number between 0 and 1 `a`
-    :param b: a real number between 0 and 1 `b`
-    :param c: a real number between 0 and 1 `c`
-    :return: a real numer `d` solution of the equation
+    :param a: a real number between 0 and 1
+    :param b: a real number between 0 and 1
+    :param c: a real number between 0 and 1
+    :return: a real numer `d` such that `a`:`b`::`c`:`d`, i.e. a solution of the equation
     """
     if a == b:
         return c

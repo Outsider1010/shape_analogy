@@ -64,7 +64,7 @@ class PixelShape(Shape):
             array = np.full((h, w), 255, dtype=np.uint8)
             setRangeValue(array, 0, rect.x_min, rect.x_max, rect.y_min, rect.y_max)
 
-        self.pixels: np.ndarray[bool] = array
+        self.pixels = array
 
     def fromShape(self, r: Rectangle):
         h, w = 2 * ceil(max(abs(r.y_min), abs(r.y_max))), 2 * ceil(max(abs(r.x_min), abs(r.x_max)))
@@ -231,28 +231,3 @@ class PixelShape(Shape):
             name += ".bmp"
         img = Image.fromarray(self.pixels, 'L')
         img.save('resources/' + name)
-
-    def toSinogram(self, maxAngle: float = 180.):
-        # useful ?
-        # array = rescale(array, scale=0.4, mode='reflect', channel_axis=None)
-
-        theta = np.linspace(0.0, maxAngle, max(self.pixels.shape), endpoint=False)
-        sinogram = radon(self.pixels, theta=theta)
-        return sinogram
-
-        # fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 4.5))
-        #
-        # ax1.set_title("Original")
-        # ax1.imshow(self.pixels, cmap=plt.cm.Greys_r)
-        # dx, dy = 0.5 * 180.0 / max(self.pixels.shape), 0.5 / sinogram.shape[0]
-        # ax2.set_title("Radon transform\n(Sinogram)")
-        # ax2.set_xlabel("Projection angle (deg)")
-        # ax2.set_ylabel("Projection position (pixels)")
-        # ax2.imshow(
-        #     sinogram,
-        #     cmap=plt.cm.Greys_r,
-        #     extent=(-dx, maxAngle + dx, -dy, sinogram.shape[0] + dy),
-        #     aspect='auto',
-        # )
-        # fig.tight_layout()
-        # plt.show()

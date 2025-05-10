@@ -6,7 +6,7 @@ from src.birectangle.rectangle import Rectangle
 
 
 # TODO: documentation
-class SimpleAnalogy(BiRectangleAnalogy):
+class NaiveAnalogy(BiRectangleAnalogy):
 
     def __init__(self, rectangleAnalogy = CenterDimAnalogy()):
         self.rectAnalogy = rectangleAnalogy

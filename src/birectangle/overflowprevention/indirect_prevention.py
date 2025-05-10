@@ -10,5 +10,5 @@ class IndirectPrevention(OverflowPrevention):
         self.biRectAnalogy = biRectAnalogy
 
     def getOuterRectangles(self, boundingBoxes, specRectangles, make_bi_rectangles):
-        birectangles = make_bi_rectangles(specRectangles, boundingBoxes, self.epsilon, False, self.biRectAnalogy)
+        birectangles = make_bi_rectangles(specRectangles, boundingBoxes, self.epsilon, self.biRectAnalogy)
         return [b.innerRectangle for b in birectangles]

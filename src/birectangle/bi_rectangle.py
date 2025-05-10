@@ -3,6 +3,7 @@ from typing import Iterator
 
 from src.birectangle.rectangle import Rectangle
 
+
 class BiRectangle:
     def __init__(self, outerRectangle: Rectangle, innerRectangle: Rectangle):
         b = outerRectangle.containsRectangle(innerRectangle)
@@ -36,48 +37,6 @@ class BiRectangle:
                                             innerR.x_max - epsilon * (innerR.x_max == outerR.x_max) * w,
                                             innerR.y_min + epsilon * (innerR.y_min == outerR.y_min) * h,
                                             innerR.y_max - epsilon * (innerR.y_max == outerR.y_max) * h)
-
-    def center_x_min_ratio(self) -> Decimal:
-        assert self.innerRectangle.center().x != self.outerRectangle.x_min, "too small rectangles"
-        return self.innerRectangle.width() / (2 * (self.innerRectangle.center().x - self.outerRectangle.x_min))
-
-    def center_x_max_ratio(self) -> Decimal:
-        assert self.innerRectangle.center().x != self.outerRectangle.x_max, "too small rectangles"
-        return self.innerRectangle.width() / (2 * (self.outerRectangle.x_max - self.innerRectangle.center().x))
-
-    def center_y_min_ratio(self) -> Decimal:
-        assert self.innerRectangle.center().y != self.outerRectangle.y_min, "too small rectangles"
-        return self.innerRectangle.height() / (2 * (self.innerRectangle.center().y - self.outerRectangle.y_min))
-
-    def center_y_max_ratio(self) -> Decimal:
-        assert self.innerRectangle.center().y != self.outerRectangle.y_max, "too small rectangles"
-        return self.innerRectangle.height() / (2 * (self.outerRectangle.y_max - self.innerRectangle.center().y))
-
-    def center_xy_ratios(self):
-        return self.center_x_min_ratio(), self.center_x_max_ratio(), self.center_y_min_ratio(), self.center_y_max_ratio()
-
-    def reduceInnerTo(self, r_x_min: Decimal, r_x_max: Decimal, r_y_min: Decimal, r_y_max: Decimal) -> None:
-        innerR, outerR = self
-        c_x, c_y = innerR.center()
-        r = Rectangle((1 - r_x_min) * c_x + r_x_min * outerR.x_min, r_x_max * outerR.x_max + (1 - r_x_max) * c_x,
-                      (1 - r_y_min) * c_y + r_y_min * outerR.y_min, r_y_max * outerR.y_max + (1 - r_y_max) * c_y)
-        if r.area() == 0:
-            raise AssertionError('too small rectangle after ratio')
-
-        b = outerR.containsRectangle(r)
-        if not b:
-            limit = Decimal('1E-10')
-            if not outerR.y_min <= r.y_min and outerR.y_min - r.y_min < limit:
-                r.y_min = outerR.y_min
-            if not outerR.x_min <= r.x_min and outerR.x_min - r.x_min < limit:
-                r.x_min = outerR.x_min
-            if not outerR.y_max >= r.y_max and r.y_max - outerR.y_max < limit:
-                r.y_max = outerR.y_max
-            if not outerR.x_max >= r.x_max and r.x_max - outerR.x_max < limit:
-                r.x_max = outerR.x_max
-        assert outerR.containsRectangle(r), (f"Inner rectangle should be contained by outer rectangle after ratio.\n"
-                              f"Outer : {outerR}\nInner : {r}")
-        self.innerRectangle = r
 
     def innerEquiv(self, toCoordSysR: Rectangle) -> Rectangle:
         w = self.outerRectangle.width()

@@ -7,4 +7,4 @@ class Segment:
     B: Point
 
     def __repr__(self):
-        return f"({self.A}, {self.A.y})"
+        return f"({self.A}, {self.B})"

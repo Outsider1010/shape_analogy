@@ -271,9 +271,5 @@ class UnionRectangles(Shape):
     def toImage(self, name: str = "default.bmp"):
         self.toPixels().toImage(name)
 
-    def toSinogram(self, maxAngle: float = 180.):
-        # TODO
-        pass
-
     def size(self):
         return len(self.rectangles)

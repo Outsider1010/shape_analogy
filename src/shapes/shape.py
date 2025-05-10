@@ -12,7 +12,7 @@ class Shape(ABC):
         """
         Find an interior axis-aligned rectangle of the shape
         :param strategy: The method used to find the rectangle
-        :return: A (axis-aligned) rectangle of the shape
+        :return: A (axis-aligned) rectangle inside the shape
         """
         raise NotImplementedError
 
@@ -51,15 +51,6 @@ class Shape(ABC):
     @abstractmethod
     def toImage(self, name='default.bmp'):
         pass
-
-    @abstractmethod
-    def toSinogram(self, maxAngle: float):
-        """
-        Create a sinogram of the shape
-        :param maxAngle:
-        :return: a sinogram (2D array of positive numbers) of the shape
-        """
-        raise NotImplementedError
 
 
 
