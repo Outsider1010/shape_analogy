@@ -1,4 +1,3 @@
-from decimal import Decimal
 
 from src.basicanalogies.realnumbers import geometric
 from src.birectangle.point import Point

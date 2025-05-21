@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 from src.birectangle.bi_rectangle import BiRectangle
 from src.birectangle.rectangle import Rectangle
-from src.shapes.pixel_shape import PixelShape
 from src.shapes.shape import Shape
 
 
@@ -20,7 +19,7 @@ class CuttingMethod(ABC):
         """
         raise NotImplementedError
 
-    def cut(self, shape: Shape, biRectangle: BiRectangle) -> list[PixelShape]:
+    def cut(self, shape: Shape, biRectangle: BiRectangle) -> list[Shape]:
         """
         Return the different part of the shape contained inside each rectangle obtained by cutting
         up the area between the outer and inner rectangles of the bi-rectangle.
@@ -31,9 +30,10 @@ class CuttingMethod(ABC):
         return [shape.fromShape(r) for r in self.cutBiRectangle(biRectangle)]
 
     @abstractmethod
-    def plotCuttingLines(self, biRectangle: BiRectangle) -> None:
+    def plotCuttingLines(self, ax, biRectangle: BiRectangle) -> None:
         """
         Draw the cutting lines between the rectangles in a plot
+        :param ax: where to plot
         :param biRectangle: the bi-rectangle being cut
         :return: Nothing.
         """

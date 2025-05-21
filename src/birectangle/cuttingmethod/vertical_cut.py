@@ -28,12 +28,12 @@ class VerticalCut(CuttingMethod):
                 Rectangle(innerR.x_min, innerR.x_max, outerR.y_min, innerR.y_min),
                 Rectangle(innerR.x_max, outerR.x_max, outerR.y_min, outerR.y_max)]
 
-    def plotCuttingLines(self, biRectangle: BiRectangle):
+    def plotCuttingLines(self, ax, biRectangle: BiRectangle):
         innerR, outerR = biRectangle
-        plt.plot([innerR.x_min] * 2, [innerR.y_max, outerR.y_max], "g", linestyle="--")
-        plt.plot([innerR.x_max] * 2, [innerR.y_max, outerR.y_max], "g", linestyle="--")
-        plt.plot([innerR.x_min] * 2, [outerR.y_min, innerR.y_min], "g", linestyle="--")
-        plt.plot([innerR.x_max] * 2, [outerR.y_min, innerR.y_min], "g", linestyle="--")
+        ax.plot([innerR.x_min] * 2, [innerR.y_max, outerR.y_max], "g", linestyle="--")
+        ax.plot([innerR.x_max] * 2, [innerR.y_max, outerR.y_max], "g", linestyle="--")
+        ax.plot([innerR.x_min] * 2, [outerR.y_min, innerR.y_min], "g", linestyle="--")
+        ax.plot([innerR.x_max] * 2, [outerR.y_min, innerR.y_min], "g", linestyle="--")
 
     def plt_colors(self) -> list[str]:
         return ["#ff007f", "b", "#800000", "#8000ff"]

@@ -1,7 +1,4 @@
-from decimal import Decimal
-
-
-def arithmetic(a: Decimal, b: Decimal, c: Decimal) -> Decimal:
+def arithmetic(a: float, b: float, c: float) -> float:
     """
     Realize the arithmetic analogical proportion on R (the set of real numbers) to solve the equation `a`:`b`::`c`:?
     :param a: a real number `a`
@@ -12,7 +9,7 @@ def arithmetic(a: Decimal, b: Decimal, c: Decimal) -> Decimal:
     return c + b - a
 
 
-def geometric(a: Decimal, b: Decimal, c: Decimal) -> Decimal:
+def geometric(a: float, b: float, c: float) -> float:
     """
     Realize the geometric analogical proportion on R* (the set of real numbers excluding 0)
     to solve the equation `a`:`b`::`c`:?
@@ -24,7 +21,7 @@ def geometric(a: Decimal, b: Decimal, c: Decimal) -> Decimal:
     return c * b / a
 
 
-def bounded(a: Decimal, b: Decimal, c: Decimal) -> Decimal:
+def bounded(a: float, b: float, c: float) -> float:
     """
     Realize a particular analogical proportion on (0, 1) to solve the equation `a`:`b`::`c`:?
     :param a: a real number between 0 and 1
@@ -36,15 +33,15 @@ def bounded(a: Decimal, b: Decimal, c: Decimal) -> Decimal:
         return c
     elif a == c:
         return b
-    assert 0 < a < 1, f"forbidden value ({a}) for bounded analogy : {round(a, 2)}:{round(b, 2)}::{round(c, 2)}:?"
-    assert 0 < b < 1, f"forbidden value ({b}) for bounded analogy : {round(a, 2)}:{round(b, 2)}::{round(c, 2)}:?"
-    assert 0 < c < 1, f"forbidden value ({c}) for bounded analogy : {round(a, 2)}:{round(b, 2)}::{round(c, 2)}:?"
+    assert 0 < a < 1, f"forbidden value ({a}) for bounded analogy : {a}:{b}::{c}:?"
+    assert 0 < b < 1, f"forbidden value ({b}) for bounded analogy : {a}:{b}::{c}:?"
+    assert 0 < c < 1, f"forbidden value ({c}) for bounded analogy : {a}:{b}::{c}:?"
 
     return 1 / (1 + (1 - c) * (1 - b) * a / ((1 - a) * b * c))
 
 
-def ext_bounded(a: Decimal, b: Decimal, c: Decimal, Ia: tuple[Decimal, Decimal], Ib: tuple[Decimal, Decimal],
-                Ic: tuple[Decimal, Decimal], Id: tuple[Decimal, Decimal]) -> Decimal:
+def ext_bounded(a: float, b: float, c: float, Ia: tuple[float, float], Ib: tuple[float, float],
+                Ic: tuple[float, float], Id: tuple[float, float]) -> float:
     """
     Realize a particular analogical proportion on dynamic intervals to solve the equation `a`:`b`::`c`:?
     :param a: a real number `a` within the interval `Ia` (exclusive)
@@ -60,16 +57,16 @@ def ext_bounded(a: Decimal, b: Decimal, c: Decimal, Ia: tuple[Decimal, Decimal],
     b_inf_b, b_sup_b = Ib
     b_inf_c, b_sup_c = Ic
     b_inf_d, b_sup_d = Id
-    assert b_inf_a < a < b_sup_a, f"forbidden value ({a}) for ext bounded analogy : {round(a, 2)}:{round(b, 2)}::{round(c, 2)}:?"
-    assert b_inf_b < b < b_sup_b, f"forbidden value ({b}) for ext bounded analogy : {round(a, 2)}:{round(b, 2)}::{round(c, 2)}:?"
-    assert b_inf_c < c < b_sup_c, f"forbidden value ({c}) for ext bounded analogy : {round(a, 2)}:{round(b, 2)}::{round(c, 2)}:?"
+    assert b_inf_a < a < b_sup_a, f"forbidden value ({a}) for ext bounded analogy : {a}:{b}::{c}:?"
+    assert b_inf_b < b < b_sup_b, f"forbidden value ({b}) for ext bounded analogy : {a}:{b}::{c}:?"
+    assert b_inf_c < c < b_sup_c, f"forbidden value ({c}) for ext bounded analogy : {a}:{b}::{c}:?"
 
     return b_inf_d + ((b_sup_d - b_inf_d) / (1 +
                                              ((b_sup_c - c) * (b_sup_b - b) * (a - b_inf_a)) / (
                                                          (c - b_inf_c) * (b - b_inf_b) * (b_sup_a - a))))
 
 
-def asc_couple(a: tuple[Decimal, Decimal], b: tuple[Decimal, Decimal], c: tuple[Decimal, Decimal]) -> tuple[Decimal, Decimal]:
+def asc_couple(a: tuple[float, float], b: tuple[float, float], c: tuple[float, float]) -> tuple[float, float]:
     a1, a2 = a
     b1, b2 = b
     c1, c2 = c

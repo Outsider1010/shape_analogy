@@ -28,12 +28,12 @@ class HorizontalCut(CuttingMethod):
                 Rectangle(innerR.x_max, outerR.x_max, innerR.y_min, innerR.y_max),
                 Rectangle(outerR.x_min, outerR.x_max, outerR.y_min, innerR.y_min)]
 
-    def plotCuttingLines(self, biRectangle: BiRectangle) -> None:
+    def plotCuttingLines(self, ax, biRectangle: BiRectangle) -> None:
         innerR, outerR = biRectangle
-        plt.plot([outerR.x_min, innerR.x_min], [innerR.y_max] * 2, "g", linestyle="--")
-        plt.plot([outerR.x_min, innerR.x_min], [innerR.y_min] * 2, "g", linestyle="--")
-        plt.plot([innerR.x_max, outerR.x_max], [innerR.y_min] * 2, "g", linestyle="--")
-        plt.plot([innerR.x_max, outerR.x_max], [innerR.y_max] * 2, "g", linestyle="--")
+        ax.plot([outerR.x_min, innerR.x_min], [innerR.y_max] * 2, "g", linestyle="--")
+        ax.plot([outerR.x_min, innerR.x_min], [innerR.y_min] * 2, "g", linestyle="--")
+        ax.plot([innerR.x_max, outerR.x_max], [innerR.y_min] * 2, "g", linestyle="--")
+        ax.plot([innerR.x_max, outerR.x_max], [innerR.y_max] * 2, "g", linestyle="--")
 
     def plt_colors(self) -> list[str]:
         return ["#ff007f", "b", "#800000", "#8000ff"]

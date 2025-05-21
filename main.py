@@ -1,8 +1,3 @@
-import time
-from decimal import Decimal
-
-from matplotlib import pyplot as plt
-
 from src.basicanalogies.realnumbers import bounded
 from src.birectangle.bi_rectangle import BiRectangle
 from src.birectangle.bi_rectangle_method import BiRectangleMethod
@@ -23,67 +18,47 @@ from src.birectangle.point import Point
 from src.birectangle.rectangle import Rectangle
 from src.birectangle.rectangleanalogy.area_analogy import AreaAnalogy
 from src.birectangle.rectangleanalogy.center_dim_analogy import CenterDimAnalogy
-from src.birectangle.rectangleanalogy.coord_analogy import CoordAnalogy
 from src.shapes.pixel_shape import PixelShape
 from src.shapes.union_rectangles import UnionRectangles
 
+example_1 = (PixelShape(img='resources/circle/circle_1.bmp'),
+             PixelShape(img='resources/donut/donut_3.bmp'),
+             PixelShape(img='resources/exact_rhombus.bmp'))
 
-l = LargestRectangleFinder()
+example_2 = (PixelShape(img='resources/ellipse/ellipse_1.bmp'),
+             PixelShape(img='resources/ellipse/rotated/ellipse_4_330deg.bmp'),
+             PixelShape(img='resources/ellipse/rotated/ellipse_4_330deg.bmp'))
 
-'''
-SA = PixelShape(img='resources/circle_1.bmp')
-SB = PixelShape(img='resources/formeIr/donut/donut3.bmp')
-SC = PixelShape(img='resources/exact_rhombus.bmp')
-'''
+example_3 = (PixelShape(img='resources/circle/circle_4.bmp'),
+             PixelShape(img='resources/circle/circle_1.bmp'),
+             PixelShape(img='resources/circle/circle_3.bmp'))
 
-'''
-SA = PixelShape(img='resources/ellipse_1.bmp')
-SB = PixelShape(img='resources/e_1_-30deg.bmp')
-SC = PixelShape(img='resources/e_1_-30deg.bmp')
-'''
+example_4 = (PixelShape(img='resources/non_sym_shape_1.bmp'),
+             PixelShape(img='resources/non_sym_shape_2.bmp'),
+             PixelShape(img='resources/non_sym_shape_3.bmp'))
 
-'''
-SA = UnionRectangles()
-SA.addRectangle(Rectangle(0., 5, 0, 1))
-SA.addRectangle(Rectangle(2.25, 2.75, 1, 2))
+example_5 = (PixelShape(img='resources/arc/arc_1.bmp'),
+             PixelShape(img='resources/arc/arc_2.bmp'),
+             PixelShape(img='resources/arc/arc_3.bmp'))
 
-SB = UnionRectangles()
-SB.addRectangle(Rectangle(0., 5, 0, 1))
-SB.addRectangle(Rectangle(1.5, 3.5, 1, 2))
+def run(ABC):
 
-SC = SB
+    m = BiRectangleMethod(biRectAnalogy=BiSegmentAnalogy(), innerRectFinder=LargestRectangleFinder(),
+                          cutMethod=HorizontalCut(), overflowPrevention=DirectPrevention(), maxDepth=6,
+                          nbIterations=1500, epsilon=1e-6,subSys='cut', algo='iter', sameAxis=True, plot='step')
 
-SD = UnionRectangles()
-SD.addRectangle(Rectangle(0., 5, 0, 1))
-SD.addRectangle(Rectangle(0.5, 4.5, 1, 2))
-'''
+    m.analogy(*ABC)
 
-'''
-SC = PixelShape(img='resources/circle_1.bmp').toRectangles(l)
-SA = SC.fromShape(Rectangle.fromTopLeft(Point(Decimal(-33), Decimal(127)), Decimal(152), Decimal(76)))
-SB = PixelShape(img='resources/exact_rhombus.bmp')
-SD = SB.fromShape(Rectangle(Decimal('-59'), Decimal('59'), Decimal('10'), Decimal('78')))
-'''
+def profile(ABC):
+    import cProfile
+    import pstats
 
-'''
-SA = PixelShape(img='resources/circle_4.bmp')
-SB = PixelShape(img='resources/circle_1.bmp')
-SC = PixelShape(img='resources/circle_3.bmp')
-'''
+    with cProfile.Profile() as pr:
+        run(ABC)
 
-'''
-SA = PixelShape(img='resources/ss_star.bmp')
-SB = PixelShape(img='resources/ss_eclair.bmp')
-SC = PixelShape(img='resources/ss_eclair2.bmp')
-'''
+    stats = pstats.Stats(pr)
+    stats.sort_stats(pstats.SortKey.TIME)
+    stats.print_stats()
 
-
-SA = PixelShape(img='resources/pentagon/pentagon1.bmp')
-SB = PixelShape(img='resources/pentagon/pentagon1.bmp')
-SC = PixelShape(img='resources/no_shape.bmp')
-
-m = BiRectangleMethod(biRectAnalogy =BiSegmentAnalogy(), innerRectFinder=LargestRectangleFinder(), cutMethod = CutIn4EqualParts1(),
-                      maxDepth = 6, nbIterations = 2000, epsilon=1e-6, overflowPrevention =IndirectPrevention(),
-                      subSys = 'cut', algo  = 'iter', sameAxis = True, plot='step')
-
-d = m.analogy(SA, SB, SC)
+if __name__ == "__main__" :
+    run(example_3)

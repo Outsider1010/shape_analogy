@@ -41,7 +41,7 @@ class Shape(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def plot(self):
+    def plot(self, ax):
         """
         Plot the shape with matplotlib
         :return: Nothing

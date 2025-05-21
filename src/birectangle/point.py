@@ -1,11 +1,10 @@
 from dataclasses import dataclass
-from decimal import Decimal
 
 
 @dataclass(frozen=True)
 class Point:
-    x: Decimal | float
-    y: Decimal | float
+    x: float
+    y: float
 
     def toCoordSys(self, srcCoordSys, dstCoordSys):
         """
@@ -33,8 +32,8 @@ class Point:
             h = srcCoordSys.height()
             w2 = dstCoordSys.width()
             h2 = dstCoordSys.height()
-            return Point(dstCoordSys.x_min + w2 * (Decimal(str(self.x)) - srcCoordSys.x_min) / w,
-                         dstCoordSys.y_min + h2 * (Decimal(str(self.y)) - srcCoordSys.y_min) / h)
+            return Point(dstCoordSys.x_min + w2 * (self.x - srcCoordSys.x_min) / w,
+                         dstCoordSys.y_min + h2 * (self.y - srcCoordSys.y_min) / h)
 
     def __repr__(self):
         return f"({self.x}, {self.y})"

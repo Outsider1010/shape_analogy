@@ -1,5 +1,4 @@
 import math
-from decimal import Decimal
 
 import numpy as np
 
@@ -9,7 +8,6 @@ import src.shapes.pixel_shape as ps
 from .shape import Shape
 from ..birectangle.Segment import Segment
 from ..birectangle.point import Point
-from math import ceil, floor
 
 # DO NOT IMPORT STRATEGIES (to avoid circular imports)
 
@@ -104,8 +102,21 @@ class UnionRectangles(Shape):
                         x_min, x_max, y_min, y_max)
         return res
 
-    def isPointInShape(self, x: Decimal | float, y: Decimal | float) -> bool:
+    def isPointInShape(self, x: float, y: float) -> bool:
         return any(r.isPointInRectangle(x, y) for r in self.rectangles)
+
+    def isRectInShape(self, r: Rectangle):
+        rs = [r]
+        for rect in self.rectangles:
+            rs2 = []
+            for r in rs:
+                x = r.subtract(rect)
+                rs2.extend(x)
+            rs = rs2
+            if len(rs) == 0:
+                return True
+
+        return False
 
     def isHorizontalSegmentInShape(self, seg: Segment, num_samples: int = 10) -> bool:
         """
@@ -120,7 +131,7 @@ class UnionRectangles(Shape):
         assert seg.A.y == seg.B.y, "Must be a horizontal segment"
 
         for i in range(num_samples + 1):
-            t = Decimal(i) / Decimal(num_samples)
+            t = i / num_samples
             # Calcul de l'abscisse interpolée le long du segment
             x = seg.A.x + (seg.B.x - seg.A.x) * t
             # Vérification du point (x, seg.A.y)
@@ -140,7 +151,7 @@ class UnionRectangles(Shape):
         assert seg.A.x == seg.B.x, "Must be a vertical segment"
 
         for i in range(num_samples + 1):
-            t = Decimal(i) / Decimal(num_samples)
+            t = i / num_samples
             # Calcul de l'ordonnée interpolée le long du segment
             y = seg.A.y + (seg.B.y - seg.A.y) * t
             # Vérification du point (seg.A.x, y)
@@ -153,17 +164,15 @@ class UnionRectangles(Shape):
             return False
         if self.size() == other.size() == 0:
             return True
-        if self.size() == other.size() == 1:
-            return self.rectangles[0] == other.rectangles[0]
-        # TODO : compléter les autres cas
-        return False
+        else:
+            return all(self.isRectInShape(r) for r in other.rectangles) and all(other.isRectInShape(r) for r in self.rectangles)
 
     def isEmpty(self) -> bool:
         return len(self.rectangles) == 0
 
-    def plot(self, color='k') -> None:
+    def plot(self, ax, color='k') -> None:
         for r in self.rectangles:
-            r.plotFilled(color, 2)
+            r.plotFilled(ax, color, 2)
 
     def union_area(self):
         # Define events for the sweep line algorithm
@@ -204,8 +213,8 @@ class UnionRectangles(Shape):
         grid_y_min = -h / 2
 
         # On fait une conversion en decimal.
-        grid_x_min_dec = Decimal(grid_x_min)
-        grid_y_min_dec = Decimal(grid_y_min)
+        grid_x_min_dec = grid_x_min
+        grid_y_min_dec = grid_y_min
 
         # 2. Initialise la matrice de pixels en blanc.
         pixels = np.full((h, w), 255, dtype=np.uint8)
@@ -231,19 +240,19 @@ class UnionRectangles(Shape):
                     pixel_y_max = pixel_y_min + 1
 
                     # Intersection entre le pixel et le rectangle.
-                    inter_x_min = max(rect.x_min, Decimal(pixel_x_min))
-                    inter_x_max = min(rect.x_max, Decimal(pixel_x_max))
-                    inter_y_min = max(rect.y_min, Decimal(pixel_y_min))
-                    inter_y_max = min(rect.y_max, Decimal(pixel_y_max))
-                    inter_width = max(Decimal(0), inter_x_max - inter_x_min)
-                    inter_height = max(Decimal(0), inter_y_max - inter_y_min)
+                    inter_x_min = max(rect.x_min, pixel_x_min)
+                    inter_x_max = min(rect.x_max, pixel_x_max)
+                    inter_y_min = max(rect.y_min, pixel_y_min)
+                    inter_y_max = min(rect.y_max, pixel_y_max)
+                    inter_width = max(0, inter_x_max - inter_x_min)
+                    inter_height = max(0, inter_y_max - inter_y_min)
 
                     if inter_width <= 0 or inter_height <= 0:
                         continue
 
                     # Si le pixel est entièrement recouvert par le rectangle.
-                    if rect.x_min <= Decimal(pixel_x_min) and rect.x_max >= Decimal(pixel_x_max) and \
-                            rect.y_min <= Decimal(pixel_y_min) and rect.y_max >= Decimal(pixel_y_max):
+                    if rect.x_min <= pixel_x_min and rect.x_max >= pixel_x_max and \
+                            rect.y_min <= pixel_y_min and rect.y_max >= pixel_y_max:
                         pixels[j, i] = 0
                         # Marque le pixel comme totalement couvert en mettant None.
                         partial_pixels[(i, j)] = None

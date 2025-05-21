@@ -1,4 +1,3 @@
-from decimal import Decimal
 
 import numpy as np
 from largestinteriorrectangle import lir
@@ -14,12 +13,10 @@ def largest_rect_in_histo(arr, xs, ys, y):
     res = b_x = b_h = b_w = bfh = 0
     for i in range(n):
         while s and arr[s[-1]] >= arr[i]:
-            # The popped item is to be considered as the
-            # smallest element of the histogram
+            # The popped item is to be considered as the smallest element of the histogram
             tp = s.pop()
 
-            # For the popped item previous smaller element is
-            # just below it in the stack (or current stack top)
+            # For the popped item previous smaller element is just below it in the stack (or current stack top)
             # and next smaller element is i
             width = i if not s else i - s[-1] - 1
             x = 0 if not s else s[-1] + 1
@@ -60,14 +57,15 @@ def lir_by_histogram(mat, xs, ys):
     # Traverse row by row.
     for i in range(n):
         arr = np.where(mat[i], arr + 1, 0)
-        area, x, h, w, fh = largest_rect_in_histo(arr, xs, ys, i)
-        if area > ans:
-            ans = area
-            y = i
-            b_x = x
-            b_h = h
-            b_w = w
-            bfh = fh
+        if i == n - 1 or not np.all(mat[i + 1][mat[i] == 1] == 1):
+            area, x, h, w, fh = largest_rect_in_histo(arr, xs, ys, i)
+            if area > ans:
+                ans = area
+                y = i
+                b_x = x
+                b_h = h
+                b_w = w
+                bfh = fh
     return b_x, y - bfh + 1, b_w, b_h
 
 class LargestRectangleFinder(InnerRectangleFinder):
@@ -91,20 +89,20 @@ class LargestRectangleFinder(InnerRectangleFinder):
         for r in shape.rectangles:
             i_x_min = i_y_min = np.inf
             i_x_max = i_y_max = -np.inf
-            for i in range(len(xs)):
-                if xs[i] == r.x_min:
+            for i, x in enumerate(xs):
+                if x == r.x_min:
                     i_x_min = i
-                if xs[i] == r.x_max:
+                if x == r.x_max:
                     i_x_max = i
-            for i in range(len(ys)):
-                if ys[i] == r.y_min:
+            for i, y in enumerate(ys):
+                if y == r.y_min:
                     i_y_max = i
-                if ys[i] == r.y_max:
+                if y == r.y_max:
                     i_y_min = i
             matrix[i_y_min:i_y_max, i_x_min:i_x_max] = True
 
         x, y, w, h = lir_by_histogram(matrix, xs, ys)
-        return Rectangle.fromTopLeft(Point(xs[x], ys[int(y)]), Decimal(str(w)), Decimal(str(h)))
+        return Rectangle.fromTopLeft(Point(xs[x], ys[int(y)]), w, h)
 
     def findInnerRectanglePixels(self, shape) -> Rectangle:
         # find the largest interior rectangle
@@ -113,3 +111,12 @@ class LargestRectangleFinder(InnerRectangleFinder):
 
         # have to adjust because we consider the center of the image to be the origin
         return Rectangle.fromTopLeft(Point(topLeft_x - h2 / 2, w2 / 2 - topLeft_y), w, h)
+
+    def findInnerRectanglePixels2(self, shape) -> Rectangle:
+        # find the largest interior rectangle
+        w0, h0 = shape.dim()
+        xs = np.arange(start=-w0 / 2, stop=(w0 / 2) + 1, step=1)
+        ys = np.arange(start=(w0 / 2), stop=(-h0 / 2) - 1, step=-1)
+
+        x, y, w, h = lir_by_histogram(shape.pixels == 0, xs, ys)
+        return Rectangle.fromTopLeft(Point(xs[x], ys[int(y)]), w, h)

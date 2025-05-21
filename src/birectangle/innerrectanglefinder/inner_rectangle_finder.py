@@ -11,9 +11,5 @@ class InnerRectangleFinder(ABC):
     """
 
     @abstractmethod
-    def findInnerRectanglePixels(self, shape : PixelShape) -> Rectangle:
-        raise NotImplementedError
-
-    @abstractmethod
     def findInnerRectangleUnionR(self, shape: UnionRectangles) -> Rectangle:
         raise NotImplementedError

@@ -1,4 +1,3 @@
-from decimal import Decimal
 from typing import Iterator
 
 from src.birectangle.rectangle import Rectangle
@@ -8,7 +7,7 @@ class BiRectangle:
     def __init__(self, outerRectangle: Rectangle, innerRectangle: Rectangle):
         b = outerRectangle.containsRectangle(innerRectangle)
         if not b:
-            limit = Decimal('1E-25')
+            limit = 1e-25
             if not outerRectangle.y_min <= innerRectangle.y_min and outerRectangle.y_min - innerRectangle.y_min < limit:
                 innerRectangle.y_min = outerRectangle.y_min
             if not outerRectangle.x_min <= innerRectangle.x_min and outerRectangle.x_min - innerRectangle.x_min < limit:
@@ -29,7 +28,7 @@ class BiRectangle:
     def __iter__(self) -> Iterator[Rectangle]:
         return iter((self.innerRectangle, self.outerRectangle))
 
-    def separate(self, epsilon: Decimal) -> None:
+    def separate(self, epsilon: float) -> None:
         if epsilon != 0:
             innerR, outerR = self
             w, h = innerR.width(), innerR.height()

@@ -1,4 +1,3 @@
-from decimal import Decimal
 from src.birectangle.rectangle import Rectangle
 from src.shapes.union_rectangles import UnionRectangles
 
@@ -11,7 +10,7 @@ def test_single_pixel():
     La grille sera de taille 2x2 (centrée sur l'origine), et seul le pixel (1,1) (en coordonnées matrice)
     sera entièrement recouvert, donc sa teinte doit être 0 (noir), et les autres 255 (blanc).
     """
-    r = Rectangle(Decimal('0'), Decimal('1'), Decimal('0'), Decimal('1'))
+    r = Rectangle(0, 1, 0, 1)
     union_rect = UnionRectangles()
     union_rect.addRectangle(r)
     pixel_shape = union_rect.toPixels()
@@ -35,7 +34,7 @@ def test_partial_coverage():
     Le pixel (1,1) de la grille (qui couvre [0,1]x[0,1]) sera recouvert à 50% (aire 0.5).
     La teinte attendue est : 255 - round(0.5*255) = 255 - 128 = 127 (avec round(127.5)=128).
     """
-    r = Rectangle(Decimal('0'), Decimal('1'), Decimal('0'), Decimal('0.5'))
+    r = Rectangle(0, 1, 0, 0.5)
     union_rect = UnionRectangles()
     union_rect.addRectangle(r)
     pixel_shape = union_rect.toPixels()
@@ -53,9 +52,9 @@ if __name__ == '__main__':
     test_partial_coverage()
 
     # Exemple avec plusieurs rectangles qui se chevauchent partiellement.
-    r1 = Rectangle(Decimal('0.2'), Decimal('2.8'), Decimal('0.2'), Decimal('1.8'))
-    r2 = Rectangle(Decimal('1.5'), Decimal('3.5'), Decimal('1.0'), Decimal('2.5'))
-    r3 = Rectangle(Decimal('2.0'), Decimal('4.0'), Decimal('0.5'), Decimal('3.0'))
+    r1 = Rectangle(0.2, 2.8, 0.2, 1.8)
+    r2 = Rectangle(1.5, 3.5, 1.0, 2.5)
+    r3 = Rectangle(2.0, 4.0, 0.5, 3.0)
 
     union_visual = UnionRectangles()
     union_visual.addRectangle(r1)

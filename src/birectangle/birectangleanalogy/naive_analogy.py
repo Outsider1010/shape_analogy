@@ -1,11 +1,9 @@
-
 from src.birectangle.birectangleanalogy.bi_rectangle_analogy import BiRectangleAnalogy
 from src.birectangle.bi_rectangle import BiRectangle
 from src.birectangle.rectangleanalogy.center_dim_analogy import CenterDimAnalogy
 from src.birectangle.rectangle import Rectangle
 
 
-# TODO: documentation
 class NaiveAnalogy(BiRectangleAnalogy):
 
     def __init__(self, rectangleAnalogy = CenterDimAnalogy()):
@@ -23,5 +21,5 @@ class NaiveAnalogy(BiRectangleAnalogy):
         if x_max - x_min > 0 and y_max - y_min > 0:
             return BiRectangle(outerRectD, Rectangle(x_min, x_max, y_min, y_max))
         else:
-            raise AssertionError('no solution found')
+            raise ValueError('no solution found')
 
